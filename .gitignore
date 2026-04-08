@@ -1,0 +1,97 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node.js / Vue
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+frontend/dist/
+frontend/.vite/
+
+# 环境变量（敏感信息）
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+logs/
+
+# 数据库备份（可能包含敏感数据）
+volumes/postgres/backups/*.sql
+volumes/postgres/backups/*.dump
+
+# 但保留目录结构
+!volumes/**/.gitkeep
+
+# SSL证书（敏感文件）
+ssl/*.pem
+ssl/*.key
+ssl/*.crt
+
+# 但保留示例说明
+!ssl/README.md
+
+# Docker
+docker-compose.override.yml
+
+# 测试覆盖率
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# LibreOffice 锁文件
+.~lock.*
+
+# Docker 数据卷（不应提交）
+volumes/postgres/data/
+volumes/pgdata/
+volumes/redis/data/
+volumes/mosquitto/data/
+volumes/mosquitto/log/
+volumes/emqx/data/
+volumes/emqx/log/

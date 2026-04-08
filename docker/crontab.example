@@ -1,0 +1,15 @@
+# Crontab 配置示例
+# 将此内容添加到系统的 crontab 中
+# 命令: crontab -e
+
+# 时区设置
+TZ=Asia/Shanghai
+
+# PostgreSQL 每日备份 (凌晨2点执行)
+0 2 * * * /var/lib/postgresql/backups/backup.sh daily >> /var/lib/postgresql/backups/backup.log 2>&1
+
+# PostgreSQL 每周备份 (周日凌晨3点执行)
+0 3 * * 0 /var/lib/postgresql/backups/backup.sh weekly >> /var/lib/postgresql/backups/backup.log 2>&1
+
+# EMQX 配置备份 (每周一凌晨4点执行)
+0 4 * * 1 docker exec bniot-emqx emqx ctl export /opt/emqx/data/emqx-export-$(date +\%Y\%m\%d).tar.gz >> /var/log/emqx-backup.log 2>&1

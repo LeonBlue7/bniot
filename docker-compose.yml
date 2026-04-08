@@ -1,0 +1,141 @@
+services:
+  # ============ PostgreSQL + TimescaleDB ============
+  postgres:
+    image: postgres:15-alpine
+    container_name: bniot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bniot}
+      POSTGRES_USER: ${POSTGRES_USER:-bniot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bniot123}
+    volumes:
+      - ./volumes/pgdata:/var/lib/postgresql/data
+      - ./volumes/postgres/backups:/var/lib/postgresql/backups
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bniot} -d ${POSTGRES_DB:-bniot}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bniot-network
+
+  # ============ Redis ============
+  redis:
+    image: redis:7-alpine
+    container_name: bniot-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --save 60 1000
+      --requirepass ${REDIS_PASSWORD:-redis123}
+    volumes:
+      - ./volumes/redis/data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis123}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bniot-network
+
+  # ============ EMQX 5.5 ============
+  emqx:
+    image: emqx/emqx:5.0.22
+    container_name: bniot-emqx
+    restart: unless-stopped
+    environment:
+      EMQX_NAME: bniot
+      EMQX_HOST: 0.0.0.0
+      # Dashboard 配置
+      EMQX_DASHBOARD__DEFAULT_USERNAME: ${EMQX_DASHBOARD_USER:-admin}
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: ${EMQX_DASHBOARD_PASSWORD:-public}
+      # MQTT 监听端口
+      EMQX_LISTENERS__TCP__DEFAULT__BIND: 1883
+      EMQX_LISTENERS__SSL__DEFAULT__BIND: 8883
+      EMQX_LISTENERS__WS__DEFAULT__BIND: 8083
+      EMQX_LISTENERS__WSS__DEFAULT__BIND: 8084
+    volumes:
+      - ./volumes/emqx/data:/opt/emqx/data
+      - ./volumes/emqx/log:/opt/emqx/log
+      - ./volumes/emqx/loaded_plugins:/opt/emqx/loaded_plugins
+      - ./ssl:/opt/emqx/etc/certs:ro
+    ports:
+      - "${EMQX_MQTT_PORT:-1883}:1883"    # MQTT TCP
+      - "${EMQX_MQTT_SSL_PORT:-8883}:8883" # MQTT SSL
+      - "${EMQX_WS_PORT:-8083}:8083"       # WebSocket
+      - "${EMQX_WSS_PORT:-8084}:8084"      # WebSocket SSL
+      - "${EMQX_DASHBOARD_PORT:-18083}:18083" # Dashboard
+    healthcheck:
+      test: ["CMD", "emqx", "ctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - bniot-network
+
+  # ============ FastAPI 后端 ============
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bniot-backend
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-bniot}
+      POSTGRES_USER: ${POSTGRES_USER:-bniot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bniot123}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      EMQX_HOST: emqx
+      EMQX_MQTT_PORT: 1883
+      MQTT_USERNAME: ${MQTT_USERNAME:-test1}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-test123}
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
+      BACKEND_DEBUG: ${BACKEND_DEBUG:-false}
+    volumes:
+      - ./backend:/app
+      - ./volumes/backend/logs:/app/logs
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      emqx:
+        condition: service_healthy
+    networks:
+      - bniot-network
+
+  # ============ Nginx 反向代理 ============
+  nginx:
+    image: nginx:alpine
+    container_name: bniot-nginx
+    restart: unless-stopped
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      # SSL 证书配置（实际文件名）
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - emqx
+    networks:
+      - bniot-network
+
+networks:
+  bniot-network:
+    driver: bridge
