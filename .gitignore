@@ -28,6 +28,13 @@ yarn-error.log*
 .pnpm-debug.log*
 frontend/dist/
 frontend/.vite/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+frontend/tsconfig.node.json
+
+# Claude Code
+.claude/
 
 # 环境变量（敏感信息）
 .env
