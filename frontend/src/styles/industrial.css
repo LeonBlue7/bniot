@@ -11,49 +11,9 @@
 /* ========================================
    设计令牌
    ======================================== */
+
+/* === 公共设计令牌（所有主题共享） === */
 :root {
-  /* === 核心色板 === */
-  --color-bg-primary: #0a0e14;
-  --color-bg-secondary: #111820;
-  --color-bg-tertiary: #1a222d;
-  --color-bg-elevated: #212b38;
-  --color-bg-hover: #2a3644;
-
-  /* === 功能色 === */
-  /* 冷却系统 - 冷色调 */
-  --color-cool-primary: #00d4ff;
-  --color-cool-secondary: #0099cc;
-  --color-cool-glow: rgba(0, 212, 255, 0.15);
-
-  /* 加热系统 - 暖色调 */
-  --color-warm-primary: #ff9500;
-  --color-warm-secondary: #cc7700;
-  --color-warm-glow: rgba(255, 149, 0, 0.15);
-
-  /* 状态指示 */
-  --color-status-normal: #00ff88;
-  --color-status-warning: #ffc107;
-  --color-status-danger: #ff3b3b;
-  --color-status-offline: #6b7280;
-
-  /* === 文字色 === */
-  --color-text-primary: #e8edf3;
-  --color-text-secondary: #94a3b8;
-  --color-text-tertiary: #64748b;
-  --color-text-disabled: #475569;
-
-  /* === 边框与分割线 === */
-  --color-border-primary: #2a3644;
-  --color-border-secondary: #1e293b;
-  --color-border-focus: var(--color-cool-primary);
-
-  /* === 阴影系统 === */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-  --shadow-glow-cool: 0 0 20px var(--color-cool-glow);
-  --shadow-glow-warm: 0 0 20px var(--color-warm-glow);
-
   /* === 字体系统 === */
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -97,6 +57,97 @@
   --z-modal: 1050;
   --z-notification: 1100;
   --z-tooltip: 1150;
+}
+
+/* === 深色主题（默认） === */
+:root,
+[data-theme='dark'] {
+  /* === 核心色板 === */
+  --color-bg-primary: #0a0e14;
+  --color-bg-secondary: #111820;
+  --color-bg-tertiary: #1a222d;
+  --color-bg-elevated: #212b38;
+  --color-bg-hover: #2a3644;
+
+  /* === 功能色 === */
+  /* 冷却系统 - 冷色调 */
+  --color-cool-primary: #00d4ff;
+  --color-cool-secondary: #0099cc;
+  --color-cool-glow: rgba(0, 212, 255, 0.15);
+
+  /* 加热系统 - 暖色调 */
+  --color-warm-primary: #ff9500;
+  --color-warm-secondary: #cc7700;
+  --color-warm-glow: rgba(255, 149, 0, 0.15);
+
+  /* 状态指示 */
+  --color-status-normal: #00ff88;
+  --color-status-warning: #ffc107;
+  --color-status-danger: #ff3b3b;
+  --color-status-offline: #6b7280;
+
+  /* === 文字色 - 深底浅字 === */
+  --color-text-primary: #e8edf3;
+  --color-text-secondary: #94a3b8;
+  --color-text-tertiary: #64748b;
+  --color-text-disabled: #475569;
+
+  /* === 边框与分割线 === */
+  --color-border-primary: #2a3644;
+  --color-border-secondary: #1e293b;
+  --color-border-focus: var(--color-cool-primary);
+
+  /* === 阴影系统 === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-glow-cool: 0 0 20px var(--color-cool-glow);
+  --shadow-glow-warm: 0 0 20px var(--color-warm-glow);
+}
+
+/* === 浅色主题 === */
+[data-theme='light'] {
+  /* === 核心色板 === */
+  --color-bg-primary: #f5f7fa;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f0f2f5;
+  --color-bg-elevated: #ffffff;
+  --color-bg-hover: #e8ecf0;
+
+  /* === 功能色 === */
+  /* 冷却系统 - 冷色调 */
+  --color-cool-primary: #0088cc;
+  --color-cool-secondary: #006699;
+  --color-cool-glow: rgba(0, 136, 204, 0.1);
+
+  /* 加热系统 - 暖色调 */
+  --color-warm-primary: #e68600;
+  --color-warm-secondary: #b36b00;
+  --color-warm-glow: rgba(230, 134, 0, 0.1);
+
+  /* 状态指示 */
+  --color-status-normal: #00aa55;
+  --color-status-warning: #dd9900;
+  --color-status-danger: #dd3333;
+  --color-status-offline: #888888;
+
+  /* === 文字色 - 浅底深字 === */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #555555;
+  --color-text-tertiary: #777777;
+  --color-text-disabled: #aaaaaa;
+
+  /* === 边框与分割线 === */
+  --color-border-primary: #d9d9d9;
+  --color-border-secondary: #e8e8e8;
+  --color-border-focus: var(--color-cool-primary);
+
+  /* === 阴影系统 === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.12);
+  --shadow-glow-cool: 0 0 20px var(--color-cool-glow);
+  --shadow-glow-warm: 0 0 20px var(--color-warm-glow);
 }
 
 /* ========================================

@@ -6,7 +6,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import MockAdapter from 'axios-mock-adapter'
 import apiClient from './client'
 import { zoneApi } from './zones'
-import type { Zone, ZoneCreate, ZoneUpdate, Message } from '@/types'
+import type { Zone, ZoneCreate, ZoneUpdate } from '@/types'
 
 // Mock auth store
 vi.mock('@/stores/auth', () => ({

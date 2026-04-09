@@ -2,7 +2,10 @@
   <div class="devices-page">
     <!-- 搜索和操作栏 -->
     <a-card class="toolbar-card">
-      <a-row :gutter="16" align="middle">
+      <a-row
+        :gutter="16"
+        align="middle"
+      >
         <a-col :span="8">
           <a-input-search
             v-model:value="searchKeyword"
@@ -19,7 +22,11 @@
             style="width: 100%"
             @change="handleSearch"
           >
-            <a-select-option v-for="zone in zones" :key="zone.id" :value="zone.id">
+            <a-select-option
+              v-for="zone in zones"
+              :key="zone.id"
+              :value="zone.id"
+            >
               {{ zone.name }}
             </a-select-option>
           </a-select>
@@ -32,13 +39,23 @@
             style="width: 100%"
             @change="handleSearch"
           >
-            <a-select-option :value="true">在线</a-select-option>
-            <a-select-option :value="false">离线</a-select-option>
+            <a-select-option :value="true">
+              在线
+            </a-select-option>
+            <a-select-option :value="false">
+              离线
+            </a-select-option>
           </a-select>
         </a-col>
-        <a-col :span="8" style="text-align: right">
+        <a-col
+          :span="8"
+          style="text-align: right"
+        >
           <a-space>
-            <a-button type="primary" @click="showCreateModal">
+            <a-button
+              type="primary"
+              @click="showCreateModal"
+            >
               <plus-outlined />
               添加设备
             </a-button>
@@ -71,7 +88,10 @@
           </template>
           <template v-else-if="column.key === 'action'">
             <a-space>
-              <a-button size="small" @click="goToDetail(record.id)">
+              <a-button
+                size="small"
+                @click="goToDetail(record.id)"
+              >
                 详情
               </a-button>
               <a-dropdown>
@@ -81,14 +101,24 @@
                 </a-button>
                 <template #overlay>
                   <a-menu>
-                    <a-menu-item key="edit" @click="showEditModal(record)">
+                    <a-menu-item
+                      key="edit"
+                      @click="showEditModal(record)"
+                    >
                       编辑
                     </a-menu-item>
-                    <a-menu-item key="control" @click="showControlModal(record)">
+                    <a-menu-item
+                      key="control"
+                      @click="showControlModal(record)"
+                    >
                       远程控制
                     </a-menu-item>
                     <a-menu-divider />
-                    <a-menu-item key="delete" danger @click="handleDelete(record)">
+                    <a-menu-item
+                      key="delete"
+                      danger
+                      @click="handleDelete(record)"
+                    >
                       删除
                     </a-menu-item>
                   </a-menu>
@@ -107,16 +137,44 @@
       :confirm-loading="createLoading"
       @ok="handleCreate"
     >
-      <a-form ref="createFormRef" :model="createForm" :rules="createRules" layout="vertical">
-        <a-form-item name="device_id" label="设备IMEI">
-          <a-input v-model:value="createForm.device_id" placeholder="请输入IMEI号" />
+      <a-form
+        ref="createFormRef"
+        :model="createForm"
+        :rules="createRules"
+        layout="vertical"
+      >
+        <a-form-item
+          name="device_id"
+          label="设备IMEI"
+        >
+          <a-input
+            v-model:value="createForm.device_id"
+            placeholder="请输入IMEI号"
+          />
         </a-form-item>
-        <a-form-item name="name" label="设备名称">
-          <a-input v-model:value="createForm.name" placeholder="请输入设备名称" />
+        <a-form-item
+          name="name"
+          label="设备名称"
+        >
+          <a-input
+            v-model:value="createForm.name"
+            placeholder="请输入设备名称"
+          />
         </a-form-item>
-        <a-form-item name="zone_id" label="所属分区">
-          <a-select v-model:value="createForm.zone_id" placeholder="选择分区" allow-clear>
-            <a-select-option v-for="zone in zones" :key="zone.id" :value="zone.id">
+        <a-form-item
+          name="zone_id"
+          label="所属分区"
+        >
+          <a-select
+            v-model:value="createForm.zone_id"
+            placeholder="选择分区"
+            allow-clear
+          >
+            <a-select-option
+              v-for="zone in zones"
+              :key="zone.id"
+              :value="zone.id"
+            >
               {{ zone.name }}
             </a-select-option>
           </a-select>
@@ -131,13 +189,35 @@
       :confirm-loading="editLoading"
       @ok="handleEdit"
     >
-      <a-form ref="editFormRef" :model="editForm" :rules="editRules" layout="vertical">
-        <a-form-item name="name" label="设备名称">
-          <a-input v-model:value="editForm.name" placeholder="请输入设备名称" />
+      <a-form
+        ref="editFormRef"
+        :model="editForm"
+        :rules="editRules"
+        layout="vertical"
+      >
+        <a-form-item
+          name="name"
+          label="设备名称"
+        >
+          <a-input
+            v-model:value="editForm.name"
+            placeholder="请输入设备名称"
+          />
         </a-form-item>
-        <a-form-item name="zone_id" label="所属分区">
-          <a-select v-model:value="editForm.zone_id" placeholder="选择分区" allow-clear>
-            <a-select-option v-for="zone in zones" :key="zone.id" :value="zone.id">
+        <a-form-item
+          name="zone_id"
+          label="所属分区"
+        >
+          <a-select
+            v-model:value="editForm.zone_id"
+            placeholder="选择分区"
+            allow-clear
+          >
+            <a-select-option
+              v-for="zone in zones"
+              :key="zone.id"
+              :value="zone.id"
+            >
               {{ zone.name }}
             </a-select-option>
           </a-select>
@@ -154,12 +234,19 @@
     >
       <a-form layout="vertical">
         <a-form-item label="设备">
-          <a-input :value="controlDevice?.name" disabled />
+          <a-input
+            :value="controlDevice?.name"
+            disabled
+          />
         </a-form-item>
         <a-form-item label="操作">
           <a-radio-group v-model:value="controlAction">
-            <a-radio :value="1">开机</a-radio>
-            <a-radio :value="0">关机</a-radio>
+            <a-radio :value="1">
+              开机
+            </a-radio>
+            <a-radio :value="0">
+              关机
+            </a-radio>
           </a-radio-group>
         </a-form-item>
       </a-form>
@@ -169,7 +256,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
 import { useDeviceStore } from '@/stores/devices'
 import { useZoneStore } from '@/stores/zones'
@@ -181,7 +268,6 @@ import type { TableProps, FormInstance } from 'ant-design-vue'
 import type { Rule } from 'ant-design-vue/es/form'
 
 const router = useRouter()
-const route = useRoute()
 const deviceStore = useDeviceStore()
 const zoneStore = useZoneStore()
 const authStore = useAuthStore()

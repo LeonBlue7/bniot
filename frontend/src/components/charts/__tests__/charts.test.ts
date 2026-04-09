@@ -2,8 +2,8 @@
  * ECharts 图表组件测试
  * TDD: 测试先行
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mount, VueWrapper } from '@vue/test-utils'
+import { describe, it, expect, vi } from 'vitest'
+import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 
 // Mock ECharts - 必须在 vi.mock 内部定义所有内容，因为 vi.mock 是 hoisted

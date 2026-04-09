@@ -3,8 +3,12 @@
     <!-- 页面头部 -->
     <div class="page-header-section">
       <div class="header-content">
-        <h1 class="page-title">系统设置</h1>
-        <p class="page-subtitle">配置系统参数与偏好</p>
+        <h1 class="page-title">
+          系统设置
+        </h1>
+        <p class="page-subtitle">
+          配置系统参数与偏好
+        </p>
       </div>
     </div>
 
@@ -12,16 +16,25 @@
     <div class="settings-content">
       <!-- 外观设置 -->
       <div class="settings-section">
-        <h3 class="section-title">外观设置</h3>
+        <h3 class="section-title">
+          外观设置
+        </h3>
         <div class="settings-card">
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label">主题模式</span>
               <span class="setting-desc">选择深色或浅色主题</span>
             </div>
-            <a-radio-group v-model:value="settings.theme" @change="saveSettings">
-              <a-radio value="dark">深色</a-radio>
-              <a-radio value="light">浅色</a-radio>
+            <a-radio-group
+              v-model:value="settings.theme"
+              @change="saveSettings"
+            >
+              <a-radio value="dark">
+                深色
+              </a-radio>
+              <a-radio value="light">
+                浅色
+              </a-radio>
             </a-radio-group>
           </div>
           <div class="setting-item">
@@ -29,53 +42,81 @@
               <span class="setting-label">显示动画效果</span>
               <span class="setting-desc">开启界面过渡动画</span>
             </div>
-            <a-switch v-model:checked="settings.animations" @change="saveSettings" />
+            <a-switch
+              v-model:checked="settings.animations"
+              @change="saveSettings"
+            />
           </div>
         </div>
       </div>
 
       <!-- 通知设置 -->
       <div class="settings-section">
-        <h3 class="section-title">通知设置</h3>
+        <h3 class="section-title">
+          通知设置
+        </h3>
         <div class="settings-card">
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label">设备离线告警</span>
               <span class="setting-desc">设备离线时发送通知</span>
             </div>
-            <a-switch v-model:checked="settings.notifyOffline" @change="saveSettings" />
+            <a-switch
+              v-model:checked="settings.notifyOffline"
+              @change="saveSettings"
+            />
           </div>
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label">温度告警</span>
               <span class="setting-desc">温度超出阈值时通知</span>
             </div>
-            <a-switch v-model:checked="settings.notifyTempAlarm" @change="saveSettings" />
+            <a-switch
+              v-model:checked="settings.notifyTempAlarm"
+              @change="saveSettings"
+            />
           </div>
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label">声音提醒</span>
               <span class="setting-desc">告警时播放提示音</span>
             </div>
-            <a-switch v-model:checked="settings.soundEnabled" @change="saveSettings" />
+            <a-switch
+              v-model:checked="settings.soundEnabled"
+              @change="saveSettings"
+            />
           </div>
         </div>
       </div>
 
       <!-- 数据刷新 -->
       <div class="settings-section">
-        <h3 class="section-title">数据刷新</h3>
+        <h3 class="section-title">
+          数据刷新
+        </h3>
         <div class="settings-card">
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label">自动刷新间隔</span>
               <span class="setting-desc">仪表盘数据自动刷新频率</span>
             </div>
-            <a-select v-model:value="settings.refreshInterval" style="width: 120px" @change="saveSettings">
-              <a-select-option :value="0">关闭</a-select-option>
-              <a-select-option :value="30">30秒</a-select-option>
-              <a-select-option :value="60">1分钟</a-select-option>
-              <a-select-option :value="300">5分钟</a-select-option>
+            <a-select
+              v-model:value="settings.refreshInterval"
+              style="width: 120px"
+              @change="saveSettings"
+            >
+              <a-select-option :value="0">
+                关闭
+              </a-select-option>
+              <a-select-option :value="30">
+                30秒
+              </a-select-option>
+              <a-select-option :value="60">
+                1分钟
+              </a-select-option>
+              <a-select-option :value="300">
+                5分钟
+              </a-select-option>
             </a-select>
           </div>
         </div>
@@ -83,7 +124,9 @@
 
       <!-- 系统信息 -->
       <div class="settings-section">
-        <h3 class="section-title">系统信息</h3>
+        <h3 class="section-title">
+          系统信息
+        </h3>
         <div class="settings-card">
           <div class="info-grid">
             <div class="info-item">
@@ -110,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, watch } from 'vue'
 import { message } from 'ant-design-vue'
 
 interface Settings {
@@ -131,6 +174,11 @@ const settings = reactive<Settings>({
   refreshInterval: 60
 })
 
+// 应用主题
+function applyTheme(theme: 'dark' | 'light') {
+  document.documentElement.setAttribute('data-theme', theme)
+}
+
 // 加载设置
 function loadSettings() {
   const saved = localStorage.getItem('bniot_settings')
@@ -138,8 +186,12 @@ function loadSettings() {
     try {
       const parsed = JSON.parse(saved)
       Object.assign(settings, parsed)
-    } catch {
-      // localStorage 数据损坏时使用默认设置
+      // 应用保存的主题
+      applyTheme(settings.theme)
+    } catch (e) {
+      // localStorage 数据损坏时使用默认设置，清理损坏数据
+      console.warn('设置数据损坏，使用默认设置:', e)
+      localStorage.removeItem('bniot_settings')
     }
   }
 }
@@ -149,6 +201,11 @@ function saveSettings() {
   localStorage.setItem('bniot_settings', JSON.stringify(settings))
   message.success('设置已保存')
 }
+
+// 监听主题变化 - 统一处理主题应用
+watch(() => settings.theme, (newTheme) => {
+  applyTheme(newTheme)
+})
 
 onMounted(() => {
   loadSettings()
@@ -273,8 +330,29 @@ onMounted(() => {
   color: var(--color-text-primary) !important;
 }
 
+:deep(.ant-radio-inner) {
+  border-color: var(--color-border-primary) !important;
+}
+
+:deep(.ant-radio-inner::after) {
+  background: var(--color-cool-primary) !important;
+}
+
 :deep(.ant-select-selector) {
   background: var(--color-bg-tertiary) !important;
   border-color: var(--color-border-primary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+:deep(.ant-select-selection-item) {
+  color: var(--color-text-primary) !important;
+}
+
+:deep(.ant-select-selection-placeholder) {
+  color: var(--color-text-tertiary) !important;
+}
+
+:deep(.ant-select-arrow) {
+  color: var(--color-text-secondary) !important;
 }
 </style>

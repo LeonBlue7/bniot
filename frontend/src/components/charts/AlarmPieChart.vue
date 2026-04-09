@@ -29,8 +29,6 @@ const typeColors = {
   temp_alarm: '#1890ff'    // 蓝色 - 温度告警
 }
 
-const themeColors = ['#ff4d4f', '#faad14', '#52c41a', '#1890ff', '#722ed1', '#13c2c2']
-
 // 告警类型名称映射
 const typeNameMap: Record<string, string> = {
   offline: '设备离线',
@@ -268,10 +266,17 @@ defineExpose({
 <template>
   <div class="alarm-pie-chart">
     <a-spin :spinning="loading">
-      <div v-if="isEmpty && !loading" class="empty-state">
+      <div
+        v-if="isEmpty && !loading"
+        class="empty-state"
+      >
         <a-empty description="暂无告警数据" />
       </div>
-      <div v-else ref="chartRef" class="chart-container"></div>
+      <div
+        v-else
+        ref="chartRef"
+        class="chart-container"
+      />
     </a-spin>
   </div>
 </template>

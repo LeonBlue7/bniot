@@ -7,10 +7,16 @@
     >
       <template #extra>
         <a-space>
-          <a-button :type="device?.is_online ? 'primary' : 'default'" @click="handleControl(1)">
+          <a-button
+            :type="device?.is_online ? 'primary' : 'default'"
+            @click="handleControl(1)"
+          >
             开机
           </a-button>
-          <a-button :type="!device?.is_online ? 'primary' : 'default'" @click="handleControl(0)">
+          <a-button
+            :type="!device?.is_online ? 'primary' : 'default'"
+            @click="handleControl(0)"
+          >
             关机
           </a-button>
         </a-space>
@@ -21,8 +27,14 @@
       <a-row :gutter="16">
         <!-- 基本信息 -->
         <a-col :span="8">
-          <a-card title="基本信息" size="small">
-            <a-descriptions :column="1" size="small">
+          <a-card
+            title="基本信息"
+            size="small"
+          >
+            <a-descriptions
+              :column="1"
+              size="small"
+            >
               <a-descriptions-item label="IMEI号">
                 {{ device?.device_id }}
               </a-descriptions-item>
@@ -49,7 +61,10 @@
 
         <!-- 实时数据 -->
         <a-col :span="8">
-          <a-card title="实时数据" size="small">
+          <a-card
+            title="实时数据"
+            size="small"
+          >
             <a-row :gutter="16">
               <a-col :span="12">
                 <a-statistic
@@ -66,7 +81,10 @@
                 />
               </a-col>
             </a-row>
-            <a-row :gutter="16" style="margin-top: 16px">
+            <a-row
+              :gutter="16"
+              style="margin-top: 16px"
+            >
               <a-col :span="12">
                 <a-statistic
                   title="空调状态"
@@ -86,9 +104,19 @@
 
         <!-- 参数设置 -->
         <a-col :span="8">
-          <a-card title="参数设置" size="small">
-            <a-empty v-if="!device?.settings" description="暂无参数数据" />
-            <a-descriptions v-else :column="1" size="small">
+          <a-card
+            title="参数设置"
+            size="small"
+          >
+            <a-empty
+              v-if="!device?.settings"
+              description="暂无参数数据"
+            />
+            <a-descriptions
+              v-else
+              :column="1"
+              size="small"
+            >
               <a-descriptions-item label="联动模式">
                 {{ getLinkageMode(device?.settings?.['101']) }}
               </a-descriptions-item>
@@ -99,7 +127,10 @@
                 {{ device?.settings?.['501'] ?? '-' }} 分钟
               </a-descriptions-item>
             </a-descriptions>
-            <a-button type="link" style="margin-top: 8px">
+            <a-button
+              type="link"
+              style="margin-top: 8px"
+            >
               查看完整参数
             </a-button>
           </a-card>
@@ -107,11 +138,23 @@
       </a-row>
 
       <!-- 历史数据图表 -->
-      <a-card title="历史数据" style="margin-top: 16px">
-        <a-radio-group v-model:value="dataRange" @change="fetchHistoryData">
-          <a-radio-button value="24">24小时</a-radio-button>
-          <a-radio-button value="72">3天</a-radio-button>
-          <a-radio-button value="168">7天</a-radio-button>
+      <a-card
+        title="历史数据"
+        style="margin-top: 16px"
+      >
+        <a-radio-group
+          v-model:value="dataRange"
+          @change="fetchHistoryData"
+        >
+          <a-radio-button value="24">
+            24小时
+          </a-radio-button>
+          <a-radio-button value="72">
+            3天
+          </a-radio-button>
+          <a-radio-button value="168">
+            7天
+          </a-radio-button>
         </a-radio-group>
         <a-table
           :columns="dataColumns"

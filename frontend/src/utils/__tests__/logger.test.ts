@@ -2,7 +2,7 @@
  * 日志工具测试
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { Logger, logger, wsLogger, apiLogger } from '../logger'
+import { Logger, wsLogger, apiLogger } from '../logger'
 
 describe('Logger', () => {
   let consoleSpy: {

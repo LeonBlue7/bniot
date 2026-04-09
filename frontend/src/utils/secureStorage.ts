@@ -65,10 +65,12 @@ function getStorage(): Storage | MemoryStorage {
  */
 interface SecureStorageInterface {
   getToken(): string | null
+   
   setToken(token: string | null): void
   removeToken(): void
   hasToken(): boolean
   getUser<T = unknown>(): T | null
+   
   setUser<T>(user: T | null): void
   removeUser(): void
   clear(): void

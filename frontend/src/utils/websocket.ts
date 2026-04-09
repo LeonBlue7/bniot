@@ -19,10 +19,13 @@ export interface WebSocketMessage {
 export interface WebSocketOptions {
   url: string
   token: string
+   
   onMessage?: (message: WebSocketMessage) => void
   onConnect?: () => void
   onDisconnect?: () => void
+   
   onError?: (error: Event) => void
+   
   onAuthError?: (message: string) => void
   reconnectAttempts?: number
   reconnectInterval?: number

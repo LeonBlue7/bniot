@@ -12,22 +12,52 @@
       <!-- Logo 区域 -->
       <div class="sidebar-logo">
         <div class="logo-icon">
-          <svg viewBox="0 0 32 32" fill="none">
-            <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2" opacity="0.3"/>
-            <circle cx="16" cy="16" r="10" stroke="currentColor" stroke-width="2"/>
-            <path d="M16 8v8l5 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="16" cy="16" r="3" fill="currentColor"/>
+          <svg
+            viewBox="0 0 32 32"
+            fill="none"
+          >
+            <circle
+              cx="16"
+              cy="16"
+              r="14"
+              stroke="currentColor"
+              stroke-width="2"
+              opacity="0.3"
+            />
+            <circle
+              cx="16"
+              cy="16"
+              r="10"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <path
+              d="M16 8v8l5 4"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <circle
+              cx="16"
+              cy="16"
+              r="3"
+              fill="currentColor"
+            />
           </svg>
         </div>
-        <span v-show="!collapsed" class="logo-text">BNIoT</span>
+        <span
+          v-show="!collapsed"
+          class="logo-text"
+        >BNIoT</span>
       </div>
 
       <!-- 导航菜单 -->
       <a-menu
-        v-model:selectedKeys="selectedKeys"
+        v-model:selected-keys="selectedKeys"
         mode="inline"
         :items="menuItems"
         class="sidebar-menu"
+        @click="handleMenuClick"
       />
 
       <!-- 底部折叠按钮 -->
@@ -48,7 +78,9 @@
       <!-- 顶部栏 -->
       <a-layout-header class="header">
         <div class="header-left">
-          <h1 class="page-title-header">{{ pageTitle }}</h1>
+          <h1 class="page-title-header">
+            {{ pageTitle }}
+          </h1>
         </div>
 
         <div class="header-right">
@@ -56,7 +88,7 @@
           <div class="system-status">
             <span class="status-label">系统</span>
             <span class="status-indicator online">
-              <span class="pulse"></span>
+              <span class="pulse" />
               正常
             </span>
           </div>
@@ -76,7 +108,10 @@
                   <UserOutlined /> 个人中心
                 </a-menu-item>
                 <a-menu-divider />
-                <a-menu-item key="logout" @click="handleLogout">
+                <a-menu-item
+                  key="logout"
+                  @click="handleLogout"
+                >
                   <LogoutOutlined /> 退出登录
                 </a-menu-item>
               </a-menu>
@@ -88,7 +123,10 @@
       <!-- 内容区域 -->
       <a-layout-content class="content">
         <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
+          <transition
+            name="fade"
+            mode="out-in"
+          >
             <component :is="Component" />
           </transition>
         </router-view>
@@ -127,41 +165,41 @@ const selectedKeys = ref<string[]>([])
 const user = computed(() => authStore.user)
 const userInitial = computed(() => user.value?.username?.charAt(0).toUpperCase() || 'U')
 
-// 菜单项
+// 菜单项 - key 必须与路由 name 一致（PascalCase）
 const menuItems = computed<MenuProps['items']>(() => {
   const items: MenuProps['items'] = [
     {
-      key: 'dashboard',
+      key: 'Dashboard',
       icon: () => h(DashboardOutlined),
       label: '仪表盘',
       title: '仪表盘'
     },
     {
-      key: 'devices',
+      key: 'Devices',
       icon: () => h(DesktopOutlined),
       label: '设备管理',
       title: '设备管理'
     },
     {
-      key: 'zones',
+      key: 'Zones',
       icon: () => h(PartitionOutlined),
       label: '分区管理',
       title: '分区管理'
     },
     {
-      key: 'alarms',
+      key: 'Alarms',
       icon: () => h(AlertOutlined),
       label: '告警中心',
       title: '告警中心'
     },
     {
-      key: 'reports',
+      key: 'Reports',
       icon: () => h(BarChartOutlined),
       label: '报表分析',
       title: '报表分析'
     },
     {
-      key: 'settings',
+      key: 'Settings',
       icon: () => h(SettingOutlined),
       label: '系统设置',
       title: '系统设置'
@@ -171,7 +209,7 @@ const menuItems = computed<MenuProps['items']>(() => {
   // 管理员才能看到用户管理
   if (authStore.isAdmin) {
     items.splice(5, 0, {
-      key: 'users',
+      key: 'Users',
       icon: () => h(TeamOutlined),
       label: '用户管理',
       title: '用户管理'
@@ -184,13 +222,13 @@ const menuItems = computed<MenuProps['items']>(() => {
 // 页面标题
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
-    dashboard: '控制中心',
-    devices: '设备管理',
-    zones: '分区管理',
-    alarms: '告警中心',
-    reports: '报表分析',
-    users: '用户管理',
-    settings: '系统设置'
+    Dashboard: '控制中心',
+    Devices: '设备管理',
+    Zones: '分区管理',
+    Alarms: '告警中心',
+    Reports: '报表分析',
+    Users: '用户管理',
+    Settings: '系统设置'
   }
   return titles[route.name as string] || '控制中心'
 })
@@ -206,12 +244,12 @@ watch(
   { immediate: true }
 )
 
-// 点击菜单跳转
-watch(selectedKeys, (keys) => {
-  if (keys.length > 0 && route.name !== keys[0]) {
-    router.push({ name: keys[0] })
+// 处理菜单点击 - 直接导航
+function handleMenuClick(e: { key: string }) {
+  if (e.key && route.name !== e.key) {
+    router.push({ name: e.key })
   }
-})
+}
 
 // 退出登录
 function handleLogout() {

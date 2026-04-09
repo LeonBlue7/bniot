@@ -98,9 +98,10 @@ npm run e2e
 
 ### 前端（TypeScript/Vue）
 
-- 使用 ESLint 检查
+- 使用 ESLint 10.x (flat config) 检查
 - Vue 3 Composition API
 - TypeScript 类型完整
+- ESLint 配置文件：`eslint.config.js`
 
 ### 后端（Python）
 

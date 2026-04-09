@@ -23,7 +23,8 @@ frontend/
 │   │   ├── Reports.vue      # 报表分析（动态导入图表）
 │   │   └── Settings.vue     # 系统设置
 │   ├── layouts/             # 布局组件
-│   │   └── MainLayout.vue   # 主布局
+│   │   ├── MainLayout.vue   # 主布局
+│   │   └── __tests__/       # 布局测试
 │   ├── components/          # 通用组件
 │   │   └── charts/          # 图表组件（懒加载）
 │   │       ├── EnergyChart.vue    # 能耗柱状图
@@ -44,11 +45,13 @@ frontend/
 │   │   ├── sanitize.ts      # 数据清洗
 │   │   └── secureStorage.ts # 安全存储（sessionStorage）
 │   ├── styles/              # 样式文件
-│   │   └── industrial.css   # 工业风格样式
+│   │   ├── industrial.css   # 工业风格主题（CSS 变量）
+│   │   └── style.css        # Chrome autofill 样式覆盖
 │   ├── types/               # TypeScript 类型
 │   │   └── index.ts
-│   ├── App.vue              # 根组件
+│   ├── App.vue              # 根组件（含主题配置）
 │   └── main.ts              # 入口文件
+├── eslint.config.js         # ESLint flat config（ESLint 10.x+）
 ├── tests/                   # 单元测试
 │   ├── api/                 # API 测试
 │   ├── utils/               # 工具测试
@@ -278,20 +281,49 @@ npm run e2e:headed
 
 ### 测试覆盖率
 
-- 单元测试：365 tests
+- 单元测试：371 tests
 - E2E 测试：45 tests
-- 覆盖率：91.52%
+- 覆盖率：93.05%
 
 ---
 
 ## 样式系统
 
+### 主题配置 (`App.vue`)
+
+使用 Ant Design Vue ConfigProvider 配置深色/浅色主题：
+
+```vue
+<a-config-provider :theme="themeConfig">
+  <router-view />
+</a-config-provider>
+```
+
+主题切换通过 `data-theme` 属性控制：
+
+```typescript
+document.documentElement.setAttribute('data-theme', 'dark' | 'light')
+```
+
 ### 工业风格主题 (`styles/industrial.css`)
 
-- 深色主题
+- 支持深色/浅色双主题
+- 公共设计令牌在 `:root` 定义（字体、间距等）
+- 主题颜色在 `[data-theme='dark']` 和 `[data-theme='light']` 定义
 - 等宽字体用于数据显示
 - 状态颜色语义化
 - CSS 变量驱动
+
+### Chrome Autofill 样式 (`style.css`)
+
+覆盖 Chrome 自动填充样式，确保深色主题下输入框样式一致：
+
+```css
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-bg-tertiary) inset;
+  -webkit-text-fill-color: var(--color-text-primary);
+}
+```
 
 ### 主要变量
 

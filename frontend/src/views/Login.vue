@@ -1,10 +1,10 @@
 <template>
   <div class="login-container">
     <!-- 背景网格效果 -->
-    <div class="grid-bg"></div>
+    <div class="grid-bg" />
 
     <!-- 扫描线效果 -->
-    <div class="scanline"></div>
+    <div class="scanline" />
 
     <!-- 登录卡片 -->
     <div class="login-wrapper">
@@ -13,11 +13,37 @@
         <div class="login-header">
           <div class="logo-container">
             <div class="logo-icon">
-              <svg viewBox="0 0 48 48" fill="none">
-                <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2" opacity="0.3"/>
-                <circle cx="24" cy="24" r="14" stroke="currentColor" stroke-width="2"/>
-                <path d="M24 12v12l8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="24" cy="24" r="4" fill="currentColor"/>
+              <svg
+                viewBox="0 0 48 48"
+                fill="none"
+              >
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  opacity="0.3"
+                />
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="14"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <path
+                  d="M24 12v12l8 6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="4"
+                  fill="currentColor"
+                />
               </svg>
             </div>
             <div class="logo-text">
@@ -29,7 +55,7 @@
 
         <!-- 系统状态指示 -->
         <div class="system-indicator">
-          <span class="indicator-dot"></span>
+          <span class="indicator-dot" />
           <span class="indicator-text">系统在线</span>
         </div>
 
@@ -37,11 +63,14 @@
         <a-form
           :model="formState"
           :rules="rules"
-          @finish="handleLogin"
           layout="vertical"
           class="login-form"
+          @finish="handleLogin"
         >
-          <a-form-item name="username" class="form-item">
+          <a-form-item
+            name="username"
+            class="form-item"
+          >
             <label class="input-label">
               <span class="label-icon">
                 <UserOutlined />
@@ -56,7 +85,10 @@
             />
           </a-form-item>
 
-          <a-form-item name="password" class="form-item">
+          <a-form-item
+            name="password"
+            class="form-item"
+          >
             <label class="input-label">
               <span class="label-icon">
                 <LockOutlined />
@@ -88,7 +120,10 @@
 
         <!-- 错误提示 -->
         <transition name="fade">
-          <div v-if="error" class="error-message">
+          <div
+            v-if="error"
+            class="error-message"
+          >
             <span class="error-icon">
               <ExclamationCircleOutlined />
             </span>
@@ -98,7 +133,7 @@
 
         <!-- 底部信息 -->
         <div class="login-footer">
-          <div class="footer-line"></div>
+          <div class="footer-line" />
           <span class="footer-text">空调节能管理系统 v1.0.0</span>
         </div>
       </div>
@@ -107,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { UserOutlined, LockOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
@@ -316,6 +351,11 @@ async function handleLogin() {
 .input-field {
   background: var(--color-bg-tertiary) !important;
   border-color: var(--color-border-primary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.input-field::placeholder {
+  color: var(--color-text-tertiary) !important;
 }
 
 .input-field:focus,

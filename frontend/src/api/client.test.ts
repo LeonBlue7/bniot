@@ -104,7 +104,7 @@ describe('API Client', () => {
 
       try {
         await apiClient.get('/unauthorized')
-      } catch (error) {
+      } catch {
         // 预期会抛出错误
       }
 

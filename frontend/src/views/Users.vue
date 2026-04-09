@@ -2,7 +2,10 @@
   <div class="users-page">
     <a-card title="用户管理">
       <template #extra>
-        <a-button type="primary" @click="showCreateModal">
+        <a-button
+          type="primary"
+          @click="showCreateModal"
+        >
           <plus-outlined />
           添加用户
         </a-button>
@@ -31,7 +34,10 @@
           </template>
           <template v-else-if="column.key === 'action'">
             <a-space>
-              <a-button size="small" @click="showEditModal(record)">
+              <a-button
+                size="small"
+                @click="showEditModal(record)"
+              >
                 编辑
               </a-button>
               <a-button
@@ -55,16 +61,28 @@
     >
       <a-form layout="vertical">
         <a-form-item label="用户名">
-          <a-input v-model:value="createForm.username" placeholder="请输入用户名" />
+          <a-input
+            v-model:value="createForm.username"
+            placeholder="请输入用户名"
+          />
         </a-form-item>
         <a-form-item label="密码">
-          <a-input-password v-model:value="createForm.password" placeholder="请输入密码" />
+          <a-input-password
+            v-model:value="createForm.password"
+            placeholder="请输入密码"
+          />
         </a-form-item>
         <a-form-item label="角色">
           <a-select v-model:value="createForm.role">
-            <a-select-option value="admin">管理员</a-select-option>
-            <a-select-option value="operator">操作员</a-select-option>
-            <a-select-option value="viewer">观察员</a-select-option>
+            <a-select-option value="admin">
+              管理员
+            </a-select-option>
+            <a-select-option value="operator">
+              操作员
+            </a-select-option>
+            <a-select-option value="viewer">
+              观察员
+            </a-select-option>
           </a-select>
         </a-form-item>
       </a-form>
@@ -78,13 +96,22 @@
     >
       <a-form layout="vertical">
         <a-form-item label="用户名">
-          <a-input v-model:value="editForm.username" disabled />
+          <a-input
+            v-model:value="editForm.username"
+            disabled
+          />
         </a-form-item>
         <a-form-item label="角色">
           <a-select v-model:value="editForm.role">
-            <a-select-option value="admin">管理员</a-select-option>
-            <a-select-option value="operator">操作员</a-select-option>
-            <a-select-option value="viewer">观察员</a-select-option>
+            <a-select-option value="admin">
+              管理员
+            </a-select-option>
+            <a-select-option value="operator">
+              操作员
+            </a-select-option>
+            <a-select-option value="viewer">
+              观察员
+            </a-select-option>
           </a-select>
         </a-form-item>
       </a-form>
@@ -182,7 +209,7 @@ async function handleEdit() {
   editModalVisible.value = false
 }
 
-async function handleToggleStatus(user: User) {
+async function handleToggleStatus(_user: User) {
   // TODO: 调用后端启用/禁用用户 API
   message.info('用户管理功能待后端 API 实现')
 }

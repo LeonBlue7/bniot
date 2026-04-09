@@ -106,7 +106,7 @@ const loadEnergyData = async () => {
   try {
     const response = await reportApi.getEnergyStats(formatParams())
     energyData.value = response.data
-  } catch (error) {
+  } catch {
     chartErrors.value.energy = '加载能耗数据失败'
     message.error(chartErrors.value.energy)
   } finally {
@@ -122,7 +122,7 @@ const loadTrendData = async () => {
   try {
     const response = await reportApi.getTrendData(formatParams())
     trendData.value = response.data
-  } catch (error) {
+  } catch {
     chartErrors.value.trend = '加载趋势数据失败'
     message.error(chartErrors.value.trend)
   } finally {
@@ -142,7 +142,7 @@ const loadAlarmData = async () => {
     })
     alarmData.value = response.data
     totalAlarms.value = response.total_alarms
-  } catch (error) {
+  } catch {
     chartErrors.value.alarm = '加载告警数据失败'
     message.error(chartErrors.value.alarm)
   } finally {
@@ -159,7 +159,7 @@ const loadRuntimeData = async () => {
     const response = await reportApi.getRuntimeStats(formatParams())
     runtimeData.value = response.data
     avgRuntimeHours.value = response.avg_runtime_hours
-  } catch (error) {
+  } catch {
     chartErrors.value.runtime = '加载运行时长数据失败'
     message.error(chartErrors.value.runtime)
   } finally {
@@ -203,11 +203,6 @@ const exportReport = async () => {
   }
 }
 
-// 导出图表图片
-const exportChartImage = () => {
-  // 图表组件通过 defineExpose 暴露了 exportImage 方法
-  message.info('请在图表工具栏中点击保存图片按钮')
-}
 
 // Tab 切换
 const onTabChange = (key: string) => {
@@ -233,11 +228,6 @@ const onAlarmGroupByChange = () => {
 // 图表加载状态
 const isChartLoading = (chart: 'energy' | 'trend' | 'alarm' | 'runtime') => {
   return chartLoadingStates.value[chart]
-}
-
-// 图表错误状态
-const getChartError = (chart: 'energy' | 'trend' | 'alarm' | 'runtime') => {
-  return chartErrors.value[chart]
 }
 
 // 初始化
@@ -272,27 +262,44 @@ onMounted(() => {
           style="width: 200px"
           @change="onZoneChange"
         >
-          <a-select-option v-for="zone in zones" :key="zone.id" :value="zone.id">
+          <a-select-option
+            v-for="zone in zones"
+            :key="zone.id"
+            :value="zone.id"
+          >
             {{ zone.name }}
           </a-select-option>
         </a-select>
 
         <!-- 导出按钮 -->
-        <a-button type="primary" @click="exportReport">
+        <a-button
+          type="primary"
+          @click="exportReport"
+        >
           导出 CSV
         </a-button>
       </a-space>
     </div>
 
     <!-- 报表内容 -->
-    <a-tabs v-model:activeKey="activeTab" @change="onTabChange">
+    <a-tabs
+      v-model:active-key="activeTab"
+      @change="onTabChange"
+    >
       <!-- 能耗统计 -->
-      <a-tab-pane key="energy" tab="能耗统计">
+      <a-tab-pane
+        key="energy"
+        tab="能耗统计"
+      >
         <a-spin :spinning="loading">
           <!-- 汇总卡片 -->
           <div class="summary-cards">
             <a-card>
-              <a-statistic title="总能耗" :value="totalEnergy" suffix="kWh" />
+              <a-statistic
+                title="总能耗"
+                :value="totalEnergy"
+                suffix="kWh"
+              />
             </a-card>
           </div>
 
@@ -303,13 +310,16 @@ onMounted(() => {
                 <EnergyChart
                   :data="energyData"
                   :loading="isChartLoading('energy')"
-                  :autoResize="true"
-                  :showExport="true"
+                  :auto-resize="true"
+                  :show-export="true"
                 />
               </template>
               <template #fallback>
                 <div class="chart-skeleton">
-                  <a-skeleton active :paragraph="{ rows: 6 }" />
+                  <a-skeleton
+                    active
+                    :paragraph="{ rows: 6 }"
+                  />
                 </div>
               </template>
             </Suspense>
@@ -317,7 +327,7 @@ onMounted(() => {
 
           <!-- 数据表格 -->
           <a-table
-            :dataSource="energyData"
+            :data-source="energyData"
             :columns="[
               { title: '设备ID', dataIndex: 'device_id', key: 'device_id' },
               { title: '设备名称', dataIndex: 'device_name', key: 'device_name' },
@@ -326,51 +336,77 @@ onMounted(() => {
               { title: '最大功率(W)', dataIndex: 'max_power', key: 'max_power' },
               { title: '运行时长(h)', dataIndex: 'runtime_hours', key: 'runtime_hours' }
             ]"
-            :rowKey="(record: EnergyStats) => record.device_id"
+            :row-key="(record: EnergyStats) => record.device_id"
             :pagination="{ pageSize: 10 }"
           />
         </a-spin>
       </a-tab-pane>
 
       <!-- 温湿度趋势 -->
-      <a-tab-pane key="trend" tab="温湿度趋势">
+      <a-tab-pane
+        key="trend"
+        tab="温湿度趋势"
+      >
         <a-spin :spinning="loading">
-          <div v-for="device in trendData" :key="device.device_id" class="trend-section">
+          <div
+            v-for="device in trendData"
+            :key="device.device_id"
+            class="trend-section"
+          >
             <Suspense>
               <template #default>
                 <TrendChart
                   :data="device"
                   :loading="isChartLoading('trend')"
-                  :autoResize="true"
-                  :showExport="true"
+                  :auto-resize="true"
+                  :show-export="true"
                 />
               </template>
               <template #fallback>
                 <div class="chart-skeleton">
-                  <a-skeleton active :paragraph="{ rows: 6 }" />
+                  <a-skeleton
+                    active
+                    :paragraph="{ rows: 6 }"
+                  />
                 </div>
               </template>
             </Suspense>
           </div>
-          <a-empty v-if="trendData.length === 0 && !loading" description="暂无数据" />
+          <a-empty
+            v-if="trendData.length === 0 && !loading"
+            description="暂无数据"
+          />
         </a-spin>
       </a-tab-pane>
 
       <!-- 告警统计 -->
-      <a-tab-pane key="alarm" tab="告警统计">
+      <a-tab-pane
+        key="alarm"
+        tab="告警统计"
+      >
         <a-spin :spinning="loading">
           <!-- 汇总卡片 -->
           <div class="summary-cards">
             <a-card>
-              <a-statistic title="总告警数" :value="totalAlarms" />
+              <a-statistic
+                title="总告警数"
+                :value="totalAlarms"
+              />
             </a-card>
           </div>
 
           <!-- 分组方式选择 -->
           <div class="filter-bar">
-            <a-radio-group v-model:value="alarmGroupBy" @change="onAlarmGroupByChange">
-              <a-radio-button value="type">按类型</a-radio-button>
-              <a-radio-button value="severity">按严重程度</a-radio-button>
+            <a-radio-group
+              v-model:value="alarmGroupBy"
+              @change="onAlarmGroupByChange"
+            >
+              <a-radio-button value="type">
+                按类型
+              </a-radio-button>
+              <a-radio-button value="severity">
+                按严重程度
+              </a-radio-button>
             </a-radio-group>
           </div>
 
@@ -381,14 +417,17 @@ onMounted(() => {
                 <AlarmPieChart
                   :data="alarmData"
                   :loading="isChartLoading('alarm')"
-                  :autoResize="true"
-                  :showExport="true"
-                  :groupBy="alarmGroupBy"
+                  :auto-resize="true"
+                  :show-export="true"
+                  :group-by="alarmGroupBy"
                 />
               </template>
               <template #fallback>
                 <div class="chart-skeleton">
-                  <a-skeleton active :paragraph="{ rows: 6 }" />
+                  <a-skeleton
+                    active
+                    :paragraph="{ rows: 6 }"
+                  />
                 </div>
               </template>
             </Suspense>
@@ -396,7 +435,7 @@ onMounted(() => {
 
           <!-- 数据表格 -->
           <a-table
-            :dataSource="alarmData"
+            :data-source="alarmData"
             :columns="[
               { title: '告警类型', dataIndex: 'type', key: 'type' },
               { title: '严重程度', dataIndex: 'severity', key: 'severity' },
@@ -404,19 +443,26 @@ onMounted(() => {
               { title: '已解决', dataIndex: 'resolved_count', key: 'resolved_count' },
               { title: '未解决', dataIndex: 'unresolved_count', key: 'unresolved_count' }
             ]"
-            :rowKey="(record: AlarmStats) => record.type || record.severity || 'unknown'"
+            :row-key="(record: AlarmStats) => record.type || record.severity || 'unknown'"
             :pagination="{ pageSize: 10 }"
           />
         </a-spin>
       </a-tab-pane>
 
       <!-- 运行时长 -->
-      <a-tab-pane key="runtime" tab="运行时长">
+      <a-tab-pane
+        key="runtime"
+        tab="运行时长"
+      >
         <a-spin :spinning="loading">
           <!-- 汇总卡片 -->
           <div class="summary-cards">
             <a-card>
-              <a-statistic title="平均运行时长" :value="avgRuntimeHours" suffix="小时" />
+              <a-statistic
+                title="平均运行时长"
+                :value="avgRuntimeHours"
+                suffix="小时"
+              />
             </a-card>
           </div>
 
@@ -427,15 +473,18 @@ onMounted(() => {
                 <RuntimeBarChart
                   :data="runtimeData"
                   :loading="isChartLoading('runtime')"
-                  :autoResize="true"
-                  :showExport="true"
-                  :sortByRuntime="true"
-                  :maxItems="10"
+                  :auto-resize="true"
+                  :show-export="true"
+                  :sort-by-runtime="true"
+                  :max-items="10"
                 />
               </template>
               <template #fallback>
                 <div class="chart-skeleton">
-                  <a-skeleton active :paragraph="{ rows: 6 }" />
+                  <a-skeleton
+                    active
+                    :paragraph="{ rows: 6 }"
+                  />
                 </div>
               </template>
             </Suspense>
@@ -443,7 +492,7 @@ onMounted(() => {
 
           <!-- 数据表格 -->
           <a-table
-            :dataSource="runtimeData"
+            :data-source="runtimeData"
             :columns="[
               { title: '设备ID', dataIndex: 'device_id', key: 'device_id' },
               { title: '设备名称', dataIndex: 'device_name', key: 'device_name' },
@@ -453,7 +502,7 @@ onMounted(() => {
               { title: '开机次数', dataIndex: 'on_count', key: 'on_count' },
               { title: '关机次数', dataIndex: 'off_count', key: 'off_count' }
             ]"
-            :rowKey="(record: RuntimeStats) => record.device_id"
+            :row-key="(record: RuntimeStats) => record.device_id"
             :pagination="{ pageSize: 10 }"
           />
         </a-spin>

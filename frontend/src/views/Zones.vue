@@ -3,9 +3,16 @@
     <a-row :gutter="16">
       <!-- 分区树 -->
       <a-col :span="6">
-        <a-card title="分区结构" size="small">
+        <a-card
+          title="分区结构"
+          size="small"
+        >
           <template #extra>
-            <a-button type="primary" size="small" @click="showCreateModal(null)">
+            <a-button
+              type="primary"
+              size="small"
+              @click="showCreateModal(null)"
+            >
               <plus-outlined />
               添加
             </a-button>
@@ -23,28 +30,54 @@
               <template #title="node">
                 <span>{{ node.name }}</span>
                 <a-space class="tree-actions">
-                  <a-button size="small" type="text" @click.stop="showCreateModal(node)">
+                  <a-button
+                    size="small"
+                    type="text"
+                    @click.stop="showCreateModal(node)"
+                  >
                     <plus-outlined />
                   </a-button>
-                  <a-button size="small" type="text" @click.stop="showEditModal(node)">
+                  <a-button
+                    size="small"
+                    type="text"
+                    @click.stop="showEditModal(node)"
+                  >
                     <edit-outlined />
                   </a-button>
-                  <a-button size="small" type="text" danger @click.stop="handleDelete(node)">
+                  <a-button
+                    size="small"
+                    type="text"
+                    danger
+                    @click.stop="handleDelete(node)"
+                  >
                     <delete-outlined />
                   </a-button>
                 </a-space>
               </template>
             </a-tree>
-            <a-empty v-else description="暂无分区数据" />
+            <a-empty
+              v-else
+              description="暂无分区数据"
+            />
           </a-spin>
         </a-card>
       </a-col>
 
       <!-- 分区详情 -->
       <a-col :span="18">
-        <a-card title="分区详情" size="small">
-          <a-empty v-if="!selectedZone" description="请选择分区查看详情" />
-          <a-descriptions v-else :column="2" bordered>
+        <a-card
+          title="分区详情"
+          size="small"
+        >
+          <a-empty
+            v-if="!selectedZone"
+            description="请选择分区查看详情"
+          />
+          <a-descriptions
+            v-else
+            :column="2"
+            bordered
+          >
             <a-descriptions-item label="分区ID">
               {{ selectedZone.id }}
             </a-descriptions-item>
@@ -57,22 +90,34 @@
             <a-descriptions-item label="排序">
               {{ selectedZone.sort_order }}
             </a-descriptions-item>
-            <a-descriptions-item label="描述" :span="2">
+            <a-descriptions-item
+              label="描述"
+              :span="2"
+            >
               {{ selectedZone.description || '-' }}
             </a-descriptions-item>
-            <a-descriptions-item label="创建时间" :span="2">
+            <a-descriptions-item
+              label="创建时间"
+              :span="2"
+            >
               {{ formatTime(selectedZone.created_at) }}
             </a-descriptions-item>
           </a-descriptions>
 
           <a-divider v-if="selectedZone" />
 
-          <div v-if="selectedZone" style="text-align: right">
+          <div
+            v-if="selectedZone"
+            style="text-align: right"
+          >
             <a-space>
               <a-button @click="showEditModal(selectedZone)">
                 编辑
               </a-button>
-              <a-button type="primary" @click="showCreateModal(selectedZone)">
+              <a-button
+                type="primary"
+                @click="showCreateModal(selectedZone)"
+              >
                 添加子分区
               </a-button>
             </a-space>
@@ -88,15 +133,39 @@
       :confirm-loading="createLoading"
       @ok="handleCreate"
     >
-      <a-form ref="createFormRef" :model="createForm" :rules="createRules" layout="vertical">
-        <a-form-item name="name" label="分区名称">
-          <a-input v-model:value="createForm.name" placeholder="请输入分区名称" />
+      <a-form
+        ref="createFormRef"
+        :model="createForm"
+        :rules="createRules"
+        layout="vertical"
+      >
+        <a-form-item
+          name="name"
+          label="分区名称"
+        >
+          <a-input
+            v-model:value="createForm.name"
+            placeholder="请输入分区名称"
+          />
         </a-form-item>
-        <a-form-item name="description" label="描述">
-          <a-textarea v-model:value="createForm.description" placeholder="请输入描述" :rows="3" />
+        <a-form-item
+          name="description"
+          label="描述"
+        >
+          <a-textarea
+            v-model:value="createForm.description"
+            placeholder="请输入描述"
+            :rows="3"
+          />
         </a-form-item>
-        <a-form-item name="sort_order" label="排序">
-          <a-input-number v-model:value="createForm.sort_order" :min="0" />
+        <a-form-item
+          name="sort_order"
+          label="排序"
+        >
+          <a-input-number
+            v-model:value="createForm.sort_order"
+            :min="0"
+          />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -108,15 +177,39 @@
       :confirm-loading="editLoading"
       @ok="handleEdit"
     >
-      <a-form ref="editFormRef" :model="editForm" :rules="editRules" layout="vertical">
-        <a-form-item name="name" label="分区名称">
-          <a-input v-model:value="editForm.name" placeholder="请输入分区名称" />
+      <a-form
+        ref="editFormRef"
+        :model="editForm"
+        :rules="editRules"
+        layout="vertical"
+      >
+        <a-form-item
+          name="name"
+          label="分区名称"
+        >
+          <a-input
+            v-model:value="editForm.name"
+            placeholder="请输入分区名称"
+          />
         </a-form-item>
-        <a-form-item name="description" label="描述">
-          <a-textarea v-model:value="editForm.description" placeholder="请输入描述" :rows="3" />
+        <a-form-item
+          name="description"
+          label="描述"
+        >
+          <a-textarea
+            v-model:value="editForm.description"
+            placeholder="请输入描述"
+            :rows="3"
+          />
         </a-form-item>
-        <a-form-item name="sort_order" label="排序">
-          <a-input-number v-model:value="editForm.sort_order" :min="0" />
+        <a-form-item
+          name="sort_order"
+          label="排序"
+        >
+          <a-input-number
+            v-model:value="editForm.sort_order"
+            :min="0"
+          />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -131,7 +224,7 @@ import { useAuthStore } from '@/stores/auth'
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 import dayjs from 'dayjs'
 import type { Zone, ZoneCreate, ZoneUpdate } from '@/types'
-import type { FormInstance, TreeProps } from 'ant-design-vue'
+import type { FormInstance } from 'ant-design-vue'
 import type { Rule } from 'ant-design-vue/es/form'
 
 const zoneStore = useZoneStore()

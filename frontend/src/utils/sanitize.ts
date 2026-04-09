@@ -55,7 +55,7 @@ export function sanitize(input: string | null | undefined | unknown): string {
       'style'
     ],
     // 允许的 URI 协议
-    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
     // 禁止 data: URI（可能包含恶意代码）
     FORBID_ATTR: ['style'],
     // 移除不安全的 data: URI

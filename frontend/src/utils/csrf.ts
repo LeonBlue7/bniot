@@ -5,8 +5,6 @@
 
 import { apiLogger } from './logger'
 
-// CSRF Token 存储键
-const CSRF_TOKEN_KEY = 'csrf_token'
 
 // 最小 Token 长度（防止简单攻击）
 const MIN_TOKEN_LENGTH = 8
@@ -144,7 +142,12 @@ export const csrfProtection = {
 /**
  * 为 fetch 请求自动添加 CSRF 保护
  */
-export function createCsrfProtectedFetch(): (url: string, options?: RequestInit) => Promise<Response> {
+export function createCsrfProtectedFetch(): (
+   
+  url: string,
+   
+  options?: RequestInit
+) => Promise<Response> {
   return async (url: string, options: RequestInit = {}) => {
     // 确保有 CSRF Token
     if (!getCsrfToken()) {

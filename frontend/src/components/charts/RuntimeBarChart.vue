@@ -243,10 +243,17 @@ defineExpose({
 <template>
   <div class="runtime-bar-chart">
     <a-spin :spinning="loading">
-      <div v-if="isEmpty && !loading" class="empty-state">
+      <div
+        v-if="isEmpty && !loading"
+        class="empty-state"
+      >
         <a-empty description="暂无运行时长数据" />
       </div>
-      <div v-else ref="chartRef" class="chart-container"></div>
+      <div
+        v-else
+        ref="chartRef"
+        class="chart-container"
+      />
     </a-spin>
   </div>
 </template>

@@ -14,6 +14,9 @@ import 'ant-design-vue/dist/reset.css'
 // 工业设计系统
 import './styles/industrial.css'
 
+// Ant Design Vue 深色主题覆盖
+import './style.css'
+
 // 创建应用
 const app = createApp(App)
 

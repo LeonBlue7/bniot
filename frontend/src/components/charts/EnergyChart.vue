@@ -3,7 +3,7 @@
  * 能耗统计柱状图组件
  * 显示设备的能耗统计数据
  */
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import type { EnergyStats } from '@/types'
 
@@ -27,7 +27,7 @@ const themeColors = [
 
 // 图表实例引用
 const chartRef = ref<HTMLElement | null>(null)
-let chartInstance: echarts.ECharts | null = null
+const chartInstance = ref<echarts.ECharts | null>(null)
 
 // 是否为空数据
 const isEmpty = computed(() => !props.data || props.data.length === 0)
@@ -153,36 +153,25 @@ const chartOption = computed(() => {
   }
 })
 
-// 初始化图表
-const initChart = () => {
-  if (!chartRef.value || isEmpty.value) return
-
-  if (chartInstance) {
-    chartInstance.dispose()
-  }
-
-  chartInstance = echarts.init(chartRef.value)
-  chartInstance.setOption(chartOption.value)
-}
 
 // 更新图表
 const updateChart = () => {
-  if (chartInstance && !isEmpty.value) {
-    chartInstance.setOption(chartOption.value, true)
+  if (chartInstance.value && !isEmpty.value) {
+    chartInstance.value.setOption(chartOption.value, true)
   }
 }
 
 // 调整图表大小
 const resizeChart = () => {
-  if (chartInstance) {
-    chartInstance.resize()
+  if (chartInstance.value) {
+    chartInstance.value.resize()
   }
 }
 
 // 导出图片
 const exportImage = () => {
-  if (chartInstance) {
-    const url = chartInstance.getDataURL({
+  if (chartInstance.value) {
+    const url = chartInstance.value.getDataURL({
       type: 'png',
       pixelRatio: 2,
       backgroundColor: '#fff'
@@ -194,10 +183,33 @@ const exportImage = () => {
   }
 }
 
+// 初始化图表
+const initChart = () => {
+  if (chartRef.value) {
+    chartInstance.value = echarts.init(chartRef.value)
+    chartInstance.value.setOption(chartOption.value)
+  }
+}
+
 // 监听数据变化
 watch(() => props.data, () => {
   updateChart()
 }, { deep: true })
+
+// 组件挂载时初始化图表
+onMounted(() => {
+  initChart()
+})
+
+// 组件卸载时销毁图表
+onUnmounted(() => {
+  if (chartInstance.value) {
+    chartInstance.value.dispose()
+  }
+  if (props.autoResize) {
+    window.removeEventListener('resize', resizeChart)
+  }
+})
 
 // 监听窗口大小变化
 if (props.autoResize) {
@@ -216,10 +228,17 @@ defineExpose({
 <template>
   <div class="energy-chart">
     <a-spin :spinning="loading">
-      <div v-if="isEmpty && !loading" class="empty-state">
+      <div
+        v-if="isEmpty && !loading"
+        class="empty-state"
+      >
         <a-empty description="暂无能耗数据" />
       </div>
-      <div v-else ref="chartRef" class="chart-container"></div>
+      <div
+        v-else
+        ref="chartRef"
+        class="chart-container"
+      />
     </a-spin>
   </div>
 </template>

@@ -3,16 +3,27 @@
     <!-- 页面头部 -->
     <div class="page-header-section">
       <div class="header-content">
-        <h1 class="page-title">控制中心</h1>
-        <p class="page-subtitle">实时监控与系统概览</p>
+        <h1 class="page-title">
+          控制中心
+        </h1>
+        <p class="page-subtitle">
+          实时监控与系统概览
+        </p>
       </div>
       <div class="header-actions">
         <div class="last-update">
           <span class="update-label">最后更新</span>
           <span class="update-time">{{ lastUpdateTime }}</span>
         </div>
-        <a-button type="primary" class="refresh-btn" @click="refreshData" :loading="loading">
-          <template #icon><ReloadOutlined /></template>
+        <a-button
+          type="primary"
+          class="refresh-btn"
+          :loading="loading"
+          @click="refreshData"
+        >
+          <template #icon>
+            <ReloadOutlined />
+          </template>
           刷新数据
         </a-button>
       </div>
@@ -33,9 +44,23 @@
           </div>
         </div>
         <div class="stat-gauge">
-          <svg viewBox="0 0 100 100" class="gauge-svg">
-            <circle cx="50" cy="50" r="40" class="gauge-bg"/>
-            <circle cx="50" cy="50" r="40" class="gauge-fill" :style="totalDevicesStyle"/>
+          <svg
+            viewBox="0 0 100 100"
+            class="gauge-svg"
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              class="gauge-bg"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              class="gauge-fill"
+              :style="totalDevicesStyle"
+            />
           </svg>
         </div>
       </div>
@@ -54,7 +79,10 @@
           <span class="stat-change up">+{{ onlineRate }}%</span>
         </div>
         <div class="stat-progress">
-          <div class="progress-bar" :style="{ width: onlineRate + '%' }"></div>
+          <div
+            class="progress-bar"
+            :style="{ width: onlineRate + '%' }"
+          />
         </div>
       </div>
 
@@ -84,8 +112,11 @@
             <span class="stat-unit">条</span>
           </div>
         </div>
-        <div class="stat-badge" v-if="stats?.unresolved_alarms && stats.unresolved_alarms > 0">
-          <span class="badge-pulse"></span>
+        <div
+          v-if="stats?.unresolved_alarms && stats.unresolved_alarms > 0"
+          class="stat-badge"
+        >
+          <span class="badge-pulse" />
           <span>需要处理</span>
         </div>
       </div>
@@ -100,7 +131,11 @@
             <span class="title-icon"><AppstoreOutlined /></span>
             设备状态
           </h3>
-          <a-button type="link" class="view-all-btn" @click="goToDevices">
+          <a-button
+            type="link"
+            class="view-all-btn"
+            @click="goToDevices"
+          >
             查看全部 <RightOutlined />
           </a-button>
         </div>
@@ -128,11 +163,17 @@
 
           <!-- 快速操作 -->
           <div class="quick-actions">
-            <a-button class="action-btn" @click="goToDevices">
+            <a-button
+              class="action-btn"
+              @click="goToDevices"
+            >
               <ControlOutlined />
               设备管理
             </a-button>
-            <a-button class="action-btn" @click="goToZones">
+            <a-button
+              class="action-btn"
+              @click="goToZones"
+            >
               <ApartmentOutlined />
               分区管理
             </a-button>
@@ -147,16 +188,26 @@
             <span class="title-icon"><AlertOutlined /></span>
             最新告警
           </h3>
-          <a-button type="link" class="view-all-btn" @click="goToAlarms">
+          <a-button
+            type="link"
+            class="view-all-btn"
+            @click="goToAlarms"
+          >
             查看全部 <RightOutlined />
           </a-button>
         </div>
         <div class="panel-content">
-          <div v-if="recentAlarms.length === 0" class="empty-state">
+          <div
+            v-if="recentAlarms.length === 0"
+            class="empty-state"
+          >
             <CheckCircleOutlined class="empty-icon" />
             <span>暂无告警</span>
           </div>
-          <div v-else class="alarms-list">
+          <div
+            v-else
+            class="alarms-list"
+          >
             <div
               v-for="alarm in recentAlarms"
               :key="alarm.id"
@@ -186,17 +237,17 @@
         <span class="bar-label">系统版本</span>
         <span class="bar-value data-value">v1.0.0</span>
       </div>
-      <div class="bar-divider"></div>
+      <div class="bar-divider" />
       <div class="bar-item">
         <span class="bar-label">MQTT状态</span>
         <span class="bar-value status-dot online">已连接</span>
       </div>
-      <div class="bar-divider"></div>
+      <div class="bar-divider" />
       <div class="bar-item">
         <span class="bar-label">数据库状态</span>
         <span class="bar-value status-dot online">正常</span>
       </div>
-      <div class="bar-divider"></div>
+      <div class="bar-divider" />
       <div class="bar-item">
         <span class="bar-label">告警处理率</span>
         <span class="bar-value data-value">{{ alarmResolveRate }}%</span>

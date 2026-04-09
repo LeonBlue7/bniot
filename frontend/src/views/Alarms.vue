@@ -3,11 +3,19 @@
     <!-- 页面头部 -->
     <div class="page-header-section">
       <div class="header-content">
-        <h1 class="page-title">告警中心</h1>
-        <p class="page-subtitle">设备告警监控与处理</p>
+        <h1 class="page-title">
+          告警中心
+        </h1>
+        <p class="page-subtitle">
+          设备告警监控与处理
+        </p>
       </div>
       <div class="header-actions">
-        <a-button class="action-btn" @click="resolveSelected" :disabled="selectedAlarms.length === 0">
+        <a-button
+          class="action-btn"
+          :disabled="selectedAlarms.length === 0"
+          @click="resolveSelected"
+        >
           <CheckOutlined /> 批量处理
         </a-button>
       </div>
@@ -17,24 +25,51 @@
     <div class="filter-bar">
       <div class="filter-group">
         <label class="filter-label">状态</label>
-        <a-select v-model:value="statusFilter" style="width: 120px" @change="fetchAlarms">
-          <a-select-option value="">全部</a-select-option>
-          <a-select-option value="unresolved">未处理</a-select-option>
-          <a-select-option value="resolved">已处理</a-select-option>
+        <a-select
+          v-model:value="statusFilter"
+          style="width: 120px"
+          @change="fetchAlarms"
+        >
+          <a-select-option value="">
+            全部
+          </a-select-option>
+          <a-select-option value="unresolved">
+            未处理
+          </a-select-option>
+          <a-select-option value="resolved">
+            已处理
+          </a-select-option>
         </a-select>
       </div>
       <div class="filter-group">
         <label class="filter-label">严重程度</label>
-        <a-select v-model:value="severityFilter" style="width: 120px" @change="fetchAlarms">
-          <a-select-option value="">全部</a-select-option>
-          <a-select-option value="high">高</a-select-option>
-          <a-select-option value="medium">中</a-select-option>
-          <a-select-option value="low">低</a-select-option>
+        <a-select
+          v-model:value="severityFilter"
+          style="width: 120px"
+          @change="fetchAlarms"
+        >
+          <a-select-option value="">
+            全部
+          </a-select-option>
+          <a-select-option value="high">
+            高
+          </a-select-option>
+          <a-select-option value="medium">
+            中
+          </a-select-option>
+          <a-select-option value="low">
+            低
+          </a-select-option>
         </a-select>
       </div>
       <div class="filter-group">
         <label class="filter-label">设备ID</label>
-        <a-input v-model:value="deviceIdFilter" placeholder="搜索设备" style="width: 180px" @pressEnter="fetchAlarms" />
+        <a-input
+          v-model:value="deviceIdFilter"
+          placeholder="搜索设备"
+          style="width: 180px"
+          @press-enter="fetchAlarms"
+        />
       </div>
     </div>
 
@@ -51,12 +86,18 @@
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'severity'">
-            <span class="severity-badge" :class="record.severity">
+            <span
+              class="severity-badge"
+              :class="record.severity"
+            >
               {{ severityText(record.severity) }}
             </span>
           </template>
           <template v-if="column.key === 'status'">
-            <span class="status-badge" :class="record.is_resolved ? 'resolved' : 'unresolved'">
+            <span
+              class="status-badge"
+              :class="record.is_resolved ? 'resolved' : 'unresolved'"
+            >
               {{ record.is_resolved ? '已处理' : '未处理' }}
             </span>
           </template>
@@ -67,10 +108,19 @@
             <span class="data-value">{{ formatTime(record.occurred_at) }}</span>
           </template>
           <template v-if="column.key === 'actions'">
-            <a-button type="link" size="small" @click="resolveAlarm(record)" v-if="!record.is_resolved">
+            <a-button
+              v-if="!record.is_resolved"
+              type="link"
+              size="small"
+              @click="resolveAlarm(record)"
+            >
               处理
             </a-button>
-            <a-button type="link" size="small" @click="viewDevice(record.device_id)">
+            <a-button
+              type="link"
+              size="small"
+              @click="viewDevice(record.device_id)"
+            >
               查看设备
             </a-button>
           </template>
@@ -162,7 +212,7 @@ function handleTableChange(pag: { current?: number; pageSize?: number }) {
 }
 
 // 处理告警
-async function resolveAlarm(alarm: Alarm) {
+async function resolveAlarm(_alarm: Alarm) {
   // TODO: 调用 API 处理告警
   message.info('告警处理功能待实现')
   fetchAlarms()

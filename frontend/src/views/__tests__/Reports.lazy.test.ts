@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { defineComponent, defineAsyncComponent, ref, reactive } from 'vue'
+import { defineComponent, defineAsyncComponent } from 'vue'
 import Antd from 'ant-design-vue'
 
 // Mock API
