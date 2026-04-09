@@ -43,20 +43,65 @@ check_and_update "frontend/package.json" "docs/CONTRIBUTING.md" "package.json"
 
 # 检查后端代码结构
 if git diff --name-only HEAD~1 2>/dev/null | grep -q "backend/app/"; then
-    echo "  ⚠️  后端代码已更新，需要同步 docs/CODEMAPS/backend.md"
-    NEED_UPDATE=true
-    UPDATE_FILES="$UPDATE_FILES\n  - docs/CODEMAPS/backend.md"
+    # 检查文档是否需要更新（文档修改时间 < 代码修改时间）
+    backend_code_mtime=$(find "$PROJECT_DIR/backend/app" -type f -name "*.py" -exec stat -c %Y {} \; 2>/dev/null | sort -rn | head -1)
+    backend_doc_mtime=0
+    if [ -f "$PROJECT_DIR/docs/CODEMAPS/backend.md" ]; then
+        backend_doc_mtime=$(stat -c %Y "$PROJECT_DIR/docs/CODEMAPS/backend.md" 2>/dev/null || stat -f %m "$PROJECT_DIR/docs/CODEMAPS/backend.md" 2>/dev/null)
+    fi
+    if [ -z "$backend_code_mtime" ] || [ "$backend_doc_mtime" -ge "$backend_code_mtime" ] 2>/dev/null; then
+        : # 文档已是最新
+    else
+        echo "  ⚠️  后端代码已更新，需要同步 docs/CODEMAPS/backend.md"
+        NEED_UPDATE=true
+        UPDATE_FILES="$UPDATE_FILES\n  - docs/CODEMAPS/backend.md"
+    fi
 fi
 
 # 检查前端代码结构
 if git diff --name-only HEAD~1 2>/dev/null | grep -q "frontend/src/"; then
-    echo "  ⚠️  前端代码已更新，需要同步 docs/CODEMAPS/frontend.md"
-    NEED_UPDATE=true
-    UPDATE_FILES="$UPDATE_FILES\n  - docs/CODEMAPS/frontend.md"
+    # 检查文档是否需要更新
+    frontend_code_mtime=$(find "$PROJECT_DIR/frontend/src" -type f \( -name "*.ts" -o -name "*.vue" \) -exec stat -c %Y {} \; 2>/dev/null | sort -rn | head -1)
+    frontend_doc_mtime=0
+    if [ -f "$PROJECT_DIR/docs/CODEMAPS/frontend.md" ]; then
+        frontend_doc_mtime=$(stat -c %Y "$PROJECT_DIR/docs/CODEMAPS/frontend.md" 2>/dev/null || stat -f %m "$PROJECT_DIR/docs/CODEMAPS/frontend.md" 2>/dev/null)
+    fi
+    if [ -z "$frontend_code_mtime" ] || [ "$frontend_doc_mtime" -ge "$frontend_code_mtime" ] 2>/dev/null; then
+        : # 文档已是最新
+    else
+        echo "  ⚠️  前端代码已更新，需要同步 docs/CODEMAPS/frontend.md"
+        NEED_UPDATE=true
+        UPDATE_FILES="$UPDATE_FILES\n  - docs/CODEMAPS/frontend.md"
+    fi
 fi
 
 # 检查 Docker 配置
 check_and_update "docker-compose.yml" "docs/RUNBOOK.md" "docker-compose.yml"
+
+# 检查 CLAUDE.md 变更同步到 README.md
+check_and_update "CLAUDE.md" "README.md" "CLAUDE.md"
+
+# 检查项目结构变更同步到 README.md
+check_readme_sync() {
+    local readme_mtime=0
+    if [ -f "$PROJECT_DIR/README.md" ]; then
+        readme_mtime=$(stat -c %Y "$PROJECT_DIR/README.md" 2>/dev/null || stat -f %m "$PROJECT_DIR/README.md" 2>/dev/null)
+    fi
+
+    for src in "frontend/package.json" "docker-compose.yml" "backend/requirements.txt"; do
+        if [ -f "$PROJECT_DIR/$src" ]; then
+            local src_mtime=$(stat -c %Y "$PROJECT_DIR/$src" 2>/dev/null || stat -f %m "$PROJECT_DIR/$src" 2>/dev/null)
+            if [ "$src_mtime" -gt "$readme_mtime" ]; then
+                echo "  ⚠️  项目配置已更新，需要同步 README.md"
+                NEED_UPDATE=true
+                UPDATE_FILES="$UPDATE_FILES\n  - README.md"
+                return
+            fi
+        fi
+    done
+}
+
+check_readme_sync
 
 # 输出结果
 if [ "$NEED_UPDATE" = true ]; then

@@ -8,6 +8,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 核心业务逻辑由嵌入式程序实现（温度控制、定时开关等节能策略），UI端主要实现参数调整、数据查看、数据分析统计、远程操控设置。
 
+## 技术栈
+
+### 后端
+- **FastAPI** - Python 异步 Web 框架
+- **SQLAlchemy** - 异步 ORM
+- **TimescaleDB** - PostgreSQL 时序数据库扩展
+- **Redis** - 缓存、Session、CSRF Token 存储
+- **EMQX** - MQTT 消息代理
+- **Alembic** - 数据库迁移工具
+
+### 前端
+- **Vue 3** - 渐进式 JavaScript 框架
+- **TypeScript** - 类型安全
+- **Ant Design Vue** - UI 组件库
+- **ECharts** - 数据可视化图表
+- **Pinia** - 状态管理
+- **Vite** - 构建工具
+
+### 基础设施
+- **Docker & Docker Compose** - 容器化部署
+- **Nginx** - 反向代理
+- **SSL/TLS** - HTTPS 加密
+
 ## 开发工作流
 
 严格遵循 **everything-claude-code** 工作流进行开发：
@@ -37,6 +60,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `backend/app/*` → `docs/CODEMAPS/backend.md`
 - `frontend/src/*` → `docs/CODEMAPS/frontend.md`
 - `docker-compose.yml` → `docs/RUNBOOK.md`
+- `CLAUDE.md` / 项目配置 → `README.md`
 
 ### 2. Claude Code Hooks
 
