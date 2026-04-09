@@ -1,22 +1,15 @@
 """
 Models package
 """
-from app.models.models import (
-    Tenant,
-    User,
-    Zone,
-    Device,
-    DeviceData,
-    Alarm,
-    ProtocolVersion
-)
+from app.models.models import Alarm, Device, DeviceData, OperationLog, ProtocolVersion, Tenant, User, Zone
 
 __all__ = [
-    "Tenant",
-    "User",
-    "Zone",
+    "Alarm",
     "Device",
     "DeviceData",
-    "Alarm",
-    "ProtocolVersion"
+    "OperationLog",
+    "ProtocolVersion",
+    "Tenant",
+    "User",
+    "Zone"
 ]

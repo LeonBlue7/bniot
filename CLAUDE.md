@@ -11,11 +11,77 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 开发工作流
 
 严格遵循 **everything-claude-code** 工作流进行开发：
-- 使用 `/everything-claude-code:tdd` 进行测试驱动开发
 - 使用 `/everything-claude-code:plan` 进行实现规划
-- 使用 `/everything-claude-code:review` 进行代码审查
+- 使用 `/everything-claude-code:tdd` 进行测试驱动开发
+- 使用 `/everything-claude-code:code-review` 进行代码审查
 - 使用 `/everything-claude-code:e2e` 进行端到端测试
+- 使用 `/everything-claude-code:verify` 进行验证
 - 使用 `/everything-claude-code:update-docs` 提交前同步更新相关技术文档
+
+## 文档同步机制
+
+为确保代码与技术文档保持同步，项目采用三层文档同步机制：
+
+### 1. Git Hooks（推荐）
+
+每次 `git commit` 前自动检查文档同步状态：
+
+```bash
+# 安装 Git Hooks
+./scripts/install-hooks.sh
+```
+
+安装后，每次提交会自动检查以下内容：
+- `.env.example` → `docs/ENV.md`
+- `frontend/package.json` → `docs/CONTRIBUTING.md`
+- `backend/app/*` → `docs/CODEMAPS/backend.md`
+- `frontend/src/*` → `docs/CODEMAPS/frontend.md`
+- `docker-compose.yml` → `docs/RUNBOOK.md`
+
+### 2. Claude Code Hooks
+
+在 Claude Code 配置文件 `~/.claude/settings.json` 中添加：
+
+```json
+{
+  "hooks": {
+    "PreCommit": [
+      {
+        "command": "/everything-claude-code:update-docs",
+        "description": "提交前自动更新文档"
+      }
+    ]
+  }
+}
+```
+
+### 3. 手动更新
+
+当文档检查失败时，执行：
+
+```bash
+# 或通过 Claude Code 命令
+claude /everything-claude-code:update-docs
+```
+
+### 文档目录结构
+
+```
+docs/
+├── ARCHITECTURE_PLAN.md   # 技术架构规划
+├── CONTRIBUTING.md         # 贡献指南
+├── ENV.md                  # 环境变量文档
+├── RUNBOOK.md              # 运行手册
+└── CODEMAPS/
+    ├── backend.md          # 后端代码结构
+    └── frontend.md         # 前端代码结构
+```
+
+### 文档更新规则
+
+- **自动更新**：从源代码生成，使用 `<!-- AUTO-GENERATED -->` 标记
+- **手动维护**：技术决策、架构说明等人工编写内容
+- **更新触发**：源文件修改时间 > 文档修改时间时触发更新提示
 
 ## UI 设计规范
 

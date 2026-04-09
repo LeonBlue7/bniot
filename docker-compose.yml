@@ -1,19 +1,26 @@
 services:
   # ============ PostgreSQL + TimescaleDB ============
+  # 生产环境必须设置以下环境变量:
+  # - POSTGRES_PASSWORD: 强密码
+  # - REDIS_PASSWORD: 强密码
+  # - JWT_SECRET: JWT 签名密钥
   postgres:
-    image: postgres:15-alpine
+    # TimescaleDB 镜像，支持时序数据高效存储和压缩
+    image: timescale/timescaledb:latest-pg15
     container_name: bniot-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-bniot}
       POSTGRES_USER: ${POSTGRES_USER:-bniot}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bniot123}
+      # 安全要求: 必须在 .env 中设置 POSTGRES_PASSWORD
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
     volumes:
       - ./volumes/pgdata:/var/lib/postgresql/data
       - ./volumes/postgres/backups:/var/lib/postgresql/backups
       - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    # 安全: 数据库端口不暴露到主机，仅容器内部访问
+    # ports:
+    #   - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bniot} -d ${POSTGRES_DB:-bniot}"]
       interval: 10s
@@ -31,13 +38,14 @@ services:
       redis-server
       --appendonly yes
       --save 60 1000
-      --requirepass ${REDIS_PASSWORD:-redis123}
+      --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set in .env}
     volumes:
       - ./volumes/redis/data:/data
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
+    # 安全: Redis 端口不暴露到主机，仅容器内部访问
+    # ports:
+    #   - "${REDIS_PORT:-6379}:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis123}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -91,15 +99,15 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_DB: ${POSTGRES_DB:-bniot}
       POSTGRES_USER: ${POSTGRES_USER:-bniot}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bniot123}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set in .env}
       EMQX_HOST: emqx
       EMQX_MQTT_PORT: 1883
       MQTT_USERNAME: ${MQTT_USERNAME:-test1}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-test123}
-      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
       JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
       BACKEND_DEBUG: ${BACKEND_DEBUG:-false}
     volumes:

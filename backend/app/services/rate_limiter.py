@@ -2,10 +2,10 @@
 速率限制服务
 用于防止暴力破解攻击
 """
-from typing import Optional
-from loguru import logger
+
 import redis.asyncio as redis
 from fastapi import HTTPException, Request, status
+from loguru import logger
 
 
 class RateLimiter:
@@ -33,7 +33,7 @@ class RateLimiter:
         self.max_attempts = max_attempts
         self.window_seconds = window_seconds
 
-    def _get_key(self, ip: str, action: str, identifier: Optional[str] = None) -> str:
+    def _get_key(self, ip: str, action: str, identifier: str | None = None) -> str:
         """
         生成 Redis 键
 
@@ -49,7 +49,7 @@ class RateLimiter:
             return f"rate_limit:{action}:{identifier}:{ip}"
         return f"rate_limit:{action}:{ip}"
 
-    async def is_allowed(self, ip: str, action: str, identifier: Optional[str] = None) -> bool:
+    async def is_allowed(self, ip: str, action: str, identifier: str | None = None) -> bool:
         """
         检查是否允许请求
 
@@ -77,7 +77,7 @@ class RateLimiter:
             return True
 
     async def record_failed_attempt(
-        self, ip: str, action: str, identifier: Optional[str] = None
+        self, ip: str, action: str, identifier: str | None = None
     ) -> int:
         """
         记录失败尝试
@@ -107,7 +107,7 @@ class RateLimiter:
             logger.error(f"记录失败尝试失败: {e}")
             return 0
 
-    async def clear_attempts(self, ip: str, action: str, identifier: Optional[str] = None) -> None:
+    async def clear_attempts(self, ip: str, action: str, identifier: str | None = None) -> None:
         """
         清除失败记录（登录成功后调用）
 
@@ -125,7 +125,7 @@ class RateLimiter:
             logger.error(f"清除失败记录失败: {e}")
 
     async def get_remaining_attempts(
-        self, ip: str, action: str, identifier: Optional[str] = None
+        self, ip: str, action: str, identifier: str | None = None
     ) -> dict:
         """
         获取剩余尝试次数
@@ -166,7 +166,7 @@ async def check_rate_limit(
     request: Request,
     action: str,
     redis_client: redis.Redis,
-    identifier: Optional[str] = None,
+    identifier: str | None = None,
     max_attempts: int = 5,
 ) -> None:
     """

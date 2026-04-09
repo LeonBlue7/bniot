@@ -2,7 +2,8 @@
 Pydantic Schemas
 """
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -13,8 +14,8 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    username: Optional[str] = None
-    tenant_id: Optional[int] = None
+    username: str | None = None
+    tenant_id: int | None = None
 
 
 class LoginRequest(BaseModel):
@@ -50,12 +51,12 @@ class TenantBase(BaseModel):
 
 
 class TenantCreate(TenantBase):
-    settings: Dict[str, Any] = {}
+    settings: dict[str, Any] = {}
 
 
 class TenantResponse(TenantBase):
     id: int
-    settings: Dict[str, Any]
+    settings: dict[str, Any]
     created_at: datetime
 
     class Config:
@@ -65,8 +66,8 @@ class TenantResponse(TenantBase):
 # ============ 分区 ============
 class ZoneBase(BaseModel):
     name: str
-    parent_id: Optional[int] = None
-    description: Optional[str] = None
+    parent_id: int | None = None
+    description: str | None = None
     sort_order: int = 0
 
 
@@ -75,10 +76,10 @@ class ZoneCreate(ZoneBase):
 
 
 class ZoneUpdate(BaseModel):
-    name: Optional[str] = None
-    parent_id: Optional[int] = None
-    description: Optional[str] = None
-    sort_order: Optional[int] = None
+    name: str | None = None
+    parent_id: int | None = None
+    description: str | None = None
+    sort_order: int | None = None
 
 
 class ZoneResponse(ZoneBase):
@@ -94,28 +95,28 @@ class ZoneResponse(ZoneBase):
 class DeviceBase(BaseModel):
     device_id: str = Field(..., description="4G模组IMEI号")
     name: str
-    zone_id: Optional[int] = None
+    zone_id: int | None = None
 
 
 class DeviceCreate(DeviceBase):
     tenant_id: int
-    sim_card: Optional[str] = None
+    sim_card: str | None = None
 
 
 class DeviceUpdate(BaseModel):
-    name: Optional[str] = None
-    zone_id: Optional[int] = None
-    sim_card: Optional[str] = None
+    name: str | None = None
+    zone_id: int | None = None
+    sim_card: str | None = None
 
 
 class DeviceResponse(DeviceBase):
     id: int
     tenant_id: int
     protocol_version: str
-    sim_card: Optional[str]
+    sim_card: str | None
     is_online: bool
-    last_seen_at: Optional[datetime]
-    settings: Dict[str, Any]
+    last_seen_at: datetime | None
+    settings: dict[str, Any]
     created_at: datetime
 
     class Config:
@@ -124,23 +125,23 @@ class DeviceResponse(DeviceBase):
 
 class DeviceWithDataResponse(DeviceResponse):
     """设备信息 + 最新数据"""
-    temp: Optional[float] = None
-    humi: Optional[float] = None
-    airstate: Optional[int] = None
-    current: Optional[float] = None
+    temp: float | None = None
+    humi: float | None = None
+    airstate: int | None = None
+    current: float | None = None
 
 
 # ============ 设备数据 ============
 class DeviceDataBase(BaseModel):
     device_id: str
-    temp: Optional[float] = None
-    humi: Optional[float] = None
-    airstate: Optional[int] = None
-    current: Optional[float] = None
-    csq: Optional[float] = None
-    air_err: Optional[int] = None
-    alarmtemp: Optional[int] = None
-    alarmhumi: Optional[int] = None
+    temp: float | None = None
+    humi: float | None = None
+    airstate: int | None = None
+    current: float | None = None
+    csq: float | None = None
+    air_err: int | None = None
+    alarmtemp: int | None = None
+    alarmhumi: int | None = None
 
 
 class DeviceDataCreate(DeviceDataBase):
@@ -161,8 +162,8 @@ class AlarmBase(BaseModel):
     device_id: str
     type: str
     severity: str
-    message: Optional[str] = None
-    details: Dict[str, Any] = {}
+    message: str | None = None
+    details: dict[str, Any] = {}
 
 
 class AlarmCreate(AlarmBase):
@@ -171,7 +172,7 @@ class AlarmCreate(AlarmBase):
 
 
 class AlarmUpdate(BaseModel):
-    is_resolved: Optional[bool] = None
+    is_resolved: bool | None = None
 
 
 class AlarmResponse(AlarmBase):
@@ -179,7 +180,7 @@ class AlarmResponse(AlarmBase):
     tenant_id: int
     is_resolved: bool
     occurred_at: datetime
-    resolved_at: Optional[datetime]
+    resolved_at: datetime | None
     created_at: datetime
 
     class Config:
@@ -198,21 +199,21 @@ class MQTTLoginMessage(BaseModel):
 class MQTTDataMessage(BaseModel):
     """设备数据上送消息"""
     mid: int
-    data: Dict[str, Any]
+    data: dict[str, Any]
     timestamp: str
 
 
 class MQTTParameterMessage(BaseModel):
     """设备参数消息"""
     mid: int
-    data: Dict[str, Any]
+    data: dict[str, Any]
     timestamp: str
 
 
 class MQTTControlMessage(BaseModel):
     """远程控制消息"""
-    airstate: Optional[int] = None  # 0关机, 1开机
-    reset: Optional[int] = None     # 复位
+    airstate: int | None = None  # 0关机, 1开机
+    reset: int | None = None     # 复位
     timestamp: str
 
 
@@ -240,7 +241,7 @@ class Message(BaseModel):
 
 class PaginatedResponse(BaseModel):
     """分页响应"""
-    items: List[Any]
+    items: list[Any]
     total: int
     page: int
     page_size: int

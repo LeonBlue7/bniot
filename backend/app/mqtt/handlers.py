@@ -3,15 +3,16 @@ MQTT 消息处理器
 处理设备上报的各类消息
 """
 import json
-from datetime import datetime
-from typing import Optional, Dict, Any, Callable
-from loguru import logger
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from collections.abc import Callable
+from datetime import UTC, datetime
 
-from app.models import Device, DeviceData, Alarm, Tenant
-from app.services import get_version_detector, ProtocolParserRegistry
+from loguru import logger
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import Device, DeviceData, Tenant
 from app.mqtt.client import get_mqtt_client
+from app.services import ProtocolParserRegistry, get_version_detector
 
 
 class MQTTMessageHandler:
@@ -36,7 +37,7 @@ class MQTTMessageHandler:
 
                 # 更新设备在线状态
                 device.is_online = True
-                device.last_seen_at = datetime.utcnow()
+                device.last_seen_at = datetime.now(UTC)
                 await db.commit()
 
             # 主动发送 getparam 探测版本
@@ -52,7 +53,7 @@ class MQTTMessageHandler:
             data = json.loads(payload)
             mid = data.get("mid")
             msg_data = data.get("data", {})
-            timestamp = data.get("timestamp")
+            data.get("timestamp")
 
             logger.debug(f"设备数据上送: {device_id}, temp: {msg_data.get('temp')}")
 
@@ -78,7 +79,7 @@ class MQTTMessageHandler:
                 db.add(device_data)
 
                 # 更新设备状态
-                device.last_seen_at = datetime.utcnow()
+                device.last_seen_at = datetime.now(UTC)
                 await db.commit()
 
             # 发送回复
@@ -105,7 +106,7 @@ class MQTTMessageHandler:
 
             # 使用对应版本的解析器解析参数
             parser = ProtocolParserRegistry.get_parser(version)
-            parsed = parser.parse_parameter(param_data)
+            parser.parse_parameter(param_data)
 
             # 更新数据库
             async with self.db_session_factory() as db:
@@ -175,7 +176,7 @@ class MQTTMessageHandler:
 
     # ============ 辅助方法 ============
 
-    async def _get_device(self, db: AsyncSession, device_id: str) -> Optional[Device]:
+    async def _get_device(self, db: AsyncSession, device_id: str) -> Device | None:
         """获取设备"""
         result = await db.execute(
             select(Device).where(Device.device_id == device_id)
@@ -210,7 +211,7 @@ class MQTTMessageHandler:
         payload = json.dumps({"timestamp": str(int(datetime.now().timestamp()))})
         get_mqtt_client().publish(topic, payload)
 
-    async def _send_reply(self, device_id: str, action: str, mid: Optional[int], code: int):
+    async def _send_reply(self, device_id: str, action: str, mid: int | None, code: int):
         """发送回复消息"""
         topic = f"/down/{device_id}/{action}"
         payload = json.dumps({

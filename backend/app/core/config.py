@@ -2,11 +2,39 @@
 应用配置
 """
 import os
-from typing import List, Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+import warnings
 from functools import lru_cache
 from urllib.parse import quote_plus
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# 不安全的默认密钥列表
+INSECURE_DEFAULT_SECRETS = [
+    "dev-secret-key",
+    "secret",
+    "password",
+    "changeme",
+    "123456",
+    "jwt-secret",
+    "test",
+    "admin",
+    "default",
+    "development",
+    "debug",
+    "example",
+]
+
+
+def is_insecure_secret(secret: str) -> bool:
+    """检测是否使用了不安全的密钥"""
+    # 检查是否在已知的不安全密钥列表中
+    if secret.lower() in INSECURE_DEFAULT_SECRETS:
+        return True
+    # 检查是否太短（小于 16 字符）
+    if len(secret) < 16:
+        return True
+    return False
 
 
 class Settings(BaseSettings):
@@ -59,7 +87,7 @@ class Settings(BaseSettings):
     JWT_EXPIRE_HOURS: int = 24
 
     # CORS 配置
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
 
     # 小程序配置
     WECHAT_APPID: str = ""
@@ -73,12 +101,44 @@ class Settings(BaseSettings):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # 生产环境验证
-        if os.getenv("ENV", "development") == "production":
+        env = os.getenv("ENV", "development")
+        if env == "production":
+            # JWT 密钥验证
             if self.JWT_SECRET == "dev-secret-key":
                 raise ValueError("生产环境必须配置 JWT_SECRET 环境变量")
+            if is_insecure_secret(self.JWT_SECRET):
+                raise ValueError(
+                    f"生产环境使用了不安全的 JWT_SECRET: '{self.JWT_SECRET}'。"
+                    "请使用至少 16 个字符的随机密钥。"
+                )
+
+            # 数据库密码验证
+            if not self.POSTGRES_PASSWORD:
+                raise ValueError("生产环境必须配置 POSTGRES_PASSWORD 环境变量")
+            if len(self.POSTGRES_PASSWORD) < 16:
+                raise ValueError(
+                    "生产环境 POSTGRES_PASSWORD 至少需要 16 个字符"
+                )
+
+            # Redis 密码验证
+            if not self.REDIS_PASSWORD:
+                raise ValueError("生产环境必须配置 REDIS_PASSWORD 环境变量")
+            if len(self.REDIS_PASSWORD) < 16:
+                raise ValueError(
+                    "生产环境 REDIS_PASSWORD 至少需要 16 个字符"
+                )
+
+            # MQTT 凭证验证（设备端硬编码，但平台端需要确认环境配置正确）
+            if self.MQTT_USERNAME == "test1" and self.MQTT_PASSWORD == "test123":
+                # 这是设备端硬编码的凭证，生产环境需要确认已配置 EMQX
+                warnings.warn(
+                    "生产环境使用默认 MQTT 凭证。请确认 EMQX 已正确配置设备认证。",
+                    UserWarning,
+                    stacklevel=2
+                )
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """获取配置单例"""
     return Settings()

@@ -1,18 +1,18 @@
 """
 BNIoT 空调节能管理系统 - FastAPI 后端
 """
+from contextlib import asynccontextmanager
+
 import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 from loguru import logger
 
-from app.core.config import settings
-from app.core.database import async_session_maker, init_db
 from app.api import api_router
+from app.core.config import settings
+from app.core.database import async_session_maker
+from app.mqtt import get_mqtt_client, init_message_handlers, init_mqtt_client
 from app.services import init_version_detector
-from app.mqtt import init_mqtt_client, init_message_handlers, get_mqtt_client
-
 
 # 全局 Redis 客户端引用
 _redis_client: redis.Redis = None

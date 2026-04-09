@@ -4,10 +4,11 @@
 """
 import json
 import threading
-from typing import Optional, Dict, Any
-from loguru import logger
+from datetime import UTC, datetime
+from typing import Any, ClassVar
+
 import redis.asyncio as redis
-from app.core.config import settings
+from loguru import logger
 
 
 class VersionDetector:
@@ -21,13 +22,13 @@ class VersionDetector:
     """
 
     # V20 独有参数（V10 不存在）
-    V20_EXCLUSIVE_PARAMS = {"108", "109", "110"}
+    V20_EXCLUSIVE_PARAMS: ClassVar[set[str]] = {"108", "109", "110"}
 
     # Redis 键前缀
-    REDIS_KEY_PREFIX = "device_version:"
+    REDIS_KEY_PREFIX: ClassVar[str] = "device_version:"
 
     # 缓存过期时间（7天）
-    CACHE_EXPIRE_SECONDS = 7 * 24 * 60 * 60
+    CACHE_EXPIRE_SECONDS: ClassVar[int] = 7 * 24 * 60 * 60
 
     def __init__(self, redis_client: redis.Redis):
         self.redis = redis_client
@@ -36,7 +37,7 @@ class VersionDetector:
         """获取 Redis 缓存键"""
         return f"{self.REDIS_KEY_PREFIX}{device_id}"
 
-    async def get_version(self, device_id: str) -> Optional[str]:
+    async def get_version(self, device_id: str) -> str | None:
         """
         从缓存获取设备版本
 
@@ -57,7 +58,7 @@ class VersionDetector:
             logger.error(f"获取设备版本缓存失败: {e}")
         return None
 
-    async def detect_version(self, device_id: str, param_data: Dict[str, Any]) -> str:
+    async def detect_version(self, device_id: str, param_data: dict[str, Any]) -> str:
         """
         检测设备协议版本
 
@@ -84,7 +85,7 @@ class VersionDetector:
             return version
 
         # 2. 通过特征参数检测
-        param_keys = set(str(k) for k in param_data.keys())
+        param_keys = {str(k) for k in param_data.keys()}
         if param_keys & self.V20_EXCLUSIVE_PARAMS:
             # 存在 V20 独有参数
             version = "V20"
@@ -101,7 +102,7 @@ class VersionDetector:
         device_id: str,
         version: str,
         method: str = "unknown",
-        extra: Optional[Dict[str, Any]] = None
+        extra: dict[str, Any] | None = None
     ) -> None:
         """
         缓存设备版本信息
@@ -116,7 +117,7 @@ class VersionDetector:
             key = self._get_cache_key(device_id)
             data = {
                 "version": version,
-                "detected_at": __import__('datetime').datetime.utcnow().isoformat(),
+                "detected_at": datetime.now(UTC).isoformat(),
                 "method": method,
                 **(extra or {})
             }
@@ -145,7 +146,7 @@ class VersionDetectorSingleton:
 
     使用双重检查锁定模式确保线程安全
     """
-    _instance: Optional[VersionDetector] = None
+    _instance: VersionDetector | None = None
     _lock = threading.Lock()
     _initialized = False
 

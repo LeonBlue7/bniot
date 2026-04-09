@@ -1,9 +1,10 @@
 """
 数据库连接配置
 """
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import MetaData
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+
 from app.core.config import settings
 
 # 命名约定
@@ -51,7 +52,7 @@ async def get_db() -> AsyncSession:
 
 async def init_db():
     """初始化数据库（创建表）"""
-    async with engine.begin() as conn:
+    async with engine.begin():
         # 仅在开发环境使用，生产环境使用迁移
         # await conn.run_sync(Base.metadata.create_all)
         pass

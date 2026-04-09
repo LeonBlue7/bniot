@@ -1,24 +1,20 @@
 """
 认证 API 端点
 """
-from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 import redis.asyncio as redis
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.security import OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
 from app.core.config import settings
+from app.core.database import get_db
 from app.models import User
-from app.schemas import Token, LoginRequest, UserResponse
-from app.services.auth import (
-    verify_password,
-    create_access_token,
-    get_password_hash,
-    get_current_user
-)
-from app.services.rate_limiter import RateLimiter, check_rate_limit
+from app.schemas import Token, UserResponse
+from app.services.auth import create_access_token, get_current_user, verify_password
+from app.services.csrf import create_csrf_token_for_user
+from app.services.rate_limiter import RateLimiter
 
 router = APIRouter()
 
@@ -28,6 +24,40 @@ async def get_redis(request: Request) -> redis.Redis:
     """获取 Redis 客户端"""
     # 从应用状态获取 Redis 客户端
     return request.app.state.redis_client
+
+
+async def get_current_user_optional(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+) -> User | None:
+    """获取当前用户（可选，不抛出异常）"""
+    from fastapi.security import OAuth2PasswordBearer
+
+    oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+    token = await oauth2_scheme_optional(request)
+
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        username: str = payload.get("sub")
+        tenant_id: int = payload.get("tenant_id")
+        if username is None or tenant_id is None:
+            return None
+
+        result = await db.execute(
+            select(User).where(
+                User.username == username,
+                User.tenant_id == tenant_id
+            )
+        )
+        user = result.scalar_one_or_none()
+        if user and user.is_active:
+            return user
+        return None
+    except JWTError:
+        return None
 
 
 @router.post("/login", response_model=Token)
@@ -95,3 +125,29 @@ async def get_current_user_info(
 ):
     """获取当前用户信息"""
     return current_user
+
+
+@router.get("/csrf-token")
+async def get_csrf_token(
+    request: Request,
+    redis_client: redis.Redis = Depends(get_redis),
+    current_user: User | None = Depends(get_current_user_optional)
+):
+    """
+    获取 CSRF Token
+
+    未认证用户也可以获取 CSRF Token（用于后续登录后的请求）。
+    已认证用户的 Token 与用户身份绑定。
+    """
+    if current_user:
+        # 已认证用户：Token 与用户绑定
+        user_id = current_user.username
+    else:
+        # 未认证用户：使用会话标识（如果有的话）
+        # 从请求中获取或生成会话标识
+        user_id = request.headers.get("X-Session-ID", "anonymous")
+
+    # 生成并存储 CSRF Token
+    csrf_token = await create_csrf_token_for_user(user_id, redis_client)
+
+    return {"csrf_token": csrf_token}

@@ -1,25 +1,18 @@
 """
 设备 API 端点
 """
-from typing import List, Optional
-from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+import json
+from datetime import UTC, datetime, timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
 
 from app.core.database import get_db
-from app.models import Device, DeviceData, Zone, User
-from app.schemas import (
-    DeviceCreate,
-    DeviceUpdate,
-    DeviceResponse,
-    DeviceWithDataResponse,
-    DashboardStats,
-    Message
-)
-from app.services.auth import get_current_user, check_admin_role
+from app.models import Device, DeviceData, User
 from app.mqtt import get_mqtt_client
-import json
+from app.schemas import DashboardStats, DeviceCreate, DeviceResponse, DeviceUpdate, Message
+from app.services.auth import get_current_user
 
 router = APIRouter()
 
@@ -40,7 +33,7 @@ async def get_dashboard_stats(
         select(func.count(Device.id)).where(
             and_(
                 Device.tenant_id == current_user.tenant_id,
-                Device.is_online == True
+                Device.is_online
             )
         )
     )
@@ -58,11 +51,11 @@ async def get_dashboard_stats(
     )
 
 
-@router.get("", response_model=List[DeviceResponse])
+@router.get("", response_model=list[DeviceResponse])
 async def list_devices(
-    zone_id: Optional[int] = None,
-    is_online: Optional[bool] = None,
-    keyword: Optional[str] = None,
+    zone_id: int | None = None,
+    is_online: bool | None = None,
+    keyword: str | None = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -112,12 +105,20 @@ async def create_device(
     current_user: User = Depends(get_current_user)
 ):
     """创建设备"""
-    # 检查 device_id 是否已存在
+    # 检查 device_id 是否已存在（跨租户检查）
     result = await db.execute(
         select(Device).where(Device.device_id == device_in.device_id)
     )
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="设备ID已存在")
+    existing_device = result.scalar_one_or_none()
+    if existing_device:
+        # 区分错误信息：同一租户 vs 其他租户
+        if existing_device.tenant_id == current_user.tenant_id:
+            raise HTTPException(status_code=400, detail="设备ID已存在")
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="设备ID已被其他租户使用，请联系管理员处理"
+            )
 
     device = Device(
         tenant_id=current_user.tenant_id,
@@ -212,7 +213,7 @@ async def control_device(
         raise HTTPException(status_code=500, detail="发送控制命令失败")
 
 
-@router.get("/{device_id}/data", response_model=List[dict])
+@router.get("/{device_id}/data", response_model=list[dict])
 async def get_device_data(
     device_id: int,
     hours: int = Query(24, ge=1, le=168, description="查询最近N小时数据"),
@@ -231,8 +232,7 @@ async def get_device_data(
         raise HTTPException(status_code=404, detail="设备不存在")
 
     # 查询历史数据
-    from datetime import datetime, timedelta
-    start_time = datetime.utcnow() - timedelta(hours=hours)
+    start_time = datetime.now(UTC) - timedelta(hours=hours)
 
     data_result = await db.execute(
         select(DeviceData)
@@ -241,4 +241,21 @@ async def get_device_data(
         .order_by(DeviceData.time.desc())
         .limit(1000)
     )
-    return [d.__dict__ for d in data_result.scalars().all()]
+    # 手动构建字典，避免暴露 SQLAlchemy 内部属性
+    return [
+        {
+            "id": d.id,
+            "time": d.time,
+            "device_id": d.device_id,
+            "tenant_id": d.tenant_id,
+            "temp": d.temp,
+            "humi": d.humi,
+            "airstate": d.airstate,
+            "current": d.current,
+            "csq": d.csq,
+            "air_err": d.air_err,
+            "alarmtemp": d.alarmtemp,
+            "alarmhumi": d.alarmhumi,
+        }
+        for d in data_result.scalars().all()
+    ]

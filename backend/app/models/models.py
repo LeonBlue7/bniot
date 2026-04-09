@@ -1,17 +1,19 @@
 """
 数据库模型
 """
-from datetime import datetime, timezone
-from typing import Optional, List
-from sqlalchemy import String, Text, Boolean, Integer, Float, DateTime, ForeignKey, Index, JSON
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import UTC, datetime
+from typing import Optional
+
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.core.database import Base
 
 
 def utc_now() -> datetime:
     """获取 UTC 时间（timezone-aware）"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class Tenant(Base):
@@ -26,9 +28,9 @@ class Tenant(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     # 关系
-    users: Mapped[List["User"]] = relationship(back_populates="tenant", cascade="all, delete-orphan")
-    zones: Mapped[List["Zone"]] = relationship(back_populates="tenant", cascade="all, delete-orphan")
-    devices: Mapped[List["Device"]] = relationship(back_populates="tenant", cascade="all, delete-orphan")
+    users: Mapped[list["User"]] = relationship(back_populates="tenant", cascade="all, delete-orphan")
+    zones: Mapped[list["Zone"]] = relationship(back_populates="tenant", cascade="all, delete-orphan")
+    devices: Mapped[list["Device"]] = relationship(back_populates="tenant", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Tenant(id={self.id}, name={self.name}, code={self.code})>"
@@ -44,12 +46,17 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(20), default="viewer")  # admin, operator, viewer
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     # 关系
     tenant: Mapped["Tenant"] = relationship(back_populates="users")
+
+    # 索引
+    __table_args__ = (
+        Index('idx_users_tenant_id', 'tenant_id'),
+    )
 
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, role={self.role})>"
@@ -62,15 +69,20 @@ class Zone(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id", ondelete="CASCADE"))
     name: Mapped[str] = mapped_column(String(100))
-    parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("zones.id", ondelete="SET NULL"), nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("zones.id", ondelete="SET NULL"), nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     # 关系
     tenant: Mapped["Tenant"] = relationship(back_populates="zones")
-    devices: Mapped[List["Device"]] = relationship(back_populates="zone")
+    devices: Mapped[list["Device"]] = relationship(back_populates="zone")
+
+    # 索引
+    __table_args__ = (
+        Index('idx_zones_tenant_id', 'tenant_id'),
+    )
 
     def __repr__(self):
         return f"<Zone(id={self.id}, name={self.name})>"
@@ -82,14 +94,14 @@ class Device(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id", ondelete="CASCADE"))
-    zone_id: Mapped[Optional[int]] = mapped_column(ForeignKey("zones.id", ondelete="SET NULL"), nullable=True)
+    zone_id: Mapped[int | None] = mapped_column(ForeignKey("zones.id", ondelete="SET NULL"), nullable=True)
     device_id: Mapped[str] = mapped_column(String(20), unique=True)  # IMEI号
     name: Mapped[str] = mapped_column(String(100))
     protocol_version: Mapped[str] = mapped_column(String(10), default="V10")
-    sim_card: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
-    firmware_version: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    sim_card: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    firmware_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
     is_online: Mapped[bool] = mapped_column(Boolean, default=False)
-    last_seen_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     settings: Mapped[dict] = mapped_column(JSONB, default=dict)
     extra_data: Mapped[dict] = mapped_column(JSONB, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
@@ -118,14 +130,14 @@ class DeviceData(Base):
     time: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     device_id: Mapped[str] = mapped_column(String(20))
     tenant_id: Mapped[int] = mapped_column(Integer)
-    temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    humi: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    airstate: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    current: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    csq: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    air_err: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    alarmtemp: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    alarmhumi: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    temp: Mapped[float | None] = mapped_column(Float, nullable=True)
+    humi: Mapped[float | None] = mapped_column(Float, nullable=True)
+    airstate: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    current: Mapped[float | None] = mapped_column(Float, nullable=True)
+    csq: Mapped[float | None] = mapped_column(Float, nullable=True)
+    air_err: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    alarmtemp: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    alarmhumi: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # 索引
     __table_args__ = (
@@ -146,11 +158,11 @@ class Alarm(Base):
     device_id: Mapped[str] = mapped_column(String(20))
     type: Mapped[str] = mapped_column(String(20))  # offline, illegal_on, temp_alarm
     severity: Mapped[str] = mapped_column(String(10))  # high, medium, low
-    message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    message: Mapped[str | None] = mapped_column(Text, nullable=True)
     details: Mapped[dict] = mapped_column(JSONB, default=dict)
     is_resolved: Mapped[bool] = mapped_column(Boolean, default=False)
     occurred_at: Mapped[datetime] = mapped_column(DateTime)
-    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
     # 索引
@@ -174,9 +186,37 @@ class ProtocolVersion(Base):
     feature_params: Mapped[dict] = mapped_column(JSONB, default=dict)
     param_mappings: Mapped[dict] = mapped_column(JSONB, default=dict)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<ProtocolVersion(code={self.version_code}, number={self.version_number})>"
+
+
+class OperationLog(Base):
+    """操作日志表"""
+    __tablename__ = "operation_logs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id", ondelete="CASCADE"))
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    action: Mapped[str] = mapped_column(String(50))  # create_device, update_device, delete_device, etc.
+    resource_type: Mapped[str] = mapped_column(String(50))  # device, zone, user, etc.
+    resource_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    details: Mapped[dict] = mapped_column(JSONB, default=dict)
+    ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+
+    # 索引
+    __table_args__ = (
+        Index('idx_operation_logs_tenant_id', 'tenant_id'),
+        Index('idx_operation_logs_user_id', 'user_id'),
+        Index('idx_operation_logs_action', 'action'),
+        Index('idx_operation_logs_resource', 'resource_type', 'resource_id'),
+        Index('idx_operation_logs_created_at', 'created_at'),
+    )
+
+    def __repr__(self):
+        return f"<OperationLog(action={self.action}, resource_type={self.resource_type})>"

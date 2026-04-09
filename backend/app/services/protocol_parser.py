@@ -3,7 +3,8 @@
 使用策略模式解析不同版本的协议数据
 """
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
+from typing import Any, ClassVar
+
 from loguru import logger
 
 
@@ -13,16 +14,16 @@ class ProtocolParser(ABC):
     version: str = "unknown"
 
     @abstractmethod
-    def parse_parameter(self, param_data: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_parameter(self, param_data: dict[str, Any]) -> dict[str, Any]:
         """解析参数数据"""
         pass
 
     @abstractmethod
-    def parse_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_data(self, data: dict[str, Any]) -> dict[str, Any]:
         """解析实时数据"""
         pass
 
-    def get_param_name(self, param_code: str) -> Optional[str]:
+    def get_param_name(self, param_code: str) -> str | None:
         """获取参数名称"""
         param_mapping = self.get_param_mapping()
         if param_code in param_mapping:
@@ -30,7 +31,7 @@ class ProtocolParser(ABC):
         return None
 
     @abstractmethod
-    def get_param_mapping(self) -> Dict[str, Dict[str, Any]]:
+    def get_param_mapping(self) -> dict[str, dict[str, Any]]:
         """获取参数映射表"""
         pass
 
@@ -41,7 +42,7 @@ class V10Parser(ProtocolParser):
     version = "V10"
 
     # V10 参数映射
-    PARAM_MAPPING = {
+    PARAM_MAPPING: ClassVar[dict[str, dict[str, Any]]] = {
         "101": {"name": "联动模式", "type": "int", "range": "0-1", "desc": "0手动，1自动"},
         "102": {"name": "夏天空调允许开机温度", "type": "float", "desc": "温度阈值"},
         "103": {"name": "夏天空调设置温度", "type": "float", "desc": "目标温度"},
@@ -66,7 +67,7 @@ class V10Parser(ProtocolParser):
         "501": {"name": "上送周期", "type": "int", "desc": "秒"},
     }
 
-    def parse_parameter(self, param_data: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_parameter(self, param_data: dict[str, Any]) -> dict[str, Any]:
         """解析 V10 参数数据"""
         result = {
             "version": self.version,
@@ -88,7 +89,7 @@ class V10Parser(ProtocolParser):
 
         return result
 
-    def parse_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_data(self, data: dict[str, Any]) -> dict[str, Any]:
         """解析 V10 实时数据"""
         return {
             "version": self.version,
@@ -102,7 +103,7 @@ class V10Parser(ProtocolParser):
             "alarmhumi": data.get("alarmhumi"),
         }
 
-    def get_param_mapping(self) -> Dict[str, Dict[str, Any]]:
+    def get_param_mapping(self) -> dict[str, dict[str, Any]]:
         return self.PARAM_MAPPING
 
 
@@ -112,7 +113,7 @@ class V20Parser(ProtocolParser):
     version = "V20"
 
     # V20 参数映射（注意 104 含义不同）
-    PARAM_MAPPING = {
+    PARAM_MAPPING: ClassVar[dict[str, dict[str, Any]]] = {
         "101": {"name": "联动模式", "type": "int", "range": "0-1", "desc": "0手动，1自动"},
         "102": {"name": "夏天空调允许开机温度", "type": "float"},
         "103": {"name": "夏天空调设置温度", "type": "float"},
@@ -141,7 +142,7 @@ class V20Parser(ProtocolParser):
         "501": {"name": "上送周期", "type": "int"},
     }
 
-    def parse_parameter(self, param_data: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_parameter(self, param_data: dict[str, Any]) -> dict[str, Any]:
         """解析 V20 参数数据"""
         result = {
             "version": self.version,
@@ -161,7 +162,7 @@ class V20Parser(ProtocolParser):
 
         return result
 
-    def parse_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_data(self, data: dict[str, Any]) -> dict[str, Any]:
         """解析 V20 实时数据"""
         # V20 数据格式与 V10 相同
         return {
@@ -176,14 +177,14 @@ class V20Parser(ProtocolParser):
             "alarmhumi": data.get("alarmhumi"),
         }
 
-    def get_param_mapping(self) -> Dict[str, Dict[str, Any]]:
+    def get_param_mapping(self) -> dict[str, dict[str, Any]]:
         return self.PARAM_MAPPING
 
 
 class ProtocolParserRegistry:
     """协议解析器注册表"""
 
-    _parsers: Dict[str, ProtocolParser] = {}
+    _parsers: ClassVar[dict[str, ProtocolParser]] = {}
 
     @classmethod
     def register(cls, parser: ProtocolParser) -> None:

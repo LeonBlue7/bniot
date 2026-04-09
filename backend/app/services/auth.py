@@ -1,14 +1,14 @@
 """
 认证服务
 """
-from datetime import datetime, timedelta
-from typing import Optional
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+from datetime import UTC, datetime, timedelta
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.ext.asyncio import AsyncSession
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
@@ -32,13 +32,13 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """创建 JWT 令牌"""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(hours=settings.JWT_EXPIRE_HOURS)
+        expire = datetime.now(UTC) + timedelta(hours=settings.JWT_EXPIRE_HOURS)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
@@ -57,14 +57,18 @@ async def get_current_user(
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         username: str = payload.get("sub")
-        if username is None:
+        tenant_id: int = payload.get("tenant_id")
+        if username is None or tenant_id is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError:
-        raise credentials_exception
+        token_data = TokenData(username=username, tenant_id=tenant_id)
+    except JWTError as e:
+        raise credentials_exception from e
 
     result = await db.execute(
-        select(User).where(User.username == token_data.username)
+        select(User).where(
+            User.username == token_data.username,
+            User.tenant_id == token_data.tenant_id  # 验证 tenant_id 匹配
+        )
     )
     user = result.scalar_one_or_none()
     if user is None:

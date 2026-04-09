@@ -1,0 +1,128 @@
+/**
+ * BNIoT 空调节能管理系统
+ * 全局样式入口
+ */
+
+/* 导入工业设计系统 */
+@import './styles/industrial.css';
+
+/* Ant Design Vue 主题覆盖 */
+.ant-layout {
+  background: var(--color-bg-primary) !important;
+}
+
+.ant-layout-sider {
+  background: var(--color-bg-secondary) !important;
+}
+
+/* 确保所有 Ant Design 组件使用暗色主题 */
+.ant-btn-primary {
+  background: var(--color-cool-primary) !important;
+  border-color: var(--color-cool-primary) !important;
+}
+
+.ant-btn-primary:hover {
+  background: var(--color-cool-secondary) !important;
+}
+
+.ant-card {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-primary) !important;
+}
+
+.ant-card-head {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-primary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.ant-card-body {
+  color: var(--color-text-primary) !important;
+}
+
+.ant-modal-content {
+  background: var(--color-bg-secondary) !important;
+}
+
+.ant-modal-header {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-primary) !important;
+}
+
+.ant-modal-title {
+  color: var(--color-text-primary) !important;
+}
+
+.ant-dropdown-menu {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-primary) !important;
+}
+
+.ant-dropdown-menu-item {
+  color: var(--color-text-primary) !important;
+}
+
+.ant-dropdown-menu-item:hover {
+  background: var(--color-bg-hover) !important;
+}
+
+.ant-tooltip-inner {
+  background: var(--color-bg-elevated) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.ant-empty-description {
+  color: var(--color-text-tertiary) !important;
+}
+
+.ant-spin-text {
+  color: var(--color-text-secondary) !important;
+}
+
+.ant-descriptions-bordered .ant-descriptions-item-label {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.ant-descriptions-item-content {
+  color: var(--color-text-primary) !important;
+}
+
+.ant-descriptions-row {
+  border-color: var(--color-border-primary) !important;
+}
+
+/* 滚动条样式优化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* 全局链接样式 */
+a {
+  color: var(--color-cool-primary);
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-cool-secondary);
+}
+
+/* 选中文本样式 */
+::selection {
+  background: var(--color-cool-primary);
+  color: var(--color-bg-primary);
+}

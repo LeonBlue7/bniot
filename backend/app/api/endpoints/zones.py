@@ -1,20 +1,19 @@
 """
 分区 API 端点
 """
-from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models import Zone, User
-from app.schemas import ZoneCreate, ZoneUpdate, ZoneResponse, Message
+from app.models import User, Zone
+from app.schemas import Message, ZoneCreate, ZoneResponse, ZoneUpdate
 from app.services.auth import get_current_user
 
 router = APIRouter()
 
 
-@router.get("", response_model=List[ZoneResponse])
+@router.get("", response_model=list[ZoneResponse])
 async def list_zones(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)

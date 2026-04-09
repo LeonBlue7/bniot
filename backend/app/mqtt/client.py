@@ -3,10 +3,13 @@ MQTT 客户端管理
 """
 import asyncio
 import threading
-from typing import Optional, Callable, Awaitable, Any
-from loguru import logger
+from collections.abc import Awaitable, Callable
+from typing import Any
+
 import paho.mqtt.client as mqtt
+from loguru import logger
 from paho.mqtt.enums import CallbackAPIVersion
+
 from app.core.config import settings
 
 # 消息处理器类型
@@ -17,10 +20,10 @@ class MQTTClient:
     """MQTT 客户端管理器"""
 
     def __init__(self):
-        self.client: Optional[mqtt.Client] = None
+        self.client: mqtt.Client | None = None
         self.connected = False
         self._message_handlers: dict[str, HandlerType] = {}
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._loop: asyncio.AbstractEventLoop | None = None
 
     def connect(self):
         """连接到 MQTT Broker"""
@@ -143,7 +146,7 @@ class MQTTClientSingleton:
 
     使用双重检查锁定模式确保线程安全
     """
-    _instance: Optional[MQTTClient] = None
+    _instance: MQTTClient | None = None
     _lock = threading.Lock()
 
     @classmethod
