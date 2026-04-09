@@ -1,6 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
+**Last Updated:** 2026-04-10
 
 ## 目录结构
 
@@ -12,7 +13,10 @@ frontend/
 │   │   ├── auth.ts          # 认证 API
 │   │   ├── devices.ts       # 设备 API
 │   │   ├── zones.ts         # 分区 API
-│   │   └── reports.ts       # 报表 API
+│   │   ├── reports.ts       # 报表 API
+│   │   ├── users.ts         # 用户管理 API
+│   │   ├── alarms.ts        # 告警管理 API
+│   │   └── index.ts         # API 统一导出
 │   ├── views/               # 页面组件
 │   │   ├── Login.vue        # 登录页
 │   │   ├── Dashboard.vue    # 仪表盘
@@ -21,6 +25,7 @@ frontend/
 │   │   ├── Zones.vue        # 分区管理
 │   │   ├── Alarms.vue       # 告警中心
 │   │   ├── Reports.vue      # 报表分析（动态导入图表）
+│   │   ├── Users.vue        # 用户管理（仅管理员）
 │   │   └── Settings.vue     # 系统设置
 │   ├── layouts/             # 布局组件
 │   │   ├── MainLayout.vue   # 主布局
@@ -82,6 +87,7 @@ frontend/
 | `/zones` | Zones.vue | 分区管理 |
 | `/alarms` | Alarms.vue | 告警中心 |
 | `/reports` | Reports.vue | 报表分析 |
+| `/users` | Users.vue | 用户管理（仅管理员） |
 | `/settings` | Settings.vue | 系统设置 |
 
 ---
@@ -123,6 +129,25 @@ reportApi.getTrendData(params)      // 温湿度趋势
 reportApi.getAlarmStats(params)     // 告警统计
 reportApi.getRuntimeStats(params)   // 运行时长
 reportApi.exportReport(params)      // 导出报表
+```
+
+### 用户管理 API (`api/users.ts`)
+
+```typescript
+userApi.list()                       // 用户列表
+userApi.create(data)                 // 创建用户
+userApi.update(id, data)             // 更新用户
+userApi.updateStatus(id, data)      // 启用/禁用用户
+userApi.delete(id)                   // 删除用户
+```
+
+### 告警管理 API (`api/alarms.ts`)
+
+```typescript
+alarmApi.list(params)               // 告警列表（支持过滤）
+alarmApi.handle(alarmId)            // 处理单个告警
+alarmApi.batchHandle(alarmIds)      // 批量处理告警
+alarmApi.getStats()                 // 获取告警统计
 ```
 
 ---
@@ -230,8 +255,10 @@ isSafeUrl(url)                         // 检查 URL 安全性
 interface User {
   id: number
   username: string
-  role: string
+  role: 'admin' | 'operator' | 'viewer'
   tenant_id: number
+  is_active: boolean
+  created_at: string
 }
 
 // 设备
@@ -249,6 +276,18 @@ interface Zone {
   name: string
   parent_id?: number
   children?: Zone[]
+}
+
+// 告警
+interface Alarm {
+  id: number
+  device_id: string
+  type: string
+  severity: 'high' | 'medium' | 'low'
+  message?: string
+  is_resolved: boolean
+  occurred_at: string
+  resolved_at?: string
 }
 
 // 报表

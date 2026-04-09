@@ -1,6 +1,7 @@
 # 后端代码结构
 
 <!-- AUTO-GENERATED -->
+**Last Updated:** 2026-04-10
 
 ## 目录结构
 
@@ -14,6 +15,8 @@ backend/
 │   │   └── endpoints/       # API 端点
 │   │       ├── __init__.py
 │   │       ├── auth.py      # 认证 API（含 CSRF）
+│   │       ├── users.py     # 用户管理 API（仅管理员）
+│   │       ├── alarms.py    # 告警管理 API
 │   │       ├── devices.py   # 设备 API
 │   │       ├── zones.py     # 分区 API
 │   │       ├── reports.py   # 报表 API
@@ -52,7 +55,16 @@ backend/
 │       ├── test_csrf.py
 │       ├── test_websocket.py
 │       ├── test_reports_api.py
-│       └── test_config_security.py
+│       ├── test_users_api.py
+│       ├── test_alarms_api.py
+│       ├── test_dashboard_stats.py
+│       ├── test_config_security.py
+│       ├── test_models.py
+│       ├── test_api.py
+│       ├── test_rate_limiter.py
+│       ├── test_protocol_parser.py
+│       ├── test_version_detector.py
+│       └── test_security_fixes.py
 ├── Dockerfile
 ├── alembic.ini              # Alembic 配置
 ├── requirements.txt
@@ -70,6 +82,25 @@ backend/
 | POST | `/login` | 用户登录 |
 | POST | `/register` | 用户注册 |
 | GET | `/csrf-token` | 获取 CSRF Token |
+
+### 用户管理 (`/api/users`)
+
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/` | 用户列表（仅管理员） |
+| POST | `/` | 创建用户（仅管理员） |
+| PUT | `/{user_id}` | 更新用户（仅管理员） |
+| PATCH | `/{user_id}/status` | 启用/禁用用户（仅管理员） |
+| DELETE | `/{user_id}` | 删除用户（仅管理员） |
+
+### 告警管理 (`/api/alarms`)
+
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/` | 告警列表（支持过滤） |
+| PATCH | `/{alarm_id}/handle` | 处理单个告警 |
+| PATCH | `/batch-handle` | 批量处理告警 |
+| GET | `/stats` | 告警统计 |
 
 ### 设备 (`/api/devices`)
 
@@ -216,9 +247,11 @@ pytest --cov=app
 # 运行特定测试文件
 pytest tests/unit/test_csrf.py
 pytest tests/unit/test_websocket.py
+pytest tests/unit/test_users_api.py
+pytest tests/unit/test_alarms_api.py
 ```
 
 ### 测试统计
 
-- 单元测试：170 tests
+- 单元测试：200+ tests
 - 跳过测试：23 (需项目根目录文件)

@@ -57,6 +57,7 @@
     <a-modal
       v-model:open="createModalVisible"
       title="添加用户"
+      :confirm-loading="createLoading"
       @ok="handleCreate"
     >
       <a-form layout="vertical">
@@ -92,6 +93,7 @@
     <a-modal
       v-model:open="editModalVisible"
       title="编辑用户"
+      :confirm-loading="editLoading"
       @ok="handleEdit"
     >
       <a-form layout="vertical">
@@ -124,26 +126,28 @@ import { ref, reactive, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import dayjs from 'dayjs'
+import { userApi } from '@/api'
 import type { User } from '@/types'
 import type { TableProps } from 'ant-design-vue'
 
-// 模拟用户数据（后端用户管理 API 待实现）
 const users = ref<User[]>([])
 const loading = ref(false)
+const createLoading = ref(false)
+const editLoading = ref(false)
 
 // 创建弹窗
 const createModalVisible = ref(false)
 const createForm = reactive({
   username: '',
   password: '',
-  role: 'viewer'
+  role: 'viewer' as 'admin' | 'operator' | 'viewer'
 })
 
 // 编辑弹窗
 const editModalVisible = ref(false)
 const editForm = reactive({
   username: '',
-  role: 'viewer'
+  role: 'viewer' as 'admin' | 'operator' | 'viewer'
 })
 const editUserId = ref<number>(0)
 
@@ -157,9 +161,21 @@ const columns: TableProps['columns'] = [
 ]
 
 onMounted(() => {
-  // TODO: 调用后端用户列表 API
-  loading.value = false
+  fetchUsers()
 })
+
+async function fetchUsers() {
+  loading.value = true
+  try {
+    users.value = await userApi.list()
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { detail?: string } } }
+    console.error('获取用户列表失败:', error)
+    message.error(error.response?.data?.detail || '获取用户列表失败')
+  } finally {
+    loading.value = false
+  }
+}
 
 function formatTime(time: string) {
   return dayjs(time).format('YYYY-MM-DD HH:mm')
@@ -191,9 +207,27 @@ function showCreateModal() {
 }
 
 async function handleCreate() {
-  // TODO: 调用后端创建用户 API
-  message.info('用户管理功能待后端 API 实现')
-  createModalVisible.value = false
+  if (!createForm.username || !createForm.password) {
+    message.error('请填写用户名和密码')
+    return
+  }
+
+  createLoading.value = true
+  try {
+    await userApi.create({
+      username: createForm.username,
+      password: createForm.password,
+      role: createForm.role
+    })
+    message.success('用户创建成功')
+    createModalVisible.value = false
+    fetchUsers()
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { detail?: string } } }
+    message.error(error.response?.data?.detail || '创建用户失败')
+  } finally {
+    createLoading.value = false
+  }
 }
 
 function showEditModal(user: User) {
@@ -204,14 +238,30 @@ function showEditModal(user: User) {
 }
 
 async function handleEdit() {
-  // TODO: 调用后端更新用户 API
-  message.info('用户管理功能待后端 API 实现')
-  editModalVisible.value = false
+  editLoading.value = true
+  try {
+    await userApi.update(editUserId.value, { role: editForm.role })
+    message.success('用户更新成功')
+    editModalVisible.value = false
+    fetchUsers()
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { detail?: string } } }
+    message.error(error.response?.data?.detail || '更新用户失败')
+  } finally {
+    editLoading.value = false
+  }
 }
 
-async function handleToggleStatus(_user: User) {
-  // TODO: 调用后端启用/禁用用户 API
-  message.info('用户管理功能待后端 API 实现')
+async function handleToggleStatus(user: User) {
+  try {
+    const newStatus = !user.is_active
+    await userApi.updateStatus(user.id, { is_active: newStatus })
+    message.success(newStatus ? '用户已启用' : '用户已禁用')
+    fetchUsers()
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { detail?: string } } }
+    message.error(error.response?.data?.detail || '操作失败')
+  }
 }
 </script>
 

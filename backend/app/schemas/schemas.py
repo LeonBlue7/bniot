@@ -30,8 +30,19 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
+    """用于内部创建用户（包含tenant_id）"""
     password: str
     tenant_id: int
+
+
+class UserCreateAPI(UserBase):
+    """用于API创建用户（不包含tenant_id，从当前用户获取）"""
+    password: str
+
+
+class UserUpdate(BaseModel):
+    """用户更新"""
+    role: str | None = None
 
 
 class UserResponse(UserBase):
@@ -42,6 +53,11 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+
+
+class UserStatusUpdate(BaseModel):
+    """用户状态更新"""
+    is_active: bool
 
 
 # ============ 租户 ============

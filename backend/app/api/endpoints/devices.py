@@ -9,7 +9,7 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models import Device, DeviceData, User
+from app.models import Alarm, Device, DeviceData, User
 from app.mqtt import get_mqtt_client
 from app.schemas import DashboardStats, DeviceCreate, DeviceResponse, DeviceUpdate, Message
 from app.services.auth import get_current_user
@@ -40,14 +40,27 @@ async def get_dashboard_stats(
     online_devices = online_result.scalar() or 0
 
     # 告警统计
-    # TODO: 实现告警统计
+    total_alarms_result = await db.execute(
+        select(func.count(Alarm.id)).where(Alarm.tenant_id == current_user.tenant_id)
+    )
+    total_alarms = total_alarms_result.scalar() or 0
+
+    unresolved_alarms_result = await db.execute(
+        select(func.count(Alarm.id)).where(
+            and_(
+                Alarm.tenant_id == current_user.tenant_id,
+                Alarm.is_resolved == False
+            )
+        )
+    )
+    unresolved_alarms = unresolved_alarms_result.scalar() or 0
 
     return DashboardStats(
         total_devices=total_devices,
         online_devices=online_devices,
         offline_devices=total_devices - online_devices,
-        total_alarms=0,
-        unresolved_alarms=0
+        total_alarms=total_alarms,
+        unresolved_alarms=unresolved_alarms
     )
 
 

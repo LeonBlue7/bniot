@@ -14,6 +14,7 @@
         <a-button
           class="action-btn"
           :disabled="selectedAlarms.length === 0"
+          :loading="batchHandleLoading"
           @click="resolveSelected"
         >
           <CheckOutlined /> 批量处理
@@ -112,6 +113,7 @@
               v-if="!record.is_resolved"
               type="link"
               size="small"
+              :loading="record._handling"
               @click="resolveAlarm(record)"
             >
               处理
@@ -135,25 +137,28 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { CheckOutlined } from '@ant-design/icons-vue'
+import { alarmApi } from '@/api'
 import type { TableProps } from 'ant-design-vue'
 
-interface Alarm {
+interface AlarmItem {
   id: number
   tenant_id: number
   device_id: string
   type: string
   severity: string
-  message?: string
+  message?: string | null
   details: Record<string, unknown>
   is_resolved: boolean
   occurred_at: string
-  resolved_at?: string
+  resolved_at?: string | null
+  _handling?: boolean
 }
 
 const router = useRouter()
 
 const loading = ref(false)
-const alarms = ref<Alarm[]>([])
+const batchHandleLoading = ref(false)
+const alarms = ref<AlarmItem[]>([])
 const selectedAlarms = ref<number[]>([])
 const statusFilter = ref('')
 const severityFilter = ref('')
@@ -181,19 +186,30 @@ const columns: TableProps['columns'] = [
 async function fetchAlarms() {
   loading.value = true
   try {
-    // TODO: 实际 API 调用
-    // const response = await api.getAlarms({
-    //   status: statusFilter.value,
-    //   severity: severityFilter.value,
-    //   device_id: deviceIdFilter.value,
-    //   page: pagination.current,
-    //   page_size: pagination.pageSize
-    // })
-    // alarms.value = response.data.items
-    // pagination.total = response.data.total
+    const params: Record<string, unknown> = {
+      skip: (pagination.current - 1) * pagination.pageSize,
+      limit: pagination.pageSize
+    }
 
-    // 模拟数据
-    alarms.value = []
+    if (statusFilter.value === 'unresolved') {
+      params.is_resolved = false
+    } else if (statusFilter.value === 'resolved') {
+      params.is_resolved = true
+    }
+
+    if (severityFilter.value) {
+      params.severity = severityFilter.value
+    }
+
+    if (deviceIdFilter.value) {
+      params.device_id = deviceIdFilter.value
+    }
+
+    alarms.value = await alarmApi.list(params as Parameters<typeof alarmApi.list>[0])
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { detail?: string } } }
+    console.error('获取告警列表失败:', error)
+    message.error(error.response?.data?.detail || '获取告警列表失败')
   } finally {
     loading.value = false
   }
@@ -212,18 +228,44 @@ function handleTableChange(pag: { current?: number; pageSize?: number }) {
 }
 
 // 处理告警
-async function resolveAlarm(_alarm: Alarm) {
-  // TODO: 调用 API 处理告警
-  message.info('告警处理功能待实现')
-  fetchAlarms()
+async function resolveAlarm(alarm: AlarmItem) {
+  alarm._handling = true
+  try {
+    await alarmApi.handle(alarm.id)
+    message.success('告警已处理')
+    fetchAlarms()
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { detail?: string } } }
+    console.error('处理告警失败:', error)
+    message.error(error.response?.data?.detail || '处理告警失败')
+  } finally {
+    alarm._handling = false
+  }
 }
 
 // 批量处理
 async function resolveSelected() {
-  // TODO: 调用 API 批量处理
-  message.info('批量处理功能待实现')
-  selectedAlarms.value = []
-  fetchAlarms()
+  if (selectedAlarms.value.length === 0) {
+    message.info('请选择要处理的告警')
+    return
+  }
+
+  batchHandleLoading.value = true
+  try {
+    const result = await alarmApi.batchHandle(selectedAlarms.value)
+    message.success(result.message)
+    if (result.warning) {
+      message.warning(result.warning)
+    }
+    selectedAlarms.value = []
+    fetchAlarms()
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { detail?: string } } }
+    console.error('批量处理失败:', error)
+    message.error(error.response?.data?.detail || '批量处理失败')
+  } finally {
+    batchHandleLoading.value = false
+  }
 }
 
 // 查看设备
