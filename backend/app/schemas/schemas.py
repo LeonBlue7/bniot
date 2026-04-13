@@ -12,6 +12,14 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "token_type": "bearer"
+            }
+        }
+
 
 class TokenData(BaseModel):
     username: str | None = None
@@ -53,6 +61,16 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "username": "admin",
+                "role": "admin",
+                "tenant_id": 1,
+                "is_active": True,
+                "created_at": "2024-01-01T00:00:00Z"
+            }
+        }
 
 
 class UserStatusUpdate(BaseModel):
@@ -137,6 +155,21 @@ class DeviceResponse(DeviceBase):
 
     class Config:
         from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "device_id": "IMEI12345678",
+                "name": "会议室空调",
+                "zone_id": 1,
+                "tenant_id": 1,
+                "protocol_version": "V20",
+                "sim_card": "13800138000",
+                "is_online": True,
+                "last_seen_at": "2024-04-13T10:30:00Z",
+                "settings": {"temp_set": 26},
+                "created_at": "2024-01-01T00:00:00Z"
+            }
+        }
 
 
 class DeviceWithDataResponse(DeviceResponse):
@@ -201,6 +234,21 @@ class AlarmResponse(AlarmBase):
 
     class Config:
         from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "device_id": "IMEI12345678",
+                "type": "temperature_high",
+                "severity": "warning",
+                "message": "温度超过设定值",
+                "details": {"temp": 30, "threshold": 28},
+                "tenant_id": 1,
+                "is_resolved": False,
+                "occurred_at": "2024-04-13T10:30:00Z",
+                "resolved_at": None,
+                "created_at": "2024-04-13T10:30:00Z"
+            }
+        }
 
 
 # ============ MQTT 消息 ============
@@ -262,3 +310,78 @@ class PaginatedResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+# ============ 批量操作 ============
+class BatchControlRequest(BaseModel):
+    """批量控制请求"""
+    device_ids: list[int] = Field(..., min_length=1, max_length=100, description="设备ID列表")
+    airstate: int = Field(..., ge=0, le=1, description="0关机，1开机")
+
+
+class BatchDeleteRequest(BaseModel):
+    """批量删除请求"""
+    device_ids: list[int] = Field(..., min_length=1, max_length=100, description="设备ID列表")
+
+
+class BatchMoveZoneRequest(BaseModel):
+    """批量迁移分区请求"""
+    device_ids: list[int] = Field(..., min_length=1, max_length=100, description="设备ID列表")
+    zone_id: int | None = Field(None, description="目标分区ID（null表示移出分区）")
+
+
+class BatchOperationResponse(BaseModel):
+    """批量操作响应"""
+    success_count: int = Field(..., description="成功数量")
+    failed_count: int = Field(..., description="失败数量")
+    failed_details: list[dict[str, Any]] = Field(default_factory=list, description="失败详情")
+
+
+class BatchSetParamRequest(BaseModel):
+    """批量设置参数请求"""
+    device_ids: list[int] = Field(..., min_length=1, max_length=100, description="设备ID列表")
+    params: dict[str, Any] = Field(..., description="参数键值对")
+
+
+# ============ 通知规则 ============
+class NotificationRuleBase(BaseModel):
+    """通知规则基础"""
+    name: str = Field(..., min_length=1, max_length=100)
+    description: str | None = None
+    alarm_types: list[str] = Field(..., min_length=1)
+    severities: list[str] = Field(..., min_length=1)
+    channels: list[str] = Field(..., min_length=1)
+    recipients: list[str] = Field(..., min_length=1)
+    cooldown_minutes: int = Field(default=30, ge=1, le=1440)
+
+
+class NotificationRuleResponse(NotificationRuleBase):
+    """通知规则响应"""
+    id: int
+    tenant_id: int
+    is_enabled: bool
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============ 通知记录 ============
+class NotificationRecordResponse(BaseModel):
+    """通知记录响应"""
+    id: int
+    tenant_id: int
+    alarm_id: int | None
+    rule_id: int | None
+    channel: str
+    recipient: str
+    subject: str | None
+    content: str
+    status: str
+    error_message: str | None
+    sent_at: datetime | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

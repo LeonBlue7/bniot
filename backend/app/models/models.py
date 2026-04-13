@@ -11,6 +11,29 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 
+class NotificationChannel:
+    """通知渠道枚举"""
+    EMAIL = "email"
+    WECHAT = "wechat"
+    SMS = "sms"
+
+
+class NotificationStatus:
+    """通知状态枚举"""
+    PENDING = "pending"
+    SENT = "sent"
+    FAILED = "failed"
+    RATE_LIMITED = "rate_limited"
+
+
+class BackupStatus:
+    """备份状态枚举"""
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
 def utc_now() -> datetime:
     """获取 UTC 时间（timezone-aware）"""
     return datetime.now(UTC)
@@ -220,3 +243,113 @@ class OperationLog(Base):
 
     def __repr__(self):
         return f"<OperationLog(action={self.action}, resource_type={self.resource_type})>"
+
+
+class NotificationRule(Base):
+    """通知规则表"""
+    __tablename__ = "notification_rules"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id", ondelete="CASCADE"))
+    name: Mapped[str] = mapped_column(String(100))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    alarm_types: Mapped[list] = mapped_column(JSONB, default=list)  # ["offline", "illegal_on", ...]
+    severities: Mapped[list] = mapped_column(JSONB, default=list)  # ["high", "medium", "low"]
+    channels: Mapped[list] = mapped_column(JSONB, default=list)  # ["email", "wechat"]
+    recipients: Mapped[list] = mapped_column(JSONB, default=list)  # 邮箱列表或用户ID列表
+    is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    cooldown_minutes: Mapped[int] = mapped_column(Integer, default=30)  # 冷却时间（分钟）
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
+
+    # 索引
+    __table_args__ = (
+        Index('idx_notification_rules_tenant_id', 'tenant_id'),
+        Index('idx_notification_rules_enabled', 'is_enabled'),
+    )
+
+    def __repr__(self):
+        return f"<NotificationRule(id={self.id}, name={self.name})>"
+
+
+class NotificationRecord(Base):
+    """通知记录表"""
+    __tablename__ = "notification_records"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id", ondelete="CASCADE"))
+    alarm_id: Mapped[int | None] = mapped_column(ForeignKey("alarms.id", ondelete="SET NULL"), nullable=True)
+    rule_id: Mapped[int | None] = mapped_column(ForeignKey("notification_rules.id", ondelete="SET NULL"), nullable=True)
+    channel: Mapped[str] = mapped_column(String(20))  # email, wechat, sms
+    recipient: Mapped[str] = mapped_column(String(255))
+    subject: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    content: Mapped[Text] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, sent, failed, rate_limited
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+
+    # 索引
+    __table_args__ = (
+        Index('idx_notification_records_tenant_id', 'tenant_id'),
+        Index('idx_notification_records_alarm_id', 'alarm_id'),
+        Index('idx_notification_records_status', 'status'),
+        Index('idx_notification_records_created_at', 'created_at'),
+    )
+
+    def __repr__(self):
+        return f"<NotificationRecord(id={self.id}, channel={self.channel}, status={self.status})>"
+
+
+class BackupRecord(Base):
+    """备份记录表"""
+    __tablename__ = "backup_records"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tenant_id: Mapped[int | None] = mapped_column(ForeignKey("tenants.id", ondelete="SET NULL"), nullable=True)
+    backup_type: Mapped[str] = mapped_column(String(20))  # manual, scheduled, auto
+    file_path: Mapped[str] = mapped_column(String(255))
+    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)  # bytes
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, in_progress, completed, failed
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+
+    # 索引
+    __table_args__ = (
+        Index('idx_backup_records_tenant_id', 'tenant_id'),
+        Index('idx_backup_records_status', 'status'),
+        Index('idx_backup_records_backup_type', 'backup_type'),
+        Index('idx_backup_records_created_at', 'created_at'),
+    )
+
+    def __repr__(self):
+        return f"<BackupRecord(id={self.id}, backup_type={self.backup_type}, status={self.status})>"
+
+
+class RestoreRecord(Base):
+    """恢复记录表"""
+    __tablename__ = "restore_records"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id", ondelete="CASCADE"))
+    backup_id: Mapped[int] = mapped_column(ForeignKey("backup_records.id", ondelete="SET NULL"), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, in_progress, completed, failed, rolled_back
+    progress: Mapped[int] = mapped_column(Integer, default=0)  # 0-100
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    safety_backup_id: Mapped[int | None] = mapped_column(ForeignKey("backup_records.id"), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+
+    # 索引
+    __table_args__ = (
+        Index('idx_restore_records_tenant_id', 'tenant_id'),
+        Index('idx_restore_records_status', 'status'),
+        Index('idx_restore_records_backup_id', 'backup_id'),
+        Index('idx_restore_records_created_at', 'created_at'),
+    )
+
+    def __repr__(self):
+        return f"<RestoreRecord(id={self.id}, status={self.status}, progress={self.progress})>"

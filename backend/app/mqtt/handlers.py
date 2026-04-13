@@ -1,6 +1,6 @@
 """
 MQTT 消息处理器
-处理设备上报的各类消息
+处理设备上报的各类消息，并实时推送到 WebSocket 客户端
 """
 import json
 from collections.abc import Callable
@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Device, DeviceData, Tenant
 from app.mqtt.client import get_mqtt_client
 from app.services import ProtocolParserRegistry, get_version_detector
+from app.services.realtime_push import get_realtime_push_service
 
 
 class MQTTMessageHandler:
@@ -20,6 +21,7 @@ class MQTTMessageHandler:
 
     def __init__(self, db_session_factory: Callable):
         self.db_session_factory = db_session_factory
+        self.realtime_push = get_realtime_push_service()
 
     async def handle_login(self, device_id: str, payload: str, action: str):
         """
@@ -39,6 +41,11 @@ class MQTTMessageHandler:
                 device.is_online = True
                 device.last_seen_at = datetime.now(UTC)
                 await db.commit()
+
+                # 推送设备状态变化到 WebSocket
+                await self.realtime_push.push_device_status(
+                    device_id, device.tenant_id, is_online=True
+                )
 
             # 主动发送 getparam 探测版本
             await self._send_getparam(device_id)
@@ -81,6 +88,11 @@ class MQTTMessageHandler:
                 # 更新设备状态
                 device.last_seen_at = datetime.now(UTC)
                 await db.commit()
+
+                # 推送实时数据到 WebSocket
+                await self.realtime_push.push_device_data(
+                    device_id, device.tenant_id, msg_data
+                )
 
             # 发送回复
             await self._send_reply(device_id, "datas_reply", mid, 200)

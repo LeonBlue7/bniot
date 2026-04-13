@@ -17,6 +17,9 @@ redis>=5.0.0
 # MQTT
 paho-mqtt>=2.0.0
 
+# 定时任务调度
+apscheduler>=3.10.0
+
 # 认证
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
@@ -26,6 +29,7 @@ bcrypt>=4.0.0,<4.1.0
 python-dotenv>=1.0.0
 httpx>=0.26.0
 orjson>=3.9.0
+openpyxl>=3.1.0  # Excel导出支持
 
 # 日志
 loguru>=0.7.0

@@ -1,0 +1,4 @@
+# BNIoT Python SDK 依赖
+
+requests>=2.28.0
+websocket-client>=1.4.0

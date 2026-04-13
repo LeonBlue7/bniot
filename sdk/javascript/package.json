@@ -1,0 +1,20 @@
+{
+  "name": "bniot-sdk",
+  "version": "1.0.0",
+  "description": "BNIoT 空调节能管理系统 JavaScript SDK",
+  "main": "src/client.js",
+  "types": "src/types.d.ts",
+  "scripts": {
+    "test": "node examples/auth_example.js"
+  },
+  "keywords": [
+    "bniot",
+    "iot",
+    "air-conditioning",
+    "energy-saving"
+  ],
+  "author": "BNIoT Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}

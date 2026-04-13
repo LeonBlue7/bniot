@@ -271,7 +271,7 @@ async def export_report(
     end_time: datetime = Query(..., description="结束时间"),
     device_ids: str | None = Query(None, description="设备ID列表，逗号分隔"),
     zone_id: int | None = Query(None, description="分区ID"),
-    format: str = Query("csv", description="导出格式: csv"),
+    format: str = Query("csv", description="导出格式: csv/excel"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -279,7 +279,7 @@ async def export_report(
     导出报表数据
 
     - 支持能耗、温湿度趋势、告警统计、运行时长报表
-    - 支持 CSV 格式导出
+    - 支持 CSV 和 Excel 格式导出
     """
     # 验证报表类型
     valid_report_types = ["energy", "trend", "alarm", "runtime"]
@@ -289,9 +289,10 @@ async def export_report(
     # 验证时间范围
     _validate_time_range(start_time, end_time)
 
-    # 验证导出格式（目前只支持 CSV）
-    if format != "csv":
-        raise HTTPException(status_code=400, detail="目前只支持 CSV 格式导出")
+    # 验证导出格式
+    valid_formats = ["csv", "excel"]
+    if format not in valid_formats:
+        raise HTTPException(status_code=400, detail=f"不支持的导出格式，支持: {valid_formats}")
 
     # 解析设备ID列表
     device_id_list = _parse_device_ids(device_ids)
@@ -306,18 +307,6 @@ async def export_report(
             device_ids=device_id_list,
             zone_id=zone_id
         )
-        headers = ["设备ID", "设备名称", "总能耗(kWh)", "平均功率(W)", "最大功率(W)", "运行时长(小时)"]
-        rows = [
-            [
-                item["device_id"],
-                item["device_name"],
-                item["total_energy"],
-                item["avg_power"],
-                item["max_power"],
-                item["runtime_hours"]
-            ]
-            for item in result["data"]
-        ]
     elif report_type == "trend":
         result = await get_trend_data(
             db=db,
@@ -327,18 +316,6 @@ async def export_report(
             device_ids=device_id_list,
             zone_id=zone_id
         )
-        headers = ["设备ID", "设备名称", "时间", "温度", "湿度"]
-        rows = []
-        for item in result["data"]:
-            # 使用 zip 处理温度和湿度数据（数据点可能不完全对应）
-            for temp_point, humi_point in zip(item["temp_trend"], item["humi_trend"], strict=False):
-                rows.append([
-                    item["device_id"],
-                    item["device_name"],
-                    temp_point["time"],
-                    temp_point["value"],
-                    humi_point["value"]
-                ])
     elif report_type == "alarm":
         result = await get_alarm_stats(
             db=db,
@@ -348,17 +325,6 @@ async def export_report(
             device_ids=device_id_list,
             zone_id=zone_id
         )
-        headers = ["告警类型", "严重程度", "数量", "已解决", "未解决"]
-        rows = [
-            [
-                item["type"],
-                item["severity"],
-                item["count"],
-                item["resolved_count"],
-                item["unresolved_count"]
-            ]
-            for item in result["data"]
-        ]
     elif report_type == "runtime":
         result = await get_runtime_stats(
             db=db,
@@ -368,36 +334,96 @@ async def export_report(
             device_ids=device_id_list,
             zone_id=zone_id
         )
-        headers = ["设备ID", "设备名称", "分区", "运行时长(小时)", "开机占比(%)", "开机次数", "关机次数"]
-        rows = [
-            [
-                item["device_id"],
-                item["device_name"],
-                item["zone_name"] or "",
-                item["total_runtime_hours"],
-                item["on_time_percentage"],
-                item["on_count"],
-                item["off_count"]
+
+    # 根据格式导出
+    if format == "excel":
+        # Excel导出
+        from app.services.excel_export import ExcelExportService
+
+        excel_service = ExcelExportService()
+        content = excel_service.export_report_data(report_type, result)
+
+        # 生成文件名
+        file_name = excel_service.generate_filename(report_type)
+
+        # 返回Excel文件
+        return StreamingResponse(
+            io.BytesIO(content),
+            media_type=excel_service.get_mime_type(),
+            headers={
+                "Content-Disposition": f"attachment; filename={file_name}"
+            }
+        )
+    else:
+        # CSV导出（保持原有逻辑）
+        if report_type == "energy":
+            headers = ["设备ID", "设备名称", "总能耗(kWh)", "平均功率(W)", "最大功率(W)", "运行时长(小时)"]
+            rows = [
+                [
+                    item["device_id"],
+                    item["device_name"],
+                    item["total_energy"],
+                    item["avg_power"],
+                    item["max_power"],
+                    item["runtime_hours"]
+                ]
+                for item in result["data"]
             ]
-            for item in result["data"]
-        ]
+        elif report_type == "trend":
+            headers = ["设备ID", "设备名称", "时间", "温度", "湿度"]
+            rows = []
+            for item in result["data"]:
+                for temp_point, humi_point in zip(item["temp_trend"], item["humi_trend"], strict=False):
+                    rows.append([
+                        item["device_id"],
+                        item["device_name"],
+                        temp_point["time"],
+                        temp_point["value"],
+                        humi_point["value"]
+                    ])
+        elif report_type == "alarm":
+            headers = ["告警类型", "严重程度", "数量", "已解决", "未解决"]
+            rows = [
+                [
+                    item["type"],
+                    item["severity"],
+                    item["count"],
+                    item["resolved_count"],
+                    item["unresolved_count"]
+                ]
+                for item in result["data"]
+            ]
+        elif report_type == "runtime":
+            headers = ["设备ID", "设备名称", "分区", "运行时长(小时)", "开机占比(%)", "开机次数", "关机次数"]
+            rows = [
+                [
+                    item["device_id"],
+                    item["device_name"],
+                    item["zone_name"] or "",
+                    item["total_runtime_hours"],
+                    item["on_time_percentage"],
+                    item["on_count"],
+                    item["off_count"]
+                ]
+                for item in result["data"]
+            ]
 
-    # 生成 CSV 文件
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(headers)
-    writer.writerows(rows)
+        # 生成 CSV 文件
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(headers)
+        writer.writerows(rows)
 
-    # 生成文件名
-    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-    file_name = f"{report_type}_report_{timestamp}.csv"
+        # 生成文件名
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+        file_name = f"{report_type}_report_{timestamp}.csv"
 
-    # 返回 StreamingResponse
-    output.seek(0)
-    return StreamingResponse(
-        io.BytesIO(output.getvalue().encode("utf-8-sig")),  # utf-8-sig 支持 Excel 正确显示中文
-        media_type="text/csv",
-        headers={
-            "Content-Disposition": f"attachment; filename={file_name}"
-        }
-    )
+        # 返回 StreamingResponse
+        output.seek(0)
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode("utf-8-sig")),
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename={file_name}"
+            }
+        )

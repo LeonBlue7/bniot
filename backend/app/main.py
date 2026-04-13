@@ -67,12 +67,128 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="BNIoT API",
-    description="空调节能管理系统物联网平台 API",
+    description="""
+空调节能管理系统物联网平台 API
+
+## 功能概述
+
+本 API 提供以下核心功能：
+
+- **认证管理**: 用户登录、JWT 令牌获取、CSRF Token
+- **设备管理**: 设备 CRUD、远程控制、历史数据查询
+- **分区管理**: 分区 CRUD、层级结构
+- **告警管理**: 告警列表、告警处理
+- **报表分析**: 数据统计、趋势分析
+- **用户管理**: 用户 CRUD、权限控制（仅管理员）
+- **操作日志**: 操作审计追踪
+- **通知管理**: 通知规则配置、通知记录
+- **健康监控**: 系统健康状态检查
+- **备份恢复**: 数据备份、数据恢复
+- **WebSocket**: 实时数据推送
+
+## 认证方式
+
+使用 JWT Bearer Token 认证：
+
+1. 通过 `/api/auth/login` 获取 Token
+2. 在请求头添加 `Authorization: Bearer <token>`
+3. Token 有效期 24 小时
+
+## 错误处理
+
+所有错误响应遵循标准格式：
+
+```json
+{
+  "code": "DEVICE_001",
+  "message": "设备不存在",
+  "details": {"device_id": 12345},
+  "http_status": 404
+}
+```
+
+## 版本信息
+
+- API 版本: v1.0.0
+- 协议版本支持: V10, V20
+
+## 联系方式
+
+如有问题请联系技术支持团队。
+""",
     version="1.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
+    contact={
+        "name": "BNIoT 技术支持",
+        "email": "support@jxbonner.cloud",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    servers=[
+        {
+            "url": "https://www.jxbonner.cloud/api",
+            "description": "生产环境"
+        },
+        {
+            "url": "http://localhost:5000/api",
+            "description": "开发环境"
+        }
+    ],
+    openapi_tags=[
+        {
+            "name": "认证",
+            "description": "用户认证相关操作，包括登录、获取用户信息、CSRF Token 等。"
+        },
+        {
+            "name": "用户",
+            "description": "用户管理操作，包括用户 CRUD、权限控制等。仅系统管理员可访问。"
+        },
+        {
+            "name": "设备",
+            "description": "设备管理操作，包括设备 CRUD、远程控制、历史数据查询、批量操作等。"
+        },
+        {
+            "name": "分区",
+            "description": "分区管理操作，用于按物理位置组织空调设备。"
+        },
+        {
+            "name": "告警",
+            "description": "告警管理操作，包括告警列表查询、告警处理等。"
+        },
+        {
+            "name": "报表",
+            "description": "数据报表与分析，包括设备统计、能耗趋势等。"
+        },
+        {
+            "name": "操作日志",
+            "description": "操作审计日志，记录用户的操作历史。"
+        },
+        {
+            "name": "通知",
+            "description": "通知规则配置与通知记录管理。"
+        },
+        {
+            "name": "健康监控",
+            "description": "系统健康状态检查，包括服务状态、数据库连接等。"
+        },
+        {
+            "name": "备份管理",
+            "description": "数据库备份操作，支持手动和自动备份。"
+        },
+        {
+            "name": "恢复管理",
+            "description": "数据库恢复操作，从备份文件恢复数据。"
+        },
+        {
+            "name": "WebSocket",
+            "description": "实时数据推送，包括设备数据更新、告警通知等。"
+        },
+    ]
 )
 
 # CORS 配置

@@ -1,6 +1,6 @@
 """
 用户管理 API 端点
-仅管理员可访问
+使用新的权限系统进行访问控制
 """
 import logging
 
@@ -11,28 +11,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models import User
 from app.schemas import Message, UserCreateAPI, UserResponse, UserStatusUpdate, UserUpdate
-from app.services.auth import check_admin_role, get_current_user, get_password_hash
+from app.services.auth import get_current_user, get_password_hash
+from app.services.permissions import can_manage_user, Permission, require_permission
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def require_admin(user: User = Depends(get_current_user)) -> User:
-    """要求管理员权限"""
-    if not check_admin_role(user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="需要管理员权限"
-        )
-    return user
-
-
 @router.get("", response_model=list[UserResponse])
 async def list_users(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_permission(Permission.USER_READ))
 ):
-    """获取用户列表（仅管理员）"""
+    """获取用户列表"""
     result = await db.execute(
         select(User).where(User.tenant_id == current_user.tenant_id)
     )
@@ -43,7 +34,7 @@ async def list_users(
 async def create_user(
     user_in: UserCreateAPI,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_permission(Permission.USER_CREATE))
 ):
     """创建用户（仅管理员）"""
     # 检查用户名是否已存在
@@ -89,7 +80,7 @@ async def update_user(
     user_id: int,
     user_in: UserUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_permission(Permission.USER_UPDATE))
 ):
     """更新用户（仅管理员）"""
     result = await db.execute(
@@ -103,6 +94,13 @@ async def update_user(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="用户不存在"
+        )
+
+    # 检查是否有权限管理该用户
+    if not await can_manage_user(current_user, user, db):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="无权管理该用户"
         )
 
     # 验证角色
@@ -133,7 +131,7 @@ async def update_user_status(
     user_id: int,
     status_in: UserStatusUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_permission(Permission.USER_UPDATE))
 ):
     """启用/禁用用户（仅管理员）"""
     result = await db.execute(
@@ -147,6 +145,13 @@ async def update_user_status(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="用户不存在"
+        )
+
+    # 检查是否有权限管理该用户
+    if not await can_manage_user(current_user, user, db):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="无权管理该用户"
         )
 
     # 不能禁用自己
@@ -171,7 +176,7 @@ async def update_user_status(
 async def delete_user(
     user_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_admin)
+    current_user: User = Depends(require_permission(Permission.USER_DELETE))
 ):
     """删除用户（仅管理员）"""
     result = await db.execute(
@@ -187,11 +192,11 @@ async def delete_user(
             detail="用户不存在"
         )
 
-    # 不能删除自己
-    if user.id == current_user.id:
+    # 检查是否有权限管理该用户
+    if not await can_manage_user(current_user, user, db):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="不能删除自己"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="无权管理该用户"
         )
 
     await db.delete(user)
