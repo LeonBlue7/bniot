@@ -65,12 +65,14 @@
           <a-input
             v-model:value="createForm.username"
             placeholder="请输入用户名"
+            autocomplete="off"
           />
         </a-form-item>
         <a-form-item label="密码">
           <a-input-password
             v-model:value="createForm.password"
             placeholder="请输入密码"
+            autocomplete="new-password"
           />
         </a-form-item>
         <a-form-item label="角色">
@@ -268,5 +270,15 @@ async function handleToggleStatus(user: User) {
 <style scoped>
 .users-page {
   padding: 0;
+}
+
+/* 修复按钮文字间距问题 - Ant Design Vue 小按钮渲染中文时的 letter-spacing 问题 */
+.users-page :deep(.ant-space .ant-btn-sm) {
+  letter-spacing: 0 !important;
+}
+
+.users-page :deep(.ant-btn-sm span) {
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
 }
 </style>

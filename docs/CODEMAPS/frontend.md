@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-10
+**Last Updated:** 2026-04-14
 
 ## 目录结构
 
@@ -322,7 +322,7 @@ npm run e2e:headed
 
 - 单元测试：371 tests
 - E2E 测试：45 tests
-- 覆盖率：93.05%
+- 覆盖率：90.26%
 
 ---
 
@@ -330,15 +330,18 @@ npm run e2e:headed
 
 ### 主题配置 (`App.vue`)
 
-使用 Ant Design Vue ConfigProvider 配置深色/浅色主题：
+使用 Ant Design Vue ConfigProvider 配置深色/浅色主题和中文国际化：
 
 ```vue
-<a-config-provider :theme="themeConfig">
+<a-config-provider :theme="themeConfig" :locale="zhCN">
   <router-view />
 </a-config-provider>
 ```
 
-主题切换通过 `data-theme` 属性控制：
+特性：
+- 深色/浅色主题切换
+- 中文 locale 配置（zhCN）
+- 主题切换通过 `data-theme` 属性控制
 
 ```typescript
 document.documentElement.setAttribute('data-theme', 'dark' | 'light')

@@ -303,6 +303,27 @@ function handleLogout() {
   padding: 8px 0;
 }
 
+/* 折叠状态下隐藏菜单文字 */
+.sidebar.ant-layout-sider-collapsed .sidebar-menu {
+  width: 64px;
+}
+
+.sidebar.ant-layout-sider-collapsed :deep(.ant-menu-item) {
+  padding: 0 calc(50% - 16px / 2) !important;
+}
+
+.sidebar.ant-layout-sider-collapsed :deep(.ant-menu-item span:not(.anticon)) {
+  display: none !important;
+}
+
+.sidebar.ant-layout-sider-collapsed :deep(.ant-menu-submenu-title span:not(.anticon)) {
+  display: none !important;
+}
+
+.sidebar.ant-layout-sider-collapsed :deep(.ant-menu-item .anticon) {
+  margin: 0 !important;
+}
+
 :deep(.ant-menu-item) {
   margin: 4px 8px !important;
   border-radius: var(--radius-md) !important;

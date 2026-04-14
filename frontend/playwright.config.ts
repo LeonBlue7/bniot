@@ -23,7 +23,8 @@ export default defineConfig({
   // Reporter 配置
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'playwright-report/results.json' }]
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['list']
   ],
 
   // 全局配置
