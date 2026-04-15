@@ -23,7 +23,7 @@ apscheduler>=3.10.0
 # 认证
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
-bcrypt>=4.0.0,<4.1.0
+bcrypt>=3.2.0,<4.0.0  # passlib 1.7.4 不兼容 bcrypt 4.x
 
 # 工具
 python-dotenv>=1.0.0
