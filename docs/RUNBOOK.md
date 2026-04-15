@@ -14,24 +14,26 @@
 
 ## 部署流程
 
-### 首次部署
+### 一键部署（推荐）
+
+项目已预配置所有必要文件（前端构建产物、SSL证书、生产环境配置），实现一键部署：
 
 ```bash
-# 1. 拉取代码
-git clone <repository-url>
+# 克隆项目
+git clone git@github.com:LeonBlue7/bniot.git
 cd bniot
 
-# 2. 配置环境变量
-cp .env.example .env
-# 编辑 .env 文件
-
-# 3. 确保 SSL 证书存在
-ls -la ssl/
-# 应包含: jxbonner.cloud_bundle.pem, jxbonner.cloud.key
-
-# 4. 构建并启动
+# 一键启动
 docker-compose up -d --build
+
+# 验证服务状态
+docker-compose ps
 ```
+
+部署完成后访问：
+- 前端：https://jxbonner.cloud
+- API：https://jxbonner.cloud:5000/docs
+- EMQX Dashboard：http://服务器IP:18083
 
 > **国内部署优化**: Dockerfile 已配置阿里云镜像源（Debian apt + pip PyPI），国内服务器构建速度更快。
 
@@ -43,16 +45,38 @@ docker-compose up -d --build
 | Debian apt | mirrors.aliyun.com |
 | pip PyPI | mirrors.aliyun.com/pypi/simple/ |
 
+### 已预提交文件
+
+以下文件已提交到仓库，无需额外配置：
+
+| 文件 | 说明 |
+|------|------|
+| `.env` | 生产环境配置（数据库密码、JWT密钥等） |
+| `ssl/*.pem`, `ssl/*.key` | SSL证书 |
+| `frontend/dist/` | 前端构建产物 |
+
+### 首次部署（完整流程）
+
+如果需要全新部署到其他服务器：
+
+```bash
+# 1. 拉取代码
+git clone <repository-url>
+cd bniot
+
+# 2. 构建并启动（一键部署）
+docker-compose up -d --build
+```
+
+> **安全提示**: `.env` 文件包含敏感密码，已提交到私有仓库。如部署到其他环境，请修改密码。
+
 ### 更新部署
 
 ```bash
-# 1. 拉取最新代码
-git pull
+# 拉取最新代码并重启
+git pull && docker-compose up -d --build
 
-# 2. 重新构建并启动
-docker-compose up -d --build
-
-# 3. 验证服务
+# 验证服务
 docker-compose ps
 docker-compose logs -f backend
 ```
