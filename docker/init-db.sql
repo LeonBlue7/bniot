@@ -273,11 +273,15 @@ COMMENT ON POLICY tenant_isolation_operation_logs IS '操作日志表租户隔�
 
 -- ============ 初始数据 ============
 INSERT INTO tenants (name, code, settings) VALUES
-('默认租户', 'default', '{"timezone": "Asia/Shanghai"}');
+('默认租户', 'default', '{"timezone": "Asia/Shanghai"}')
+ON CONFLICT (code) DO NOTHING;
 
 -- 默认管理员用户（密码: admin123）
+-- 使用 bcrypt hash，注意：此 hash 对应密码 'admin123'
+-- 如果用户已存在则跳过
 INSERT INTO users (tenant_id, username, password_hash, role, is_active) VALUES
-(1, 'admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.G.4d.Z5h8K8KA6', 'admin', true);
+(1, 'admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.G.4d.Z5h8K8KA6', 'admin', true)
+ON CONFLICT (username) DO NOTHING;
 
 -- ============ 协议版本初始化 ============
 INSERT INTO protocol_versions (version_code, version_number, feature_params, param_mappings, description) VALUES

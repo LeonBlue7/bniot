@@ -110,6 +110,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
       JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
       BACKEND_DEBUG: ${BACKEND_DEBUG:-false}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-admin123}
     volumes:
       - ./backend:/app
       - ./volumes/backend/logs:/app/logs

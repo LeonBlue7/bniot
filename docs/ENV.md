@@ -53,6 +53,9 @@
 | `BACKEND_DEBUG` | No | 调试模式开关 | `false` | `true`/`false` |
 | `JWT_SECRET` | Yes | JWT 签名密钥 | - | `your_jwt_secret_here` |
 | `JWT_EXPIRE_HOURS` | No | JWT 过期时间(小时) | `24` | `24` |
+| `DEFAULT_ADMIN_PASSWORD` | No | 默认管理员密码 | `admin123` | `admin123` |
+
+> ⚠️ **安全提示**: `DEFAULT_ADMIN_PASSWORD` 仅用于首次部署，生产环境请修改默认密码
 
 ### 小程序配置（后续迭代）
 

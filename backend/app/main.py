@@ -13,6 +13,7 @@ from app.core.config import settings
 from app.core.database import async_session_maker
 from app.mqtt import get_mqtt_client, init_message_handlers, init_mqtt_client
 from app.services import init_version_detector
+from app.services.init_data import init_default_data
 
 # 全局 Redis 客户端引用
 _redis_client: redis.Redis = None
@@ -35,6 +36,10 @@ async def lifespan(app: FastAPI):
     # 初始化版本检测器
     await init_version_detector(_redis_client)
     logger.info("版本检测器初始化完成")
+
+    # 初始化默认数据（租户和管理员用户）
+    await init_default_data()
+    logger.info("默认数据初始化完成")
 
     # 初始化 MQTT 客户端
     init_mqtt_client()

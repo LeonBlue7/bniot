@@ -49,6 +49,7 @@ backend/
 │   │   ├── __init__.py
 │   │   ├── auth.py          # 认证服务（含 tenant_id 验证）
 │   │   ├── csrf.py          # CSRF Token 服务
+│   │   ├── init_data.py     # 启动初始化（默认用户创建）
 │   │   ├── websocket_manager.py # WebSocket 连接管理
 │   │   ├── protocol_parser.py   # 协议解析器
 │   │   ├── rate_limiter.py      # 速率限制
@@ -238,6 +239,14 @@ backend/
 - `generate_csrf_token()` - 生成 Token
 - `verify_csrf_token()` - 验证 Token
 - `CsrfMiddleware` - CSRF 中间件
+
+### 启动初始化服务 (`services/init_data.py`)
+
+自动检查并创建默认数据：
+- `ensure_default_tenant()` - 确保默认租户存在
+- `ensure_admin_user()` - 确保管理员用户存在
+- `init_default_data()` - 初始化默认数据
+- 支持环境变量自定义默认密码 (`DEFAULT_ADMIN_PASSWORD`)
 
 ### 权限系统 (`services/permissions.py`) - Phase 1.1
 

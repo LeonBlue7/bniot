@@ -73,24 +73,49 @@ bniot/
 
 - Docker & Docker Compose
 - Git
+- Node.js 18+ (前端构建需要)
 
-### 安装部署
+### 一键部署（推荐）
 
 ```bash
 # 克隆项目
 git clone https://github.com/LeonBlue7/bniot.git
 cd bniot
 
+# 执行一键部署脚本
+./scripts/deploy.sh
+```
+
+部署脚本自动完成：
+- ✅ 环境检查（Docker、环境变量、SSL证书）
+- ✅ 前端构建
+- ✅ 服务部署
+- ✅ 健康检查
+- ✅ 自动创建默认管理员用户
+
+### 手动部署
+
+```bash
 # 配置环境变量
 cp .env.example .env
-# 编辑 .env 文件，填写必填变量（见 docs/ENV.md）
+vi .env  # 编辑必填变量（见 docs/ENV.md）
 
-# 启动所有服务
-docker-compose up -d
+# 构建前端
+cd frontend && npm install && npm run build && cd ..
+
+# 启动服务
+docker-compose up -d --build
 
 # 查看服务状态
 docker-compose ps
 ```
+
+### 默认登录凭据
+
+- 用户名：`admin`
+- 密码：`admin123`（可通过 `DEFAULT_ADMIN_PASSWORD` 自定义）
+
+> ⚠️ **安全提示**: 生产环境请修改默认密码！
 
 ### 开发环境
 
@@ -170,9 +195,34 @@ npm run dev
 ## API 文档
 
 启动服务后访问：
-- Swagger UI: `https://localhost:5000/docs`
-- ReDoc: `https://localhost:5000/redoc`
-- 错误码文档: `https://localhost:5000/api/docs/error-codes`
+- Swagger UI: `https://www.jxbonner.cloud/api/docs`
+- ReDoc: `https://www.jxbonner.cloud/api/redoc`
+
+## 诊断工具
+
+项目提供诊断脚本，用于快速排查和修复常见问题：
+
+```bash
+# 查看帮助
+./scripts/diagnose.sh help
+
+# 检查所有服务健康状态
+./scripts/diagnose.sh health
+
+# 清除登录速率限制
+./scripts/diagnose.sh rate-limit
+
+# 检查并创建默认用户
+./scripts/diagnose.sh user
+
+# 重置数据库密码
+./scripts/diagnose.sh password
+
+# 执行所有诊断和修复
+./scripts/diagnose.sh all
+```
+
+详见 [运行手册](docs/RUNBOOK.md)。
 
 ## 测试
 
