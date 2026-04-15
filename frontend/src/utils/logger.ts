@@ -130,17 +130,12 @@ class ModuleLogger {
 }
 
 // 创建默认日志器实例
-export const logger = new Logger()
+const logger = new Logger()
 
-// 创建常用模块日志器
+// 创建常用模块日志器（仅导出实际使用的）
 export const wsLogger = logger.module('WebSocket')
 export const apiLogger = logger.module('API')
-export const authLogger = logger.module('Auth')
-export const chartLogger = logger.module('Chart')
 
 // 导出类型和类
 export type { LoggerOptions, LogLevel }
 export { Logger }
-
-// 默认导出
-export default logger

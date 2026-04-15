@@ -8,11 +8,6 @@ export const TEST_USER = {
   password: 'admin123'
 }
 
-// 等待网络空闲
-export async function waitForNetworkIdle(page: import('@playwright/test').Page, timeout = 2000) {
-  await page.waitForLoadState('networkidle', { timeout })
-}
-
 // 等待 Ant Design Vue 加载状态消失
 export async function waitForAntLoading(page: import('@playwright/test').Page) {
   // 等待页面上所有 spin 组件消失

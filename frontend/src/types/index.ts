@@ -80,6 +80,31 @@ export interface Device {
   created_at: string
 }
 
+// 设备列表项（包含实时数据和分区信息）
+export interface DeviceListItem extends Device {
+  temp: number | null
+  humi: number | null
+  alarmtemp: number | null
+  zone_name: string | null
+}
+
+// 设备详情（包含完整信息）
+export interface DeviceDetail extends Device {
+  zone_name: string | null
+  firmware_version: string | null
+  temp: number | null
+  humi: number | null
+  csq: number | null
+  alarmtemp: number | null
+  alarmhumi: number | null
+  air_err: number | null
+  airstate: number | null
+  current: number | null
+  supports_runtime: boolean
+  today_runtime: number | null
+  month_runtime: number | null
+}
+
 export interface DeviceCreate {
   device_id: string
   name: string
@@ -181,6 +206,7 @@ export interface DeviceQueryParams {
   zone_id?: number
   is_online?: boolean
   keyword?: string
+  protocol_version?: string
   skip?: number
   limit?: number
 }

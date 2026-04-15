@@ -6,18 +6,18 @@
         :gutter="16"
         align="middle"
       >
-        <a-col :span="8">
+        <a-col :span="6">
           <a-input-search
             v-model:value="searchKeyword"
-            placeholder="搜索设备名称或IMEI"
+            placeholder="搜索设备号、名称、SIM卡、固件版本、分区"
             allow-clear
             @search="handleSearch"
           />
         </a-col>
-        <a-col :span="4">
+        <a-col :span="3">
           <a-select
             v-model:value="filterZone"
-            placeholder="选择分区"
+            placeholder="分区"
             allow-clear
             style="width: 100%"
             @change="handleSearch"
@@ -31,7 +31,23 @@
             </a-select-option>
           </a-select>
         </a-col>
-        <a-col :span="4">
+        <a-col :span="3">
+          <a-select
+            v-model:value="filterProtocol"
+            placeholder="协议版本"
+            allow-clear
+            style="width: 100%"
+            @change="handleSearch"
+          >
+            <a-select-option value="V10">
+              V10
+            </a-select-option>
+            <a-select-option value="V20">
+              V20
+            </a-select-option>
+          </a-select>
+        </a-col>
+        <a-col :span="3">
           <a-select
             v-model:value="filterOnline"
             placeholder="在线状态"
@@ -48,7 +64,7 @@
           </a-select>
         </a-col>
         <a-col
-          :span="8"
+          :span="9"
           style="text-align: right"
         >
           <a-space>
@@ -75,11 +91,48 @@
         @change="handleTableChange"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'name'">
+          <template v-if="column.key === 'device_id'">
+            <span>{{ record.device_id }}</span>
+          </template>
+          <template v-else-if="column.key === 'name'">
             <a @click="goToDetail(record.id)">{{ record.name }}</a>
           </template>
+          <template v-else-if="column.key === 'temp'">
+            <span v-if="record.temp != null">{{ record.temp.toFixed(1) }}℃</span>
+            <span v-else>--℃</span>
+          </template>
+          <template v-else-if="column.key === 'humi'">
+            <span v-if="record.humi != null">{{ record.humi.toFixed(1) }}%</span>
+            <span v-else>--%</span>
+          </template>
+          <template v-else-if="column.key === 'alarmtemp'">
+            <a-tag
+              v-if="record.alarmtemp"
+              color="red"
+            >
+              告警
+            </a-tag>
+            <a-tag
+              v-else
+              color="default"
+            >
+              正常
+            </a-tag>
+          </template>
+          <template v-else-if="column.key === 'protocol_version'">
+            <a-tag :color="record.protocol_version === 'V10' ? 'blue' : 'green'">
+              {{ record.protocol_version }}
+            </a-tag>
+          </template>
+          <template v-else-if="column.key === 'zone_name'">
+            <span v-if="record.zone_name">{{ record.zone_name }}</span>
+            <span
+              v-else
+              style="color: #999"
+            >未分配</span>
+          </template>
           <template v-else-if="column.key === 'is_online'">
-            <a-tag :color="record.is_online ? 'green' : 'red'">
+            <a-tag :color="record.is_online ? 'green' : 'default'">
               {{ record.is_online ? '在线' : '离线' }}
             </a-tag>
           </template>
@@ -276,6 +329,7 @@ const authStore = useAuthStore()
 const searchKeyword = ref('')
 const filterZone = ref<number | undefined>()
 const filterOnline = ref<boolean | undefined>()
+const filterProtocol = ref<string | undefined>()
 
 // 数据
 const devices = computed(() => deviceStore.devices)
@@ -291,19 +345,37 @@ const pagination = reactive({
   showTotal: (total: number) => `共 ${total} 条`
 })
 
-// 表格列定义
+// 表格列定义（10列）
 const columns: TableProps['columns'] = [
   {
-    title: 'IMEI号',
+    title: '设备号',
     dataIndex: 'device_id',
     key: 'device_id',
-    width: 150
+    width: 130
   },
   {
     title: '设备名称',
     dataIndex: 'name',
     key: 'name',
-    width: 200
+    width: 130
+  },
+  {
+    title: '温度',
+    dataIndex: 'temp',
+    key: 'temp',
+    width: 90
+  },
+  {
+    title: '湿度',
+    dataIndex: 'humi',
+    key: 'humi',
+    width: 90
+  },
+  {
+    title: '告警状态',
+    dataIndex: 'alarmtemp',
+    key: 'alarmtemp',
+    width: 100
   },
   {
     title: '协议版本',
@@ -312,16 +384,22 @@ const columns: TableProps['columns'] = [
     width: 100
   },
   {
-    title: '状态',
+    title: '分区',
+    dataIndex: 'zone_name',
+    key: 'zone_name',
+    width: 100
+  },
+  {
+    title: '在线状态',
     dataIndex: 'is_online',
     key: 'is_online',
-    width: 80
+    width: 90
   },
   {
     title: '最后通信',
     dataIndex: 'last_seen_at',
     key: 'last_seen_at',
-    width: 180
+    width: 160
   },
   {
     title: '操作',
@@ -376,6 +454,7 @@ async function fetchDevices() {
     keyword: searchKeyword.value,
     zone_id: filterZone.value,
     is_online: filterOnline.value,
+    protocol_version: filterProtocol.value,
     skip: (pagination.current - 1) * pagination.pageSize,
     limit: pagination.pageSize
   })

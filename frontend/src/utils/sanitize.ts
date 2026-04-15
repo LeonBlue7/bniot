@@ -201,13 +201,3 @@ export function isSafeUrl(url: string | null | undefined): boolean {
 
   return false
 }
-
-/**
- * 创建安全的 HTML 内容
- * 用于 Vue 模板中的 v-html 指令
- * @param html - 原始 HTML
- * @returns 安全的 HTML
- */
-export function safeHtml(html: string): string {
-  return sanitize(html)
-}

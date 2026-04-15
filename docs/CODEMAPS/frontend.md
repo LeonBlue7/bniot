@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-14
+**Last Updated:** 2026-04-15
 
 ## 目录结构
 
@@ -105,12 +105,21 @@ authApi.getCurrentUser()            // 获取当前用户
 ### 设备 API (`api/devices.ts`)
 
 ```typescript
-deviceApi.list(params)              // 设备列表
-deviceApi.get(deviceId)             // 设备详情
+deviceApi.list(params)              // 设备列表（含温湿度、告警状态、分区名称）
+deviceApi.get(deviceId)             // 设备详情（含运行统计）
 deviceApi.update(deviceId, data)    // 更新设备
 deviceApi.delete(deviceId)          // 删除设备
-deviceApi.getData(deviceId, params) // 设备数据
+deviceApi.getData(deviceId, params) // 设备历史数据
+deviceApi.getEvents(deviceId, params) // 开关机记录（仅V10）
+deviceApi.getRuntime(deviceId)      // 运行时间统计（仅V10）
 ```
+
+**新增返回字段（2026-04-15）**：
+
+| API | 新增字段 | 说明 |
+|-----|---------|------|
+| `list()` | `temp`, `humi`, `alarmtemp`, `zone_name` | 实时数据、告警状态、分区名称 |
+| `get()` | `firmware_version`, `csq`, `air_err`, `alarmhumi`, `current`, `airstate`, `supports_runtime`, `today_runtime`, `month_runtime` | 设备详情完整数据、版本差异化字段 |
 
 ### 分区 API (`api/zones.ts`)
 
@@ -270,6 +279,31 @@ interface Device {
   zone_id?: number
 }
 
+// 设备列表项（含实时数据）
+interface DeviceListItem extends Device {
+  temp: number | null           // 实时温度
+  humi: number | null           // 实时湿度
+  alarmtemp: number | null      // 温度告警状态
+  zone_name: string | null      // 分区名称
+}
+
+// 设备详情（含完整信息）
+interface DeviceDetail extends Device {
+  zone_name: string | null
+  firmware_version: string | null
+  temp: number | null
+  humi: number | null
+  csq: number | null            // 信号强度
+  alarmtemp: number | null      // 温度告警
+  alarmhumi: number | null      // 湿度告警
+  air_err: number | null        // 空调故障码
+  airstate: number | null       // 空调状态（V10专属）
+  current: number | null        // 电流（V10专属）
+  supports_runtime: boolean     // 是否支持运行统计
+  today_runtime: number | null  // 当天运行时间（小时）
+  month_runtime: number | null  // 当月运行时间（小时）
+}
+
 // 分区
 interface Zone {
   id: number
@@ -320,9 +354,9 @@ npm run e2e:headed
 
 ### 测试覆盖率
 
-- 单元测试：371 tests
+- 单元测试：399 tests
 - E2E 测试：45 tests
-- 覆盖率：90.26%
+- 覆盖率：90%+
 
 ---
 

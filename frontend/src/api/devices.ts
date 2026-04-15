@@ -4,6 +4,8 @@
 import apiClient from './client'
 import type {
   Device,
+  DeviceListItem,
+  DeviceDetail,
   DeviceCreate,
   DeviceUpdate,
   DeviceData,
@@ -12,6 +14,29 @@ import type {
   DeviceQueryParams,
   DeviceDataQueryParams
 } from '@/types'
+
+// 开关机事件接口
+export interface DeviceEvent {
+  time: string
+  action: string
+  duration: number | null
+}
+
+export interface DeviceEventsResponse {
+  supported: boolean
+  message: string
+  events: DeviceEvent[]
+  total: number
+  page: number
+  page_size: number
+}
+
+export interface DeviceRuntimeResponse {
+  supported: boolean
+  message: string
+  today_runtime: number | null
+  month_runtime: number | null
+}
 
 export const deviceApi = {
   /**
@@ -23,18 +48,18 @@ export const deviceApi = {
   },
 
   /**
-   * 获取设备列表
+   * 获取设备列表（包含实时数据和分区信息）
    */
-  async list(params?: DeviceQueryParams): Promise<Device[]> {
-    const response = await apiClient.get<Device[]>('/devices', { params })
+  async list(params?: DeviceQueryParams): Promise<DeviceListItem[]> {
+    const response = await apiClient.get<DeviceListItem[]>('/devices', { params })
     return response.data
   },
 
   /**
-   * 获取设备详情
+   * 获取设备详情（包含完整信息）
    */
-  async get(id: number): Promise<Device> {
-    const response = await apiClient.get<Device>(`/devices/${id}`)
+  async get(id: number): Promise<DeviceDetail> {
+    const response = await apiClient.get<DeviceDetail>(`/devices/${id}`)
     return response.data
   },
 
@@ -77,6 +102,22 @@ export const deviceApi = {
    */
   async getData(id: number, params?: DeviceDataQueryParams): Promise<DeviceData[]> {
     const response = await apiClient.get<DeviceData[]>(`/devices/${id}/data`, { params })
+    return response.data
+  },
+
+  /**
+   * 获取设备开关机事件记录
+   */
+  async getEvents(id: number, params?: { page?: number; page_size?: number }): Promise<DeviceEventsResponse> {
+    const response = await apiClient.get<DeviceEventsResponse>(`/devices/${id}/events`, { params })
+    return response.data
+  },
+
+  /**
+   * 获取设备运行时间统计
+   */
+  async getRuntime(id: number): Promise<DeviceRuntimeResponse> {
+    const response = await apiClient.get<DeviceRuntimeResponse>(`/devices/${id}/runtime`)
     return response.data
   }
 }

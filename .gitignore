@@ -94,6 +94,15 @@ Thumbs.db
 # LibreOffice 锁文件
 .~lock.*
 
+# 临时测试截图（不应提交）
+*.png
+!frontend/public/**/*.png
+!docs/**/*.png
+e2e-screenshots/
+test-results/
+test-results-manual/
+.playwright-mcp/
+
 # Docker 数据卷（不应提交）
 volumes/postgres/data/
 volumes/pgdata/

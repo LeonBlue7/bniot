@@ -172,12 +172,126 @@ class DeviceResponse(DeviceBase):
         }
 
 
+class DeviceListItemResponse(DeviceBase):
+    """设备列表项响应 - 包含实时数据和分区信息"""
+    id: int
+    tenant_id: int
+    protocol_version: str
+    temp: float | None = None
+    humi: float | None = None
+    alarmtemp: int | None = None
+    zone_name: str | None = None
+    is_online: bool
+    last_seen_at: datetime | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "device_id": "IMEI12345678",
+                "name": "会议室空调",
+                "zone_id": 1,
+                "tenant_id": 1,
+                "protocol_version": "V20",
+                "temp": 25.5,
+                "humi": 60.2,
+                "alarmtemp": 0,
+                "zone_name": "办公区",
+                "is_online": True,
+                "last_seen_at": "2024-04-13T10:30:00Z",
+                "created_at": "2024-01-01T00:00:00Z"
+            }
+        }
+
+
 class DeviceWithDataResponse(DeviceResponse):
     """设备信息 + 最新数据"""
     temp: float | None = None
     humi: float | None = None
     airstate: int | None = None
     current: float | None = None
+
+
+class DeviceDetailResponse(DeviceResponse):
+    """设备详情响应 - 包含完整信息"""
+    zone_name: str | None = None
+    firmware_version: str | None = None
+    csq: float | None = None
+    alarmhumi: int | None = None
+    air_err: int | None = None
+    temp: float | None = None
+    humi: float | None = None
+    airstate: int | None = None
+    current: float | None = None
+    alarmtemp: int | None = None
+    # 运行时间统计（仅支持airstate的协议版本）
+    supports_runtime: bool = False
+    today_runtime: float | None = None  # 当天运行时间（小时）
+    month_runtime: float | None = None  # 当月运行时间（小时）
+
+    class Config:
+        from_attributes = True
+
+
+class DeviceEventItem(BaseModel):
+    """开关机事件项"""
+    time: str = Field(..., description="事件时间（ISO格式）")
+    action: str = Field(..., description="动作：开机/关机")
+    duration: float | None = Field(None, description="运行时长（小时），仅关机事件有")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "time": "2024-04-13T10:30:00",
+                "action": "关机",
+                "duration": 2.5
+            }
+        }
+
+
+class DeviceEventsResponse(BaseModel):
+    """开关机事件记录响应"""
+    supported: bool = Field(..., description="是否支持空调状态监控")
+    message: str = Field(default="", description="不支持时的提示消息")
+    events: list[DeviceEventItem] = Field(default_factory=list, description="事件列表")
+    total: int = Field(default=0, description="总数量")
+    page: int = Field(default=1, description="当前页")
+    page_size: int = Field(default=20, description="每页数量")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "supported": True,
+                "message": "",
+                "events": [
+                    {"time": "2024-04-13T10:30:00", "action": "关机", "duration": 2.5},
+                    {"time": "2024-04-13T08:00:00", "action": "开机", "duration": None}
+                ],
+                "total": 50,
+                "page": 1,
+                "page_size": 20
+            }
+        }
+
+
+class DeviceRuntimeResponse(BaseModel):
+    """运行时间统计响应"""
+    supported: bool = Field(..., description="是否支持运行时间统计")
+    message: str = Field(default="", description="不支持时的提示消息")
+    today_runtime: float | None = Field(None, description="当天运行时间（小时）")
+    month_runtime: float | None = Field(None, description="当月运行时间（小时）")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "supported": True,
+                "message": "",
+                "today_runtime": 5.5,
+                "month_runtime": 120.0
+            }
+        }
 
 
 # ============ 设备数据 ============

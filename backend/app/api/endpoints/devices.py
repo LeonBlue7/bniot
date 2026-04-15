@@ -11,6 +11,7 @@ from datetime import UTC, datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import outerjoin, selectinload
 
 from app.core.database import get_db
 from app.models import Alarm, Device, DeviceData, User, Zone
@@ -22,13 +23,18 @@ from app.schemas import (
     BatchOperationResponse,
     DashboardStats,
     DeviceCreate,
+    DeviceDetailResponse,
+    DeviceEventsResponse,
+    DeviceListItemResponse,
     DeviceResponse,
+    DeviceRuntimeResponse,
     DeviceUpdate,
     Message,
 )
 from app.services.auth import get_current_user
 from app.services.permissions import Permission, require_permission
 from app.services.operation_log import OperationLogService, ActionType, ResourceType
+from app.services.runtime import RuntimeService
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -83,32 +89,96 @@ async def get_dashboard_stats(
     )
 
 
-@router.get("", response_model=list[DeviceResponse])
+@router.get("", response_model=list[DeviceListItemResponse])
 async def list_devices(
     zone_id: int | None = None,
     is_online: bool | None = None,
     keyword: str | None = None,
+    protocol_version: str | None = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_permission(Permission.DEVICE_READ))
 ):
-    """获取设备列表"""
-    query = select(Device).where(Device.tenant_id == current_user.tenant_id)
+    """获取设备列表，包含实时数据和分区信息"""
+    # 基础查询：LEFT JOIN Zone 和 最新 DeviceData
+    # 使用子查询获取每个设备的最新数据
+    latest_data_subquery = (
+        select(
+            DeviceData.device_id,
+            DeviceData.temp,
+            DeviceData.humi,
+            DeviceData.alarmtemp,
+            func.max(DeviceData.time).label("max_time")
+        )
+        .where(DeviceData.tenant_id == current_user.tenant_id)
+        .group_by(DeviceData.device_id)
+        .subquery()
+    )
+
+    query = (
+        select(
+            Device.id,
+            Device.tenant_id,
+            Device.device_id,
+            Device.name,
+            Device.zone_id,
+            Device.protocol_version,
+            Device.is_online,
+            Device.last_seen_at,
+            Device.created_at,
+            Zone.name.label("zone_name"),
+            latest_data_subquery.c.temp,
+            latest_data_subquery.c.humi,
+            latest_data_subquery.c.alarmtemp,
+        )
+        .outerjoin(Zone, Device.zone_id == Zone.id)
+        .outerjoin(
+            latest_data_subquery,
+            Device.device_id == latest_data_subquery.c.device_id
+        )
+        .where(Device.tenant_id == current_user.tenant_id)
+    )
 
     if zone_id:
         query = query.where(Device.zone_id == zone_id)
     if is_online is not None:
         query = query.where(Device.is_online == is_online)
+    if protocol_version:
+        query = query.where(Device.protocol_version == protocol_version)
+
     if keyword:
         query = query.where(
             (Device.name.ilike(f"%{keyword}%")) |
-            (Device.device_id.ilike(f"%{keyword}%"))
+            (Device.device_id.ilike(f"%{keyword}%")) |
+            (Device.sim_card.ilike(f"%{keyword}%")) |
+            (Device.firmware_version.ilike(f"%{keyword}%")) |
+            (Zone.name.ilike(f"%{keyword}%"))
         )
 
     query = query.offset(skip).limit(limit).order_by(Device.id.desc())
     result = await db.execute(query)
-    return result.scalars().all()
+
+    # 将结果转换为DeviceListItemResponse格式
+    rows = result.all()
+    devices = []
+    for row in rows:
+        devices.append({
+            "id": row.id,
+            "tenant_id": row.tenant_id,
+            "device_id": row.device_id,
+            "name": row.name,
+            "zone_id": row.zone_id,
+            "protocol_version": row.protocol_version,
+            "temp": row.temp,
+            "humi": row.humi,
+            "alarmtemp": row.alarmtemp,
+            "zone_name": row.zone_name,
+            "is_online": row.is_online,
+            "last_seen_at": row.last_seen_at,
+            "created_at": row.created_at,
+        })
+    return devices
 
 
 @router.post("", response_model=DeviceResponse, status_code=status.HTTP_201_CREATED)
@@ -347,23 +417,98 @@ async def batch_move_zone(
 
 # ============ 单设备操作（带路径参数） ============
 
-@router.get("/{device_id}", response_model=DeviceResponse)
+@router.get("/{device_id}", response_model=DeviceDetailResponse)
 async def get_device(
     device_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_permission(Permission.DEVICE_READ))
 ):
-    """获取设备详情"""
-    result = await db.execute(
-        select(Device).where(
+    """获取设备详情（包含实时数据、分区信息、运行统计）"""
+    # 查询设备基础信息，LEFT JOIN Zone
+    query = (
+        select(
+            Device.id,
+            Device.tenant_id,
+            Device.device_id,
+            Device.name,
+            Device.zone_id,
+            Device.protocol_version,
+            Device.sim_card,
+            Device.is_online,
+            Device.last_seen_at,
+            Device.settings,
+            Device.created_at,
+            Device.firmware_version,
+            Zone.name.label("zone_name"),
+        )
+        .outerjoin(Zone, Device.zone_id == Zone.id)
+        .where(
             Device.id == device_id,
             Device.tenant_id == current_user.tenant_id
         )
     )
-    device = result.scalar_one_or_none()
-    if not device:
+    result = await db.execute(query)
+    row = result.one_or_none()
+
+    if not row:
         raise HTTPException(status_code=404, detail="设备不存在")
-    return device
+
+    # 获取最新设备数据
+    latest_data_query = (
+        select(DeviceData)
+        .where(DeviceData.device_id == row.device_id)
+        .order_by(DeviceData.time.desc())
+        .limit(1)
+    )
+    latest_data_result = await db.execute(latest_data_query)
+    latest_data = latest_data_result.scalar_one_or_none()
+
+    # 获取运行时间统计（传入 tenant_id 确保租户隔离）
+    runtime_service = RuntimeService(db, tenant_id=current_user.tenant_id)
+    supports_runtime = await runtime_service.supports_runtime(row.device_id)
+
+    if supports_runtime:
+        today_runtime = await runtime_service.get_today_runtime(
+            row.device_id, last_seen_at=row.last_seen_at
+        )
+        month_runtime = await runtime_service.get_month_runtime(
+            row.device_id, last_seen_at=row.last_seen_at
+        )
+    else:
+        today_runtime = None
+        month_runtime = None
+
+    # 构建响应
+    response = {
+        "id": row.id,
+        "tenant_id": row.tenant_id,
+        "device_id": row.device_id,
+        "name": row.name,
+        "zone_id": row.zone_id,
+        "protocol_version": row.protocol_version,
+        "sim_card": row.sim_card,
+        "is_online": row.is_online,
+        "last_seen_at": row.last_seen_at,
+        "settings": row.settings,
+        "created_at": row.created_at,
+        "zone_name": row.zone_name,
+        "firmware_version": row.firmware_version,
+        # 从最新数据获取
+        "temp": latest_data.temp if latest_data else None,
+        "humi": latest_data.humi if latest_data else None,
+        "csq": latest_data.csq if latest_data else None,
+        "alarmtemp": latest_data.alarmtemp if latest_data else None,
+        "alarmhumi": latest_data.alarmhumi if latest_data else None,
+        "air_err": latest_data.air_err if latest_data else None,
+        "airstate": latest_data.airstate if latest_data else None,
+        "current": latest_data.current if latest_data else None,
+        # 运行时间统计
+        "supports_runtime": supports_runtime,
+        "today_runtime": today_runtime,
+        "month_runtime": month_runtime,
+    }
+
+    return response
 
 
 @router.put("/{device_id}", response_model=DeviceResponse)
@@ -490,3 +635,97 @@ async def get_device_data(
         }
         for d in data_result.scalars().all()
     ]
+
+
+@router.get("/{device_id}/events", response_model=DeviceEventsResponse)
+async def get_device_events(
+    device_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(Permission.DEVICE_READ))
+):
+    """
+    获取设备开关机事件记录
+
+    返回:
+    - supported: 是否支持空调状态监控
+    - message: 不支持时的提示消息
+    - events: 事件列表 [{time, action, duration}]
+    - total: 总数量
+    - page: 当前页
+    - page_size: 每页数量
+    """
+    result = await db.execute(
+        select(Device).where(
+            Device.id == device_id,
+            Device.tenant_id == current_user.tenant_id
+        )
+    )
+    device = result.scalar_one_or_none()
+    if not device:
+        raise HTTPException(status_code=404, detail="设备不存在")
+
+    # 使用运行时间服务获取事件记录（传入 tenant_id 确保租户隔离）
+    service = RuntimeService(db, tenant_id=current_user.tenant_id)
+    events_data = await service.get_runtime_events(
+        device.device_id,
+        page=page,
+        page_size=page_size
+    )
+
+    return events_data
+
+
+@router.get("/{device_id}/runtime", response_model=DeviceRuntimeResponse)
+async def get_device_runtime(
+    device_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(Permission.DEVICE_READ))
+):
+    """
+    获取设备运行时间统计
+
+    返回:
+    - supported: 是否支持运行时间统计
+    - today_runtime: 当天运行时间（小时）
+    - month_runtime: 当月运行时间（小时）
+    """
+    result = await db.execute(
+        select(Device).where(
+            Device.id == device_id,
+            Device.tenant_id == current_user.tenant_id
+        )
+    )
+    device = result.scalar_one_or_none()
+    if not device:
+        raise HTTPException(status_code=404, detail="设备不存在")
+
+    # 使用运行时间服务（传入 tenant_id 确保租户隔离）
+    service = RuntimeService(db, tenant_id=current_user.tenant_id)
+
+    # 检查是否支持
+    supported = await service.supports_runtime(device.device_id)
+
+    if not supported:
+        return {
+            "supported": False,
+            "message": "当前协议版本不支持空调状态监控",
+            "today_runtime": None,
+            "month_runtime": None
+        }
+
+    # 计算运行时间（传入 last_seen_at 处理边界条件）
+    today_runtime = await service.get_today_runtime(
+        device.device_id, last_seen_at=device.last_seen_at
+    )
+    month_runtime = await service.get_month_runtime(
+        device.device_id, last_seen_at=device.last_seen_at
+    )
+
+    return {
+        "supported": True,
+        "message": "",
+        "today_runtime": today_runtime,
+        "month_runtime": month_runtime
+    }

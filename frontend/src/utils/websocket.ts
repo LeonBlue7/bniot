@@ -328,20 +328,3 @@ export class WebSocketManager {
 // 全局 WebSocket 实例
 let wsInstance: WebSocketManager | null = null
 
-/**
- * 获取或创建 WebSocket 实例
- */
-export function useWebSocket(options?: WebSocketOptions): WebSocketManager {
-  if (!wsInstance && options) {
-    wsInstance = new WebSocketManager(options)
-  }
-  return wsInstance!
-}
-
-/**
- * 断开 WebSocket 连接
- */
-export function disconnectWebSocket(): void {
-  wsInstance?.disconnect()
-  wsInstance = null
-}

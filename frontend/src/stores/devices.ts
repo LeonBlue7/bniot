@@ -4,12 +4,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { deviceApi } from '@/api'
-import type { Device, DeviceCreate, DeviceUpdate, DashboardStats, DeviceData } from '@/types'
+import type { Device, DeviceListItem, DeviceDetail, DeviceCreate, DeviceUpdate, DashboardStats, DeviceData } from '@/types'
 
 export const useDeviceStore = defineStore('device', () => {
   // 状态
-  const devices = ref<Device[]>([])
-  const currentDevice = ref<Device | null>(null)
+  const devices = ref<DeviceListItem[]>([])
+  const currentDevice = ref<DeviceDetail | null>(null)
   const deviceData = ref<DeviceData[]>([])
   const stats = ref<DashboardStats | null>(null)
   const loading = ref(false)
@@ -41,6 +41,7 @@ export const useDeviceStore = defineStore('device', () => {
     zone_id?: number
     is_online?: boolean
     keyword?: string
+    protocol_version?: string
     skip?: number
     limit?: number
   }): Promise<void> {
@@ -69,13 +70,14 @@ export const useDeviceStore = defineStore('device', () => {
   }
 
   // 创建设备
-  async function createDevice(data: DeviceCreate): Promise<Device | null> {
+  async function createDevice(data: DeviceCreate): Promise<DeviceListItem | null> {
     loading.value = true
     error.value = null
     try {
       const device = await deviceApi.create(data)
-      devices.value.unshift(device)
-      return device
+      // 创建后重新获取列表以获取完整数据
+      await fetchDevices()
+      return devices.value.find(d => d.device_id === data.device_id) || null
     } catch (err) {
       error.value = err instanceof Error ? err.message : '创建设备失败'
       return null
@@ -85,19 +87,14 @@ export const useDeviceStore = defineStore('device', () => {
   }
 
   // 更新设备
-  async function updateDevice(id: number, data: DeviceUpdate): Promise<Device | null> {
+  async function updateDevice(id: number, data: DeviceUpdate): Promise<DeviceDetail | null> {
     loading.value = true
     error.value = null
     try {
       const device = await deviceApi.update(id, data)
-      const index = devices.value.findIndex(d => d.id === id)
-      if (index !== -1) {
-        devices.value[index] = device
-      }
-      if (currentDevice.value?.id === id) {
-        currentDevice.value = device
-      }
-      return device
+      // 更新后重新获取详情
+      await fetchDevice(id)
+      return currentDevice.value
     } catch (err) {
       error.value = err instanceof Error ? err.message : '更新设备失败'
       return null

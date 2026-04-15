@@ -137,8 +137,10 @@ class Device(Base):
     # 索引
     __table_args__ = (
         Index('idx_devices_tenant_id', 'tenant_id'),
+        Index('idx_devices_zone_id', 'zone_id'),  # Zone 关联索引
         Index('idx_devices_is_online', 'is_online'),
         Index('idx_devices_last_seen', 'last_seen_at'),
+        Index('idx_devices_protocol_version', 'protocol_version'),  # 协议版本筛选索引
     )
 
     def __repr__(self):
@@ -166,6 +168,7 @@ class DeviceData(Base):
     __table_args__ = (
         Index('idx_device_data_time', 'time'),
         Index('idx_device_data_device_id', 'device_id', 'time'),
+        Index('idx_device_data_airstate', 'device_id', 'tenant_id', 'airstate'),  # 运行时间查询优化
     )
 
     def __repr__(self):

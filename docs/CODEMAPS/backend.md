@@ -1,7 +1,7 @@
 # 后端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-13
+**Last Updated:** 2026-04-15
 
 ## 目录结构
 
@@ -359,7 +359,7 @@ backend/
 | `users` | 用户表 | `idx_users_tenant_id` |
 | `zones` | 分区表 | `idx_zones_tenant_id` |
 | `devices` | 设备表 | `idx_devices_tenant_id`, `idx_devices_is_online`, `idx_devices_last_seen` |
-| `device_data` | 设备数据（时序） | Hypertable, `idx_device_data_time` |
+| `device_data` | 设备数据（时序） | Hypertable, `idx_device_data_time`, `idx_device_data_airstate` |
 | `alarms` | 告警表 | `idx_alarms_tenant_id`, `idx_alarms_device_id`, `idx_alarms_occurred_at` |
 | `operation_logs` | 操作日志 | `idx_operation_logs_tenant_id`, `idx_operation_logs_user_id`, `idx_operation_logs_action` |
 | `protocol_versions` | 协议版本注册 | - |
@@ -383,6 +383,42 @@ backend/
 - `device_data` 配置为 Hypertable
 - 压缩策略：7 天后压缩
 - 保留策略：365 天
+
+---
+
+## 数据库迁移
+
+### 迁移文件列表
+
+| 迁移文件 | 描述 | 创建日期 |
+|----------|------|----------|
+| `b9f4d3e6f2c5_add_airstate_index_for_runtime_queries.py` | 添加 airstate 索引优化运行时间查询 | 2026-04-15 |
+
+### 索引说明
+
+#### `idx_device_data_airstate` - 运行时间查询优化索引
+
+**用途**：优化设备运行时间统计查询性能。
+
+**索引字段**：`(device_id, tenant_id, airstate)`
+
+**优化场景**：
+- `/api/reports/runtime` 报表接口查询设备运行时长
+- 统计空调开机/关机状态时长分布
+- 按设备 ID 和租户 ID 过滤，同时筛选 airstate（空调运行状态）
+
+**查询示例**：
+```sql
+-- 运行时间统计查询（使用此索引）
+SELECT airstate, COUNT(*), SUM(duration)
+FROM device_data
+WHERE device_id = :device_id
+  AND tenant_id = :tenant_id
+  AND airstate IN (1, 2)  -- 1=制冷, 2=制热
+GROUP BY airstate;
+```
+
+**性能提升**：对于百万级数据量的 device_data 表，该复合索引可将运行时间统计查询的响应时间从秒级降至毫秒级。
 
 ---
 
