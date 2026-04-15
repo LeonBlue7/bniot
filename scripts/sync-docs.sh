@@ -77,6 +77,7 @@ fi
 
 # 检查 Docker 配置
 check_and_update "docker-compose.yml" "docs/RUNBOOK.md" "docker-compose.yml"
+check_and_update "backend/Dockerfile" "docs/RUNBOOK.md" "backend/Dockerfile"
 
 # 检查 CLAUDE.md 变更同步到 README.md
 check_and_update "CLAUDE.md" "README.md" "CLAUDE.md"

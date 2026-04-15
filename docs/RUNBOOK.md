@@ -27,14 +27,21 @@ cp .env.example .env
 
 # 3. 确保 SSL 证书存在
 ls -la ssl/
-# 应包含: fullchain.pem, privkey.pem
+# 应包含: jxbonner.cloud_bundle.pem, jxbonner.cloud.key
 
 # 4. 构建并启动
 docker-compose up -d --build
-
-# 5. 验证服务状态
-docker-compose ps
 ```
+
+> **国内部署优化**: Dockerfile 已配置阿里云镜像源（Debian apt + pip PyPI），国内服务器构建速度更快。
+
+<!-- AUTO-GENERATED: backend/Dockerfile -->
+### Dockerfile 镜像源配置
+
+| 配置项 | 镜像源 |
+|--------|--------|
+| Debian apt | mirrors.aliyun.com |
+| pip PyPI | mirrors.aliyun.com/pypi/simple/ |
 
 ### 更新部署
 
