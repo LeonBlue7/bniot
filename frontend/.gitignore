@@ -8,7 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
+# dist - 前端构建产物需要提交，确保一键部署
+# dist
 dist-ssr
 *.local
 

@@ -26,7 +26,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-frontend/dist/
+# 前端构建产物需要提交，确保一键部署
+# frontend/dist/
 frontend/.vite/
 frontend/coverage/
 frontend/playwright-report/
@@ -36,10 +37,8 @@ frontend/tsconfig.node.json
 # Claude Code
 .claude/
 
-# 环境变量（敏感信息）
-.env
-.env.local
-.env.*.local
+# 环境变量（生产环境配置，需要提交）
+# .env 文件包含生产密码，必须提交以确保一键部署
 
 # IDE
 .vscode/
@@ -59,10 +58,10 @@ volumes/postgres/backups/*.dump
 # 但保留目录结构
 !volumes/**/.gitkeep
 
-# SSL证书（敏感文件）
-ssl/*.pem
-ssl/*.key
-ssl/*.crt
+# SSL证书（生产环境必须提交）
+# ssl/*.pem
+# ssl/*.key
+# ssl/*.crt
 
 # 但保留示例说明
 !ssl/README.md
