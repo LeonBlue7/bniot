@@ -148,12 +148,13 @@ build_frontend() {
     # 检查 node_modules
     if [ ! -d "node_modules" ]; then
         log_info "安装前端依赖..."
-        npm install
+        # 使用 sudo 安装依赖（服务器环境需要）
+        $SUDO npm install
     fi
 
     # 构建生产版本
     log_info "执行前端构建..."
-    npm run build
+    $SUDO npm run build
 
     if [ ! -d "dist" ]; then
         log_error "前端构建失败，dist 目录不存在"
