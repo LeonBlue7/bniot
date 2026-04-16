@@ -102,6 +102,10 @@ async def list_devices(
     current_user: User = Depends(require_permission(Permission.DEVICE_READ))
 ):
     """获取设备列表，包含实时数据和分区信息"""
+    # 处理空字符串 keyword（前端可能传递 keyword=""）
+    if keyword == "":
+        keyword = None
+
     # 使用 DISTINCT ON 获取每个设备的最新数据（PostgreSQL 特有）
     # 先按 device_id 分组，取时间最新的那条记录
     latest_data_query = (
