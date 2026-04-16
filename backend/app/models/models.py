@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMPTZ
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -47,8 +47,8 @@ class Tenant(Base):
     name: Mapped[str] = mapped_column(String(100))
     code: Mapped[str] = mapped_column(String(20), unique=True)
     settings: Mapped[dict] = mapped_column(JSONB, default=dict)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now, onupdate=utc_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     # 关系
     users: Mapped[list["User"]] = relationship(back_populates="tenant", cascade="all, delete-orphan")
@@ -69,9 +69,9 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(20), default="viewer")  # admin, operator, viewer
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    last_login_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now, onupdate=utc_now)
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     # 关系
     tenant: Mapped["Tenant"] = relationship(back_populates="users")
@@ -95,8 +95,8 @@ class Zone(Base):
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("zones.id", ondelete="SET NULL"), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now, onupdate=utc_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     # 关系
     tenant: Mapped["Tenant"] = relationship(back_populates="zones")
@@ -124,11 +124,11 @@ class Device(Base):
     sim_card: Mapped[str | None] = mapped_column(String(30), nullable=True)
     firmware_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
     is_online: Mapped[bool] = mapped_column(Boolean, default=False)
-    last_seen_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     settings: Mapped[dict] = mapped_column(JSONB, default=dict)
     extra_data: Mapped[dict] = mapped_column(JSONB, default=dict)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now, onupdate=utc_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     # 关系
     tenant: Mapped["Tenant"] = relationship(back_populates="devices")
@@ -152,7 +152,7 @@ class DeviceData(Base):
     __tablename__ = "device_data"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    time: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now)
+    time: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     device_id: Mapped[str] = mapped_column(String(20))
     tenant_id: Mapped[int] = mapped_column(Integer)
     temp: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -187,9 +187,9 @@ class Alarm(Base):
     message: Mapped[str | None] = mapped_column(Text, nullable=True)
     details: Mapped[dict] = mapped_column(JSONB, default=dict)
     is_resolved: Mapped[bool] = mapped_column(Boolean, default=False)
-    occurred_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ)
-    resolved_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     # 索引
     __table_args__ = (
@@ -213,8 +213,8 @@ class ProtocolVersion(Base):
     param_mappings: Mapped[dict] = mapped_column(JSONB, default=dict)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now, onupdate=utc_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<ProtocolVersion(code={self.version_code}, number={self.version_number})>"
@@ -233,7 +233,7 @@ class OperationLog(Base):
     details: Mapped[dict] = mapped_column(JSONB, default=dict)
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
     user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     # 索引
     __table_args__ = (
@@ -262,8 +262,8 @@ class NotificationRule(Base):
     recipients: Mapped[list] = mapped_column(JSONB, default=list)  # 邮箱列表或用户ID列表
     is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     cooldown_minutes: Mapped[int] = mapped_column(Integer, default=30)  # 冷却时间（分钟）
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, default=utc_now, onupdate=utc_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     # 索引
     __table_args__ = (
@@ -289,8 +289,8 @@ class NotificationRecord(Base):
     content: Mapped[Text] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, sent, failed, rate_limited
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
-    sent_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     # 索引
     __table_args__ = (
@@ -315,9 +315,9 @@ class BackupRecord(Base):
     file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)  # bytes
     status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, in_progress, completed, failed
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
-    started_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
-    completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     # 索引
     __table_args__ = (
@@ -342,9 +342,9 @@ class RestoreRecord(Base):
     progress: Mapped[int] = mapped_column(Integer, default=0)  # 0-100
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     safety_backup_id: Mapped[int | None] = mapped_column(ForeignKey("backup_records.id"), nullable=True)
-    started_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
-    completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     # 索引
     __table_args__ = (
