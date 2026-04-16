@@ -176,7 +176,7 @@ class DeviceListItemResponse(DeviceBase):
     """设备列表项响应 - 包含实时数据和分区信息"""
     id: int
     tenant_id: int
-    protocol_version: str
+    protocol_version: str | None = None
     temp: float | None = None
     humi: float | None = None
     alarmtemp: int | None = None
