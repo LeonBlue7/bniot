@@ -136,7 +136,7 @@ async def list_devices(
         # 关键字搜索需要 JOIN Zone
         count_query = (
             select(func.count(Device.id))
-            .select_from(Device.outerjoin(Zone, Device.zone_id == Zone.id))
+            .join(Zone, Device.zone_id == Zone.id, isouter=True)
             .where(and_(*base_conditions))
             .where(
                 (Device.name.ilike(f"%{keyword}%")) |
@@ -151,7 +151,7 @@ async def list_devices(
     total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
 
-    # 数据查询 - 使用 select_from 正确构建 JOIN
+    # 数据查询 - 使用 join() 方法 + isouter=True 构建 LEFT JOIN
     query = (
         select(
             Device.id,
@@ -168,13 +168,8 @@ async def list_devices(
             latest_data_query.c.humi,
             latest_data_query.c.alarmtemp,
         )
-        .select_from(
-            Device.outerjoin(Zone, Device.zone_id == Zone.id)
-            .outerjoin(
-                latest_data_query,
-                Device.device_id == latest_data_query.c.device_id
-            )
-        )
+        .join(Zone, Device.zone_id == Zone.id, isouter=True)
+        .join(latest_data_query, Device.device_id == latest_data_query.c.device_id, isouter=True)
         .where(and_(*base_conditions))
     )
 
