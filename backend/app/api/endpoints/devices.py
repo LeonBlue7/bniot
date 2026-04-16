@@ -132,12 +132,11 @@ async def list_devices(
         base_conditions.append(Device.protocol_version == protocol_version)
 
     # 查询总数
-    count_query = select(func.count(Device.id)).where(and_(*base_conditions))
     if keyword:
         # 关键字搜索需要 JOIN Zone
         count_query = (
             select(func.count(Device.id))
-            .outerjoin(Zone, Device.zone_id == Zone.id)
+            .select_from(Device.outerjoin(Zone, Device.zone_id == Zone.id))
             .where(and_(*base_conditions))
             .where(
                 (Device.name.ilike(f"%{keyword}%")) |
@@ -147,10 +146,12 @@ async def list_devices(
                 (Zone.name.ilike(f"%{keyword}%"))
             )
         )
+    else:
+        count_query = select(func.count(Device.id)).where(and_(*base_conditions))
     total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
 
-    # 数据查询
+    # 数据查询 - 使用 select_from 正确构建 JOIN
     query = (
         select(
             Device.id,
@@ -167,10 +168,12 @@ async def list_devices(
             latest_data_query.c.humi,
             latest_data_query.c.alarmtemp,
         )
-        .outerjoin(Zone, Device.zone_id == Zone.id)
-        .outerjoin(
-            latest_data_query,
-            Device.device_id == latest_data_query.c.device_id
+        .select_from(
+            Device.outerjoin(Zone, Device.zone_id == Zone.id)
+            .outerjoin(
+                latest_data_query,
+                Device.device_id == latest_data_query.c.device_id
+            )
         )
         .where(and_(*base_conditions))
     )
