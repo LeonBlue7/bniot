@@ -101,18 +101,19 @@ async def list_devices(
     current_user: User = Depends(require_permission(Permission.DEVICE_READ))
 ):
     """获取设备列表，包含实时数据和分区信息"""
-    # 基础查询：LEFT JOIN Zone 和 最新 DeviceData
-    # 使用子查询获取每个设备的最新数据
-    latest_data_subquery = (
+    # 使用 DISTINCT ON 获取每个设备的最新数据（PostgreSQL 特有）
+    # 先按 device_id 分组，取时间最新的那条记录
+    latest_data_query = (
         select(
             DeviceData.device_id,
             DeviceData.temp,
             DeviceData.humi,
             DeviceData.alarmtemp,
-            func.max(DeviceData.time).label("max_time")
+            DeviceData.time
         )
         .where(DeviceData.tenant_id == current_user.tenant_id)
-        .group_by(DeviceData.device_id)
+        .distinct(DeviceData.device_id)
+        .order_by(DeviceData.device_id, DeviceData.time.desc())
         .subquery()
     )
 
@@ -128,14 +129,14 @@ async def list_devices(
             Device.last_seen_at,
             Device.created_at,
             Zone.name.label("zone_name"),
-            latest_data_subquery.c.temp,
-            latest_data_subquery.c.humi,
-            latest_data_subquery.c.alarmtemp,
+            latest_data_query.c.temp,
+            latest_data_query.c.humi,
+            latest_data_query.c.alarmtemp,
         )
         .outerjoin(Zone, Device.zone_id == Zone.id)
         .outerjoin(
-            latest_data_subquery,
-            Device.device_id == latest_data_subquery.c.device_id
+            latest_data_query,
+            Device.device_id == latest_data_query.c.device_id
         )
         .where(Device.tenant_id == current_user.tenant_id)
     )
