@@ -65,10 +65,8 @@ class MQTTMessageHandler:
             logger.debug(f"设备数据上送: {device_id}, temp: {msg_data.get('temp')}")
 
             async with self.db_session_factory() as db:
-                device = await self._get_device(db, device_id)
-                if not device:
-                    logger.warning(f"设备不存在: {device_id}")
-                    return
+                # 获取或创建设备（设备可能不发送 login 消息）
+                device = await self._get_or_create_device(db, device_id)
 
                 # 保存数据到时序表
                 device_data = DeviceData(
@@ -85,7 +83,8 @@ class MQTTMessageHandler:
                 )
                 db.add(device_data)
 
-                # 更新设备状态
+                # 更新设备状态（在线状态和最后通信时间）
+                device.is_online = True
                 device.last_seen_at = datetime.now(UTC)
                 await db.commit()
 
