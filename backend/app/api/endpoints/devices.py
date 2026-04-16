@@ -26,6 +26,7 @@ from app.schemas import (
     DeviceDetailResponse,
     DeviceEventsResponse,
     DeviceListItemResponse,
+    DeviceListResponse,
     DeviceResponse,
     DeviceRuntimeResponse,
     DeviceUpdate,
@@ -89,7 +90,7 @@ async def get_dashboard_stats(
     )
 
 
-@router.get("", response_model=list[DeviceListItemResponse])
+@router.get("", response_model=DeviceListResponse)
 async def list_devices(
     zone_id: int | None = None,
     is_online: bool | None = None,
@@ -117,6 +118,35 @@ async def list_devices(
         .subquery()
     )
 
+    # 基础查询条件（用于计数和查询）
+    base_conditions = [Device.tenant_id == current_user.tenant_id]
+    if zone_id:
+        base_conditions.append(Device.zone_id == zone_id)
+    if is_online is not None:
+        base_conditions.append(Device.is_online == is_online)
+    if protocol_version:
+        base_conditions.append(Device.protocol_version == protocol_version)
+
+    # 查询总数
+    count_query = select(func.count(Device.id)).where(and_(*base_conditions))
+    if keyword:
+        # 关键字搜索需要 JOIN Zone
+        count_query = (
+            select(func.count(Device.id))
+            .outerjoin(Zone, Device.zone_id == Zone.id)
+            .where(and_(*base_conditions))
+            .where(
+                (Device.name.ilike(f"%{keyword}%")) |
+                (Device.device_id.ilike(f"%{keyword}%")) |
+                (Device.sim_card.ilike(f"%{keyword}%")) |
+                (Device.firmware_version.ilike(f"%{keyword}%")) |
+                (Zone.name.ilike(f"%{keyword}%"))
+            )
+        )
+    total_result = await db.execute(count_query)
+    total = total_result.scalar() or 0
+
+    # 数据查询
     query = (
         select(
             Device.id,
@@ -138,15 +168,8 @@ async def list_devices(
             latest_data_query,
             Device.device_id == latest_data_query.c.device_id
         )
-        .where(Device.tenant_id == current_user.tenant_id)
+        .where(and_(*base_conditions))
     )
-
-    if zone_id:
-        query = query.where(Device.zone_id == zone_id)
-    if is_online is not None:
-        query = query.where(Device.is_online == is_online)
-    if protocol_version:
-        query = query.where(Device.protocol_version == protocol_version)
 
     if keyword:
         query = query.where(
@@ -179,7 +202,12 @@ async def list_devices(
             "last_seen_at": row.last_seen_at,
             "created_at": row.created_at,
         })
-    return devices
+    return DeviceListResponse(
+        items=devices,
+        total=total,
+        skip=skip,
+        limit=limit
+    )
 
 
 @router.post("", response_model=DeviceResponse, status_code=status.HTTP_201_CREATED)

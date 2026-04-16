@@ -206,6 +206,14 @@ class DeviceListItemResponse(DeviceBase):
         }
 
 
+class DeviceListResponse(BaseModel):
+    """设备列表分页响应"""
+    items: list[DeviceListItemResponse]
+    total: int
+    skip: int
+    limit: int
+
+
 class DeviceWithDataResponse(DeviceResponse):
     """设备信息 + 最新数据"""
     temp: float | None = None

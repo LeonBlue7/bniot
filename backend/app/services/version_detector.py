@@ -70,18 +70,25 @@ class VersionDetector:
             版本号 (V10/V20)
         """
         # 1. 尝试从 Ver 字段识别
+        # Ver 字段是固件版本号（如 11, 12, 20, 21 等）
+        # 规则：Ver >= 20 表示 V20 协议，Ver < 20 表示 V10 协议
         ver = param_data.get("Ver")
         if ver is not None:
-            # Ver 字段可能为整数 10, 20 或字符串 "V10", "V20"
             if isinstance(ver, int):
-                version = f"V{ver}"
-            elif isinstance(ver, str) and ver.startswith("V"):
-                version = ver
+                version = "V20" if ver >= 20 else "V10"
+            elif isinstance(ver, str):
+                # 尝试解析字符串形式的版本号
+                try:
+                    ver_num = int(ver.replace("V", "").replace("v", ""))
+                    version = "V20" if ver_num >= 20 else "V10"
+                except ValueError:
+                    # 无法解析，使用默认版本
+                    version = "V10"
             else:
-                version = f"V{ver}"
+                version = "V10"
 
             logger.info(f"通过 Ver 字段检测版本: {device_id} -> {version} (Ver={ver})")
-            await self.cache_version(device_id, version, method="ver_field")
+            await self.cache_version(device_id, version, method="ver_field", extra={"ver_value": str(ver)})
             return version
 
         # 2. 通过特征参数检测

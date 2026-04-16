@@ -1,7 +1,7 @@
 # 后端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-15
+**Last Updated:** 2026-04-16
 
 ## 目录结构
 
@@ -131,11 +131,31 @@ backend/
 
 | 方法 | 路径 | 描述 |
 |------|------|------|
-| GET | `/` | 设备列表 |
+| GET | `/` | 设备列表（分页响应：`DeviceListResponse`） |
+| GET | `/stats` | 仪表盘统计 |
 | GET | `/{device_id}` | 设备详情 |
+| POST | `/` | 创建设备 |
 | PUT | `/{device_id}` | 更新设备 |
 | DELETE | `/{device_id}` | 删除设备 |
-| GET | `/{device_id}/data` | 设备数据 |
+| POST | `/{device_id}/control` | 远程控制设备 |
+| GET | `/{device_id}/data` | 设备历史数据 |
+| GET | `/{device_id}/events` | 开关机事件记录 |
+| GET | `/{device_id}/runtime` | 运行时间统计 |
+| POST | `/batch/control` | 批量控制设备 |
+| POST | `/batch/delete` | 批量删除设备 |
+| POST | `/batch/move-zone` | 批量迁移分区 |
+
+**新增响应格式（2026-04-16）**：
+
+`GET /api/devices` 返回 `DeviceListResponse` 分页响应：
+```json
+{
+  "items": [...],     // DeviceListItemResponse 数组
+  "total": 76,        // 设备总数
+  "skip": 0,          // 偏移量
+  "limit": 20         // 每页数量
+}
+```
 
 ### 分区 (`/api/zones`)
 
@@ -305,6 +325,10 @@ backend/
 - `VersionDetector` - 版本检测类
 - 自动检测设备协议版本
 - Redis 缓存管理
+- **版本识别策略**（2026-04-16 更新）：
+  - 优先级：Ver字段 > 特征参数检测 > 默认版本
+  - Ver >= 20 → V20，Ver < 20 → V10
+  - 特征参数：108、109、110（V20独有）
 
 ### 备份服务 (`services/backup.py`) - Phase 3.1
 

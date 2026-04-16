@@ -38,6 +38,14 @@ export interface DeviceRuntimeResponse {
   month_runtime: number | null
 }
 
+// 分页响应接口
+export interface DeviceListResponse {
+  items: DeviceListItem[]
+  total: number
+  skip: number
+  limit: number
+}
+
 export const deviceApi = {
   /**
    * 获取仪表盘统计
@@ -49,9 +57,10 @@ export const deviceApi = {
 
   /**
    * 获取设备列表（包含实时数据和分区信息）
+   * 返回分页响应，包含总数
    */
-  async list(params?: DeviceQueryParams): Promise<DeviceListItem[]> {
-    const response = await apiClient.get<DeviceListItem[]>('/devices', { params })
+  async list(params?: DeviceQueryParams): Promise<DeviceListResponse> {
+    const response = await apiClient.get<DeviceListResponse>('/devices', { params })
     return response.data
   },
 

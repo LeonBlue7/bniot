@@ -191,16 +191,19 @@ describe('Device Store', () => {
 
   describe('fetchDevices 方法', () => {
     it('成功获取设备列表', async () => {
-      vi.mocked(deviceApi.list).mockResolvedValue(mockDevices)
+      const mockResponse = { items: mockDevices, total: 2, skip: 0, limit: 20 }
+      vi.mocked(deviceApi.list).mockResolvedValue(mockResponse)
 
       const store = useDeviceStore()
       await store.fetchDevices()
 
       expect(store.devices).toEqual(mockDevices)
+      expect(store.totalDevices).toBe(2)
     })
 
     it('支持查询参数', async () => {
-      vi.mocked(deviceApi.list).mockResolvedValue(mockDevices)
+      const mockResponse = { items: mockDevices, total: 2, skip: 0, limit: 20 }
+      vi.mocked(deviceApi.list).mockResolvedValue(mockResponse)
 
       const store = useDeviceStore()
       await store.fetchDevices({ zone_id: 1, is_online: true })
@@ -271,7 +274,7 @@ describe('Device Store', () => {
         settings: {},
         created_at: '2024-01-01'
       })
-      vi.mocked(deviceApi.list).mockResolvedValue([...mockDevices, {
+      const newDeviceList = [...mockDevices, {
         id: 3,
         tenant_id: 1,
         device_id: 'IMEI003',
@@ -287,7 +290,8 @@ describe('Device Store', () => {
         humi: null,
         alarmtemp: null,
         zone_name: null
-      }])
+      }]
+      vi.mocked(deviceApi.list).mockResolvedValue({ items: newDeviceList, total: 3, skip: 0, limit: 20 })
 
       const store = useDeviceStore()
       const result = await store.createDevice({

@@ -111,50 +111,60 @@ describe('Devices API', () => {
   })
 
   describe('list', () => {
-    it('应返回设备列表', async () => {
-      mockAxios.onGet('/devices').reply(200, mockDevices)
+    it('应返回设备列表（分页响应）', async () => {
+      const mockResponse = { items: mockDevices, total: 2, skip: 0, limit: 20 }
+      mockAxios.onGet('/devices').reply(200, mockResponse)
 
       const result = await deviceApi.list()
 
-      expect(result).toEqual(mockDevices)
-      expect(result.length).toBe(2)
+      expect(result.items).toEqual(mockDevices)
+      expect(result.total).toBe(2)
+      expect(result.items.length).toBe(2)
     })
 
     it('支持 zone_id 查询参数', async () => {
-      mockAxios.onGet('/devices', { params: { zone_id: 1 } }).reply(200, mockDevices)
+      const mockResponse = { items: mockDevices, total: 2, skip: 0, limit: 20 }
+      mockAxios.onGet('/devices', { params: { zone_id: 1 } }).reply(200, mockResponse)
 
       const result = await deviceApi.list({ zone_id: 1 })
 
-      expect(result).toEqual(mockDevices)
+      expect(result.items).toEqual(mockDevices)
     })
 
     it('支持 is_online 查询参数', async () => {
-      mockAxios.onGet('/devices', { params: { is_online: true } }).reply(200, [mockDevice])
+      const mockResponse = { items: [mockDevice], total: 1, skip: 0, limit: 20 }
+      mockAxios.onGet('/devices', { params: { is_online: true } }).reply(200, mockResponse)
 
       const result = await deviceApi.list({ is_online: true })
 
-      expect(result.length).toBe(1)
-      expect(result[0].is_online).toBe(true)
+      expect(result.items.length).toBe(1)
+      expect(result.items[0].is_online).toBe(true)
     })
 
     it('支持 keyword 搜索参数', async () => {
-      mockAxios.onGet('/devices', { params: { keyword: '空调1' } }).reply(200, [mockDevice])
+      const mockResponse = { items: [mockDevice], total: 1, skip: 0, limit: 20 }
+      mockAxios.onGet('/devices', { params: { keyword: '空调1' } }).reply(200, mockResponse)
 
       const result = await deviceApi.list({ keyword: '空调1' })
 
-      expect(result.length).toBe(1)
+      expect(result.items.length).toBe(1)
     })
 
     it('支持分页参数', async () => {
-      mockAxios.onGet('/devices', { params: { skip: 0, limit: 10 } }).reply(200, mockDevices)
+      const mockResponse = { items: mockDevices, total: 100, skip: 0, limit: 10 }
+      mockAxios.onGet('/devices', { params: { skip: 0, limit: 10 } }).reply(200, mockResponse)
 
-      await deviceApi.list({ skip: 0, limit: 10 })
+      const result = await deviceApi.list({ skip: 0, limit: 10 })
 
+      expect(result.total).toBe(100)
+      expect(result.skip).toBe(0)
+      expect(result.limit).toBe(10)
       expect(mockAxios.history.get.length).toBe(1)
     })
 
     it('组合查询参数', async () => {
-      mockAxios.onGet('/devices').reply(200, mockDevices)
+      const mockResponse = { items: mockDevices, total: 2, skip: 0, limit: 10 }
+      mockAxios.onGet('/devices').reply(200, mockResponse)
 
       await deviceApi.list({
         zone_id: 1,
@@ -174,20 +184,24 @@ describe('Devices API', () => {
       })
     })
 
-    it('空列表应返回空数组', async () => {
-      mockAxios.onGet('/devices').reply(200, [])
+    it('空列表应返回空的分页响应', async () => {
+      const mockResponse = { items: [], total: 0, skip: 0, limit: 20 }
+      mockAxios.onGet('/devices').reply(200, mockResponse)
 
       const result = await deviceApi.list()
 
-      expect(result).toEqual([])
+      expect(result.items).toEqual([])
+      expect(result.total).toBe(0)
     })
 
     it('无参数调用应成功', async () => {
-      mockAxios.onGet('/devices').reply(200, mockDevices)
+      const mockResponse = { items: mockDevices, total: 2, skip: 0, limit: 20 }
+      mockAxios.onGet('/devices').reply(200, mockResponse)
 
       const result = await deviceApi.list()
 
-      expect(result).toEqual(mockDevices)
+      expect(result.items).toEqual(mockDevices)
+      expect(result.total).toBe(2)
     })
   })
 

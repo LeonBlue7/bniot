@@ -14,6 +14,10 @@ export const useDeviceStore = defineStore('device', () => {
   const stats = ref<DashboardStats | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  // 分页状态
+  const totalDevices = ref(0)
+  const currentPage = ref(1)
+  const pageSize = ref(20)
 
   // 计算属性
   const onlineDevices = computed(() =>
@@ -21,6 +25,9 @@ export const useDeviceStore = defineStore('device', () => {
   )
   const offlineDevices = computed(() =>
     devices.value.filter(d => !d.is_online)
+  )
+  const totalPages = computed(() =>
+    Math.ceil(totalDevices.value / pageSize.value)
   )
 
   // 获取仪表盘统计
@@ -36,7 +43,7 @@ export const useDeviceStore = defineStore('device', () => {
     }
   }
 
-  // 获取设备列表
+  // 获取设备列表（支持分页）
   async function fetchDevices(params?: {
     zone_id?: number
     is_online?: boolean
@@ -48,7 +55,16 @@ export const useDeviceStore = defineStore('device', () => {
     loading.value = true
     error.value = null
     try {
-      devices.value = await deviceApi.list(params)
+      const response = await deviceApi.list(params)
+      devices.value = response.items
+      totalDevices.value = response.total
+      // 更新分页状态
+      if (params?.limit) {
+        pageSize.value = params.limit
+      }
+      if (params?.skip !== undefined) {
+        currentPage.value = Math.floor(params.skip / pageSize.value) + 1
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : '获取设备列表失败'
     } finally {
@@ -164,6 +180,11 @@ export const useDeviceStore = defineStore('device', () => {
     stats,
     loading,
     error,
+    // 分页状态
+    totalDevices,
+    currentPage,
+    pageSize,
+    totalPages,
     // 计算属性
     onlineDevices,
     offlineDevices,

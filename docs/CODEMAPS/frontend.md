@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-15
+**Last Updated:** 2026-04-16
 
 ## 目录结构
 
@@ -40,7 +40,7 @@ frontend/
 │   │   └── index.ts
 │   ├── stores/              # Pinia 状态
 │   │   ├── auth.ts          # 认证状态
-│   │   ├── devices.ts       # 设备状态
+│   │   ├── devices.ts       # 设备状态（含分页状态）
 │   │   └── zones.ts         # 分区状态
 │   ├── utils/               # 工具函数
 │   │   ├── logger.ts        # 统一日志工具
@@ -105,7 +105,7 @@ authApi.getCurrentUser()            // 获取当前用户
 ### 设备 API (`api/devices.ts`)
 
 ```typescript
-deviceApi.list(params)              // 设备列表（含温湿度、告警状态、分区名称）
+deviceApi.list(params)              // 设备列表（返回 DeviceListResponse 分页响应）
 deviceApi.get(deviceId)             // 设备详情（含运行统计）
 deviceApi.update(deviceId, data)    // 更新设备
 deviceApi.delete(deviceId)          // 删除设备
@@ -114,7 +114,17 @@ deviceApi.getEvents(deviceId, params) // 开关机记录（仅V10）
 deviceApi.getRuntime(deviceId)      // 运行时间统计（仅V10）
 ```
 
-**新增返回字段（2026-04-15）**：
+**新增返回格式（2026-04-16）**：
+
+`deviceApi.list()` 返回 `DeviceListResponse`：
+```typescript
+interface DeviceListResponse {
+  items: DeviceListItem[]   // 设备数组
+  total: number            // 设备总数
+  skip: number             // 偏移量
+  limit: number            // 每页数量
+}
+```
 
 | API | 新增字段 | 说明 |
 |-----|---------|------|
@@ -285,6 +295,14 @@ interface DeviceListItem extends Device {
   humi: number | null           // 实时湿度
   alarmtemp: number | null      // 温度告警状态
   zone_name: string | null      // 分区名称
+}
+
+// 设备列表分页响应（2026-04-16 新增）
+interface DeviceListResponse {
+  items: DeviceListItem[]       // 设备数组
+  total: number                 // 设备总数
+  skip: number                  // 偏移量
+  limit: number                 // 每页数量
 }
 
 // 设备详情（含完整信息）

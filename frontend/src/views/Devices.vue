@@ -308,7 +308,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
 import { useDeviceStore } from '@/stores/devices'
@@ -335,6 +335,7 @@ const filterProtocol = ref<string | undefined>()
 const devices = computed(() => deviceStore.devices)
 const zones = computed(() => zoneStore.zones)
 const loading = computed(() => deviceStore.loading)
+const totalDevices = computed(() => deviceStore.totalDevices)
 
 // 分页配置
 const pagination = reactive({
@@ -343,6 +344,11 @@ const pagination = reactive({
   total: 0,
   showSizeChanger: true,
   showTotal: (total: number) => `共 ${total} 条`
+})
+
+// 监听 store 中的总数变化，更新 pagination.total
+watch(totalDevices, (newTotal) => {
+  pagination.total = newTotal
 })
 
 // 表格列定义（10列）
