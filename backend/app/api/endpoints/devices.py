@@ -446,6 +446,82 @@ async def batch_move_zone(
     )
 
 
+@router.post("/batch/detect-version", response_model=BatchOperationResponse)
+async def batch_detect_version(
+    request: Request,
+    batch_req: BatchDeleteRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(Permission.DEVICE_CONTROL))
+):
+    """
+    批量触发设备版本检测
+
+    发送 getparam 命令到指定在线设备，触发协议版本重新检测
+    离线设备无法触发检测
+    """
+    log_service = OperationLogService()
+    success_count = 0
+    failed_details = []
+
+    mqtt = get_mqtt_client()
+
+    for device_id in batch_req.device_ids:
+        result = await db.execute(
+            select(Device).where(
+                Device.id == device_id,
+                Device.tenant_id == current_user.tenant_id
+            )
+        )
+        device = result.scalar_one_or_none()
+
+        if not device:
+            failed_details.append({
+                "device_id": device_id,
+                "reason": "设备不存在或无权访问"
+            })
+            continue
+
+        if not device.is_online:
+            failed_details.append({
+                "device_id": device_id,
+                "reason": "设备离线，无法触发检测"
+            })
+            continue
+
+        # 发送 getparam 命令触发版本检测
+        topic = f"/down/{device.device_id}/getparam"
+        payload = json.dumps({"timestamp": str(int(datetime.now(UTC).timestamp()))})
+
+        if mqtt.publish(topic, payload):
+            success_count += 1
+        else:
+            failed_details.append({
+                "device_id": device_id,
+                "reason": "MQTT发送失败"
+            })
+
+    await log_service.log(
+        db,
+        user=current_user,
+        action=ActionType.DEVICE_BATCH_CONTROL,
+        resource_type=ResourceType.DEVICE,
+        details={
+            "device_ids": batch_req.device_ids,
+            "operation": "detect_version",
+            "success_count": success_count,
+            "failed_count": len(failed_details)
+        },
+        ip_address=request.client.host if request.client else None
+    )
+    await db.commit()
+
+    return BatchOperationResponse(
+        success_count=success_count,
+        failed_count=len(failed_details),
+        failed_details=failed_details
+    )
+
+
 # ============ 单设备操作（带路径参数） ============
 
 @router.get("/{device_id}", response_model=DeviceDetailResponse)

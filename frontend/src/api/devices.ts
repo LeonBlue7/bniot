@@ -38,6 +38,13 @@ export interface DeviceRuntimeResponse {
   month_runtime: number | null
 }
 
+// 批量操作响应接口
+export interface BatchOperationResponse {
+  success_count: number
+  failed_count: number
+  failed_details: Array<{ device_id: number; reason: string }>
+}
+
 // 分页响应接口
 export interface DeviceListResponse {
   items: DeviceListItem[]
@@ -127,6 +134,17 @@ export const deviceApi = {
    */
   async getRuntime(id: number): Promise<DeviceRuntimeResponse> {
     const response = await apiClient.get<DeviceRuntimeResponse>(`/devices/${id}/runtime`)
+    return response.data
+  },
+
+  /**
+   * 批量触发设备版本检测
+   * 发送 getparam 命令到在线设备，触发协议版本重新检测
+   */
+  async batchDetectVersion(deviceIds: number[]): Promise<BatchOperationResponse> {
+    const response = await apiClient.post<BatchOperationResponse>('/devices/batch/detect-version', {
+      device_ids: deviceIds
+    })
     return response.data
   }
 }

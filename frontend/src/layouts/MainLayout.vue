@@ -384,6 +384,8 @@ function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  overflow: hidden; /* 防止内容溢出 */
+  box-sizing: border-box; /* 边框计入尺寸 */
 }
 
 .header-left {

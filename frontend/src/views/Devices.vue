@@ -69,6 +69,13 @@
         >
           <a-space>
             <a-button
+              @click="handleRefresh"
+              :loading="refreshLoading"
+            >
+              <reload-outlined />
+              刷新数据
+            </a-button>
+            <a-button
               type="primary"
               @click="showCreateModal"
             >
@@ -314,7 +321,7 @@ import { message, Modal } from 'ant-design-vue'
 import { useDeviceStore } from '@/stores/devices'
 import { useZoneStore } from '@/stores/zones'
 import { useAuthStore } from '@/stores/auth'
-import { PlusOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, DownOutlined, ReloadOutlined } from '@ant-design/icons-vue'
 import dayjs from 'dayjs'
 import type { Device, DeviceCreate, DeviceUpdate } from '@/types'
 import type { TableProps, FormInstance } from 'ant-design-vue'
@@ -335,6 +342,7 @@ const filterProtocol = ref<string | undefined>()
 const devices = computed(() => deviceStore.devices)
 const zones = computed(() => zoneStore.zones)
 const loading = computed(() => deviceStore.loading)
+const refreshLoading = ref(false)
 const totalDevices = computed(() => deviceStore.totalDevices)
 
 // 分页配置 - 初始化时从 store 获取 total
@@ -464,6 +472,17 @@ async function fetchDevices() {
     skip: (pagination.current - 1) * pagination.pageSize,
     limit: pagination.pageSize
   })
+}
+
+// 刷新数据
+async function handleRefresh() {
+  refreshLoading.value = true
+  try {
+    await fetchDevices()
+    message.success('数据已刷新')
+  } finally {
+    refreshLoading.value = false
+  }
 }
 
 // 搜索
@@ -600,14 +619,31 @@ function handleDelete(device: Device) {
 }
 
 /* 协议版本标签深色主题 */
-:deep(.ant-tag-blue),
-:deep(.ant-tag-green) {
+:deep(.ant-tag-blue) {
   background-color: rgba(24, 144, 255, 0.2);
 }
 
 /* 在线状态标签深色主题 */
-:deep(.ant-tag-success) {
+:deep(.ant-tag-green) {
   background-color: rgba(82, 196, 26, 0.2);
+}
+
+/* 告警状态标签深色主题 - 新增 */
+:deep(.ant-tag-red) {
+  background-color: rgba(255, 77, 79, 0.2);
+}
+
+/* 其他颜色标签深色主题 */
+:deep(.ant-tag-orange) {
+  background-color: rgba(250, 173, 20, 0.2);
+}
+
+:deep(.ant-tag-cyan) {
+  background-color: rgba(19, 194, 194, 0.2);
+}
+
+:deep(.ant-tag-purple) {
+  background-color: rgba(114, 46, 209, 0.2);
 }
 
 /* 默认标签深色主题 */
@@ -631,6 +667,28 @@ function handleDelete(device: Device) {
   :deep(.ant-tag-green) {
     background-color: rgba(82, 196, 26, 0.25);
     color: #95de64;
+  }
+
+  /* 新增：告警红色标签深色样式 */
+  :deep(.ant-tag-red) {
+    background-color: rgba(255, 77, 79, 0.25);
+    color: #ff7875;
+  }
+
+  /* 新增：其他颜色标签深色样式 */
+  :deep(.ant-tag-orange) {
+    background-color: rgba(250, 173, 20, 0.25);
+    color: #ffc53d;
+  }
+
+  :deep(.ant-tag-cyan) {
+    background-color: rgba(19, 194, 194, 0.25);
+    color: #5cdbd3;
+  }
+
+  :deep(.ant-tag-purple) {
+    background-color: rgba(114, 46, 209, 0.25);
+    color: #b37feb;
   }
 }
 </style>
