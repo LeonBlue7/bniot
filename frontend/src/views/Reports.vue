@@ -530,7 +530,7 @@ onMounted(() => {
 .query-panel {
   margin-bottom: 24px;
   padding: 16px;
-  background: #fff;
+  background: var(--color-bg-secondary);
   border-radius: 4px;
 }
 
@@ -551,14 +551,14 @@ onMounted(() => {
 .chart-section {
   margin-bottom: 24px;
   padding: 16px;
-  background: #fff;
+  background: var(--color-bg-secondary);
   border-radius: 4px;
 }
 
 .trend-section {
   margin-bottom: 24px;
   padding: 16px;
-  background: #fff;
+  background: var(--color-bg-secondary);
   border-radius: 4px;
 }
 

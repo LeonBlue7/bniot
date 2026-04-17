@@ -69,8 +69,8 @@
         >
           <a-space>
             <a-button
-              @click="handleRefresh"
               :loading="refreshLoading"
+              @click="handleRefresh"
             >
               <reload-outlined />
               刷新数据
@@ -105,11 +105,11 @@
             <a @click="goToDetail(record.id)">{{ record.name }}</a>
           </template>
           <template v-else-if="column.key === 'temp'">
-            <span v-if="record.temp != null">{{ record.temp.toFixed(1) }}℃</span>
+            <span v-if="record.is_online && record.temp != null">{{ record.temp.toFixed(1) }}℃</span>
             <span v-else>--℃</span>
           </template>
           <template v-else-if="column.key === 'humi'">
-            <span v-if="record.humi != null">{{ record.humi.toFixed(1) }}%</span>
+            <span v-if="record.is_online && record.humi != null">{{ record.humi.toFixed(1) }}%</span>
             <span v-else>--%</span>
           </template>
           <template v-else-if="column.key === 'alarmtemp'">
@@ -611,84 +611,5 @@ function handleDelete(device: Device) {
 
 .table-card {
   min-height: 400px;
-}
-
-/* 深色主题标签样式 */
-:deep(.ant-tag) {
-  border-color: transparent;
-}
-
-/* 协议版本标签深色主题 */
-:deep(.ant-tag-blue) {
-  background-color: rgba(24, 144, 255, 0.2);
-}
-
-/* 在线状态标签深色主题 */
-:deep(.ant-tag-green) {
-  background-color: rgba(82, 196, 26, 0.2);
-}
-
-/* 告警状态标签深色主题 - 新增 */
-:deep(.ant-tag-red) {
-  background-color: rgba(255, 77, 79, 0.2);
-}
-
-/* 其他颜色标签深色主题 */
-:deep(.ant-tag-orange) {
-  background-color: rgba(250, 173, 20, 0.2);
-}
-
-:deep(.ant-tag-cyan) {
-  background-color: rgba(19, 194, 194, 0.2);
-}
-
-:deep(.ant-tag-purple) {
-  background-color: rgba(114, 46, 209, 0.2);
-}
-
-/* 默认标签深色主题 */
-:deep(.ant-tag-default) {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--ant-text-color, rgba(0, 0, 0, 0.65));
-}
-
-/* 响应深色主题变量 */
-@media (prefers-color-scheme: dark) {
-  :deep(.ant-tag-default) {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.85);
-  }
-
-  :deep(.ant-tag-blue) {
-    background-color: rgba(24, 144, 255, 0.25);
-    color: #69c0ff;
-  }
-
-  :deep(.ant-tag-green) {
-    background-color: rgba(82, 196, 26, 0.25);
-    color: #95de64;
-  }
-
-  /* 新增：告警红色标签深色样式 */
-  :deep(.ant-tag-red) {
-    background-color: rgba(255, 77, 79, 0.25);
-    color: #ff7875;
-  }
-
-  /* 新增：其他颜色标签深色样式 */
-  :deep(.ant-tag-orange) {
-    background-color: rgba(250, 173, 20, 0.25);
-    color: #ffc53d;
-  }
-
-  :deep(.ant-tag-cyan) {
-    background-color: rgba(19, 194, 194, 0.25);
-    color: #5cdbd3;
-  }
-
-  :deep(.ant-tag-purple) {
-    background-color: rgba(114, 46, 209, 0.25);
-    color: #b37feb;
-  }
 }
 </style>

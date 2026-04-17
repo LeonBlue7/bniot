@@ -104,7 +104,10 @@
             </div>
             <template #overlay>
               <a-menu class="user-menu">
-                <a-menu-item key="profile">
+                <a-menu-item
+                  key="profile"
+                  @click="handleProfile"
+                >
                   <UserOutlined /> 个人中心
                 </a-menu-item>
                 <a-menu-divider />
@@ -138,6 +141,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
 import { useAuthStore } from '@/stores/auth'
 import {
   MenuFoldOutlined,
@@ -255,6 +259,11 @@ function handleMenuClick(e: { key: string }) {
 function handleLogout() {
   authStore.logout()
   router.push({ name: 'Login' })
+}
+
+// 个人中心（暂未实现页面，显示提示）
+function handleProfile() {
+  message.info('个人中心页面开发中，敬请期待')
 }
 </script>
 

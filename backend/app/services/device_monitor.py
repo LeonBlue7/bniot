@@ -16,7 +16,9 @@ from app.services.realtime_push import get_realtime_push_service
 
 
 # 离线阈值：设备超过此时间未通信则标记为离线
-OFFLINE_THRESHOLD_MINUTES = 5
+# EMQX心跳120秒，设备可能3个心跳周期（6分钟）才发送数据
+# 设置为15分钟，确保设备有足够时间发送数据
+OFFLINE_THRESHOLD_MINUTES = 15
 
 
 class DeviceMonitorService:

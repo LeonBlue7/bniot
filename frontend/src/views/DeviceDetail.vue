@@ -75,14 +75,14 @@
               <a-col :span="12">
                 <a-statistic
                   title="温度"
-                  :value="device?.temp != null ? device.temp.toFixed(1) : '-'"
+                  :value="device?.is_online && device?.temp != null ? device.temp.toFixed(1) : '-'"
                   suffix="C"
                 />
               </a-col>
               <a-col :span="12">
                 <a-statistic
                   title="湿度"
-                  :value="device?.humi != null ? device.humi.toFixed(1) : '-'"
+                  :value="device?.is_online && device?.humi != null ? device.humi.toFixed(1) : '-'"
                   suffix="%"
                 />
               </a-col>
@@ -94,15 +94,15 @@
               <a-col :span="12">
                 <a-statistic
                   title="信号强度"
-                  :value="device?.csq ?? '-'"
+                  :value="device?.is_online ? (device?.csq ?? '-') : '-'"
                   suffix="dB"
                 />
               </a-col>
               <a-col :span="12">
                 <a-statistic
-                  v-if="device?.current != null"
+                  v-if="device?.is_online && device?.current != null"
                   title="电流"
-                  :value="device?.current != null ? device.current.toFixed(2) : '-'"
+                  :value="device.current.toFixed(2)"
                   suffix="A"
                 />
                 <a-statistic
@@ -115,7 +115,7 @@
             </a-row>
             <!-- 空调状态（版本差异化） -->
             <a-row
-              v-if="device?.airstate != null"
+              v-if="device?.is_online && device?.airstate != null"
               :gutter="16"
               style="margin-top: 16px"
             >
