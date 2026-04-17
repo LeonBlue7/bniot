@@ -337,11 +337,11 @@ const zones = computed(() => zoneStore.zones)
 const loading = computed(() => deviceStore.loading)
 const totalDevices = computed(() => deviceStore.totalDevices)
 
-// 分页配置
+// 分页配置 - 初始化时从 store 获取 total
 const pagination = reactive({
-  current: 1,
-  pageSize: 20,
-  total: 0,
+  current: deviceStore.currentPage,
+  pageSize: deviceStore.pageSize,
+  total: deviceStore.totalDevices,
   showSizeChanger: true,
   showTotal: (total: number) => `共 ${total} 条`
 })
@@ -349,7 +349,7 @@ const pagination = reactive({
 // 监听 store 中的总数变化，更新 pagination.total
 watch(totalDevices, (newTotal) => {
   pagination.total = newTotal
-})
+}, { immediate: true })
 
 // 表格列定义（10列）
 const columns: TableProps['columns'] = [
