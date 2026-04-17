@@ -58,6 +58,7 @@ backend/
 │   │   ├── permissions.py       # 权限系统（Phase 1.1）
 │   │   ├── operation_log.py     # 操作日志（Phase 1.2）
 │   │   ├── realtime_push.py     # 实时数据推送（Phase 2.3）
+│   │   ├── device_monitor.py    # 设备离线监控（Phase 4.3）
 │   │   ├── backup.py            # 备份服务（Phase 3.1）
 │   │   ├── restore.py           # 恢复服务（Phase 3.2）
 │   │   ├── backup_scheduler.py  # 备份定时任务（Phase 3.1）
@@ -88,6 +89,7 @@ backend/
 │       ├── test_rate_limiter.py
 │       ├── test_protocol_parser.py
 │       ├── test_version_detector.py
+│       ├── test_device_monitor.py # 设备离线监控测试（Phase 4.3）
 │       ├── test_security_fixes.py
 │       └── test_permissions.py
 ├── Dockerfile
@@ -325,11 +327,21 @@ backend/
 - `VersionDetector` - 版本检测类
 - 自动检测设备协议版本
 - Redis 缓存管理
-- **版本识别策略**（仅通过特征参数检测）：
-  - V20 独有参数：108（冬天开始月份）、109（冬天结束月份）、110（空调关机间隔）
-  - 若参数数据包含 108、109 或 110 任一参数 → V20
-  - 否则 → V10
-  - **注意**：Ver 字段是固件版本号，不能用于判断协议版本
+- **版本识别策略**（三级优先级）：
+  1. **特征参数检测**（最高优先级）：V20 独有参数 108/109/110
+  2. **Ver 字段检测**（次要优先级）：Ver >= 20 → V20，Ver >= 10 → V10
+  3. **默认版本**：V10
+
+### 设备离线监控 (`services/device_monitor.py`) - Phase 4.3
+
+定期检测设备在线状态：
+- `DeviceMonitorService` - 监控服务类
+- 每 60 秒检测一次
+- 5 分钟离线阈值
+- 自动标记超时设备为离线
+- WebSocket 实时推送状态变化
+- `start_device_monitor()` - 启动服务
+- `stop_device_monitor()` - 停止服务
 
 ### 备份服务 (`services/backup.py`) - Phase 3.1
 

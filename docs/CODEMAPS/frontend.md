@@ -20,11 +20,11 @@ frontend/
 │   ├── views/               # 页面组件
 │   │   ├── Login.vue        # 登录页
 │   │   ├── Dashboard.vue    # 仪表盘
-│   │   ├── Devices.vue      # 设备管理
+│   │   ├── Devices.vue      # 设备管理（含深色主题标签样式）
 │   │   ├── DeviceDetail.vue # 设备详情
 │   │   ├── Zones.vue        # 分区管理
 │   │   ├── Alarms.vue       # 告警中心
-│   │   ├── Reports.vue      # 报表分析（动态导入图表）
+│   │   ├── Reports.vue      # 报表分析（动态导入图表、数据显示优化）
 │   │   ├── Users.vue        # 用户管理（仅管理员）
 │   │   └── Settings.vue     # 系统设置
 │   ├── layouts/             # 布局组件

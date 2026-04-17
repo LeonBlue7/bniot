@@ -593,4 +593,44 @@ function handleDelete(device: Device) {
 .table-card {
   min-height: 400px;
 }
+
+/* 深色主题标签样式 */
+:deep(.ant-tag) {
+  border-color: transparent;
+}
+
+/* 协议版本标签深色主题 */
+:deep(.ant-tag-blue),
+:deep(.ant-tag-green) {
+  background-color: rgba(24, 144, 255, 0.2);
+}
+
+/* 在线状态标签深色主题 */
+:deep(.ant-tag-success) {
+  background-color: rgba(82, 196, 26, 0.2);
+}
+
+/* 默认标签深色主题 */
+:deep(.ant-tag-default) {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--ant-text-color, rgba(0, 0, 0, 0.65));
+}
+
+/* 响应深色主题变量 */
+@media (prefers-color-scheme: dark) {
+  :deep(.ant-tag-default) {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  :deep(.ant-tag-blue) {
+    background-color: rgba(24, 144, 255, 0.25);
+    color: #69c0ff;
+  }
+
+  :deep(.ant-tag-green) {
+    background-color: rgba(82, 196, 26, 0.25);
+    color: #95de64;
+  }
+}
 </style>

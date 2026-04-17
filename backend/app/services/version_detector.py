@@ -15,12 +15,16 @@ class VersionDetector:
     """
     设备协议版本检测器
 
-    版本识别策略（仅通过特征参数检测）：
-    - V20 独有参数：108（冬天开始月份）、109（冬天结束月份）、110（空调关机间隔）
-    - 若参数数据包含 108、109 或 110 任一参数，则为 V20
-    - 否则为 V10
+    版本识别策略（优先级：特征参数检测 > Ver字段 > 默认版本）：
+    1. 特征参数检测（最高优先级）：
+       - V20 独有参数：108（冬天开始月份）、109（冬天结束月份）、110（空调关机间隔）
+       - 若参数数据包含 108、109 或 110 任一参数，则为 V20
+    2. Ver 字段检测（次要优先级）：
+       - Ver >= 20 视为 V20
+       - Ver >= 10 视为 V10
+    3. 默认版本：V10
 
-    注意：Ver 字段是固件版本号，不能用于判断协议版本
+    注意：Ver 字段建议设备端使用标准版本号（V10→10, V20→20）
     """
 
     # V20 独有参数（V10 不存在）
@@ -62,9 +66,9 @@ class VersionDetector:
 
     async def detect_version(self, device_id: str, param_data: dict[str, Any]) -> str:
         """
-        检测设备协议版本（仅通过特征参数检测）
+        检测设备协议版本
 
-        V20 独有参数：108、109、110（V10 协议不存在这些参数）
+        优先级：特征参数检测 > Ver字段 > 默认版本
 
         Args:
             device_id: 设备ID (IMEI)
@@ -73,20 +77,40 @@ class VersionDetector:
         Returns:
             版本号 (V10/V20)
         """
-        # 通过特征参数检测
-        # 若参数数据包含 108、109 或 110 任一参数，则为 V20，否则为 V10
         param_keys = {str(k) for k in param_data.keys()}
 
+        # 优先级1: 特征参数检测
         if param_keys & self.V20_EXCLUSIVE_PARAMS:
-            # 存在 V20 独有参数
             version = "V20"
             found_params = param_keys & self.V20_EXCLUSIVE_PARAMS
             logger.info(f"通过特征参数检测版本: {device_id} -> V20 (发现参数: {found_params})")
-        else:
-            version = "V10"
-            logger.info(f"通过特征参数检测版本: {device_id} -> V10 (无V20独有参数)")
+            await self.cache_version(device_id, version, method="feature_params")
+            return version
 
-        await self.cache_version(device_id, version, method="feature_params")
+        # 优先级2: Ver 字段检测
+        ver_value = param_data.get("Ver")
+        if ver_value is not None:
+            try:
+                # Ver 可能是数字或字符串
+                ver_num = int(str(ver_value))
+                if ver_num >= 20:
+                    version = "V20"
+                    logger.info(f"通过Ver字段检测版本: {device_id} -> V20 (Ver={ver_num})")
+                elif ver_num >= 10:
+                    version = "V10"
+                    logger.info(f"通过Ver字段检测版本: {device_id} -> V10 (Ver={ver_num})")
+                else:
+                    version = "V10"
+                    logger.info(f"Ver字段值过低，使用默认版本: {device_id} -> V10 (Ver={ver_num})")
+                await self.cache_version(device_id, version, method="ver_field", extra={"ver_value": ver_num})
+                return version
+            except (ValueError, TypeError):
+                logger.warning(f"Ver字段解析失败: {device_id}, Ver={ver_value}")
+
+        # 优先级3: 默认版本
+        version = "V10"
+        logger.info(f"使用默认版本: {device_id} -> V10")
+        await self.cache_version(device_id, version, method="default")
         return version
 
     async def cache_version(

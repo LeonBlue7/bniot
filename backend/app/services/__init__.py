@@ -12,6 +12,12 @@ from app.services.csrf import (
     store_csrf_token,
     verify_csrf_token,
 )
+from app.services.device_monitor import (
+    DeviceMonitorService,
+    get_device_monitor_service,
+    start_device_monitor,
+    stop_device_monitor,
+)
 from app.services.operation_log import (
     ActionType,
     OperationLogService,
@@ -39,6 +45,7 @@ __all__ = [
     "CSRF_EXPIRE_SECONDS",
     "CSRF_SAFE_METHODS",
     "ConnectionManager",
+    "DeviceMonitorService",
     "OperationLogService",
     "Permission",
     "PermissionChecker",
@@ -57,6 +64,7 @@ __all__ = [
     "create_csrf_token_for_user",
     "generate_csrf_token",
     "get_connection_manager",
+    "get_device_monitor_service",
     "get_user_permissions",
     "get_version_detector",
     "init_version_detector",
@@ -64,6 +72,8 @@ __all__ = [
     "log_operation",
     "require_permission",
     "requires_csrf",
+    "start_device_monitor",
+    "stop_device_monitor",
     "store_csrf_token",
     "verify_csrf_token",
 ]

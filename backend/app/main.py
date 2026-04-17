@@ -13,6 +13,7 @@ from app.core.config import settings
 from app.core.database import async_session_maker
 from app.mqtt import get_mqtt_client, init_message_handlers, init_mqtt_client
 from app.services import init_version_detector
+from app.services.device_monitor import start_device_monitor, stop_device_monitor
 from app.services.init_data import init_default_data
 
 # 全局 Redis 客户端引用
@@ -49,12 +50,20 @@ async def lifespan(app: FastAPI):
     init_message_handlers(async_session_maker)
     logger.info("MQTT 消息处理器初始化完成")
 
+    # 启动设备在线状态监控
+    await start_device_monitor()
+    logger.info("设备在线状态监控服务启动完成")
+
     logger.info("应用启动完成")
 
     yield
 
     # 关闭时清理
     logger.info("应用关闭中...")
+
+    # 停止设备在线状态监控
+    await stop_device_monitor()
+    logger.info("设备在线状态监控服务已停止")
 
     # 关闭 Redis 连接
     if _redis_client:

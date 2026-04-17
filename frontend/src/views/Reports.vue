@@ -298,6 +298,7 @@ onMounted(() => {
               <a-statistic
                 title="总能耗"
                 :value="totalEnergy"
+                :precision="2"
                 suffix="kWh"
               />
             </a-card>
@@ -331,10 +332,10 @@ onMounted(() => {
             :columns="[
               { title: '设备ID', dataIndex: 'device_id', key: 'device_id' },
               { title: '设备名称', dataIndex: 'device_name', key: 'device_name' },
-              { title: '总能耗(kWh)', dataIndex: 'total_energy', key: 'total_energy' },
-              { title: '平均功率(W)', dataIndex: 'avg_power', key: 'avg_power' },
+              { title: '总能耗(kWh)', dataIndex: 'total_energy', key: 'total_energy', customRender: ({ text }: { text: number | null }) => text?.toFixed(2) ?? '-' },
+              { title: '平均功率(W)', dataIndex: 'avg_power', key: 'avg_power', customRender: ({ text }: { text: number | null }) => text?.toFixed(2) ?? '-' },
               { title: '最大功率(W)', dataIndex: 'max_power', key: 'max_power' },
-              { title: '运行时长(h)', dataIndex: 'runtime_hours', key: 'runtime_hours' }
+              { title: '运行时长(h)', dataIndex: 'runtime_hours', key: 'runtime_hours', customRender: ({ text }: { text: number | null }) => text?.toFixed(1) ?? '-' }
             ]"
             :row-key="(record: EnergyStats) => record.device_id"
             :pagination="{ pageSize: 10 }"
