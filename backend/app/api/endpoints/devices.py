@@ -532,7 +532,7 @@ async def get_device(
         "alarmhumi": latest_data.alarmhumi if latest_data else None,
         "air_err": latest_data.air_err if latest_data else None,
         "airstate": latest_data.airstate if latest_data else None,
-        "current": latest_data.current if latest_data else None,
+        "current": latest_data.current / 1000.0 if latest_data and latest_data.current else None,
         # 运行时间统计
         "supports_runtime": supports_runtime,
         "today_runtime": today_runtime,
@@ -658,7 +658,7 @@ async def get_device_data(
             "temp": d.temp,
             "humi": d.humi,
             "airstate": d.airstate,
-            "current": d.current,
+            "current": d.current / 1000.0 if d.current else None,
             "csq": d.csq,
             "air_err": d.air_err,
             "alarmtemp": d.alarmtemp,

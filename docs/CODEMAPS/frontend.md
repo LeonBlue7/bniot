@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-16
+**Last Updated:** 2026-04-17
 
 ## 目录结构
 
@@ -316,7 +316,7 @@ interface DeviceDetail extends Device {
   alarmhumi: number | null      // 湿度告警
   air_err: number | null        // 空调故障码
   airstate: number | null       // 空调状态（V10专属）
-  current: number | null        // 电流（V10专属）
+  current: number | null        // 电流（V10专属，单位：A，后端已从mA转换）
   supports_runtime: boolean     // 是否支持运行统计
   today_runtime: number | null  // 当天运行时间（小时）
   month_runtime: number | null  // 当月运行时间（小时）

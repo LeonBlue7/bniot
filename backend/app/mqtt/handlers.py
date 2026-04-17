@@ -68,14 +68,15 @@ class MQTTMessageHandler:
                 # 获取或创建设备（设备可能不发送 login 消息）
                 device = await self._get_or_create_device(db, device_id)
 
-                # 保存数据到时序表
+                # 保存数据到时序表（电流值从mA转换为A）
+                raw_current = msg_data.get("current")
                 device_data = DeviceData(
                     device_id=device_id,
                     tenant_id=device.tenant_id,
                     temp=msg_data.get("temp"),
                     humi=msg_data.get("humi"),
                     airstate=msg_data.get("airstate"),
-                    current=msg_data.get("current"),
+                    current=raw_current / 1000.0 if raw_current else None,
                     csq=msg_data.get("csq"),
                     air_err=msg_data.get("air_err"),
                     alarmtemp=msg_data.get("alarmtemp"),
