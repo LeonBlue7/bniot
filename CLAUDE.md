@@ -131,6 +131,87 @@ docs/
   - socket合法域名：`wss://www.jxbonner.cloud:8084`
 - **SSL证书**：存放在项目根目录 `ssl/` 文件夹下
 
+## SSH 登录生产服务器
+
+### 服务器信息
+
+- **服务器地址**：`www.jxbonner.cloud` 或服务器 IP
+- **用户名**：`ubuntu`
+- **密码**：`lan.feng527`
+
+### SSH 登录命令
+
+```bash
+# 直接 SSH 登录
+ssh ubuntu@www.jxbonner.cloud
+
+# 使用 sshpass 自动输入密码
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud
+
+# 带命令执行
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud "cd /opt/bniot && sudo git pull"
+```
+
+### 常用运维命令
+
+```bash
+# 进入项目目录
+cd /opt/bniot
+
+# 查看服务状态
+sudo docker-compose ps
+
+# 重启服务
+sudo docker-compose restart backend
+
+# 查看日志
+sudo docker logs bniot-backend --tail 100
+
+# 更新部署
+sudo git pull && sudo docker-compose restart backend
+```
+
+## 双远程仓库配置
+
+项目同时推送到两个 Git 远程仓库（国内 + 国际）：
+
+### 仓库地址
+
+| 平台 | 地址 | 用途 |
+|------|------|------|
+| **GitHub** | `git@github.com:LeonBlue7/bniot.git` | 国际备份、主要开发 |
+| **Gitee** | `git@gitee.com:leon_blue/bniot.git` | 国内镜像、服务器拉取源 |
+
+### Git 配置
+
+```bash
+# 查看当前配置
+git remote -v
+
+# 配置双 push（一次性推送到两个仓库）
+git remote set-url --add --push origin git@github.com:LeonBlue7/bniot.git
+git remote set-url --add --push origin git@gitee.com:leon_blue/bniot.git
+```
+
+当前配置结果：
+```
+origin  git@github.com:LeonBlue7/bniot.git (fetch)
+origin  git@gitee.com:leon_blue/bniot.git (push)
+origin  git@github.com:LeonBlue7/bniot.git (push)
+```
+
+### 推送说明
+
+- `git push origin main` - 同时推送到 GitHub 和 Gitee
+- fetch 只从 GitHub 拉取（国际源优先）
+- 生产服务器从 Gitee 拉取（国内访问更快）
+
+### 重要注意事项
+
+1. **服务器部署**：服务器配置从 Gitee 拉取代码，国内访问更稳定
+2. **同步推送**：本地推送自动同步到两个仓库，无需手动分开推送
+3. **冲突处理**：如服务器有本地修改，需先 `git checkout -- <files>` 再拉取
+
 ## MQTT 设备认证
 
 设备端嵌入式程序已硬编码认证信息，无法修改：
