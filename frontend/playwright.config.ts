@@ -4,6 +4,15 @@ import { defineConfig, devices } from '@playwright/test'
  * BNIoT E2E 测试配置
  * @see https://playwright.dev/docs/test-configuration
  */
+
+// 生产环境 URL
+const PRODUCTION_URL = 'https://www.jxbonner.cloud'
+
+// 根据 BASE_URL 环境变量决定测试环境
+const baseURL = process.env.BASE_URL || process.env.TEST_ENV === 'production'
+  ? PRODUCTION_URL
+  : 'http://localhost:3000'
+
 export default defineConfig({
   // 测试目录
   testDir: './e2e',
@@ -29,8 +38,8 @@ export default defineConfig({
 
   // 全局配置
   use: {
-    // 基础 URL
-    baseURL: 'http://localhost:3000',
+    // 基础 URL（支持环境变量覆盖）
+    baseURL,
 
     // 收集失败时的 trace
     trace: 'on-first-retry',
@@ -56,12 +65,14 @@ export default defineConfig({
     },
   ],
 
-  // 启动开发服务器
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
-    timeout: 120000,
-    stdout: 'pipe',
-  },
+  // 启动开发服务器（仅本地测试）
+  webServer: baseURL.startsWith('http://localhost')
+    ? {
+        command: 'npm run dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: true,
+        timeout: 120000,
+        stdout: 'pipe',
+      }
+    : undefined, // 生产环境无需启动本地服务器
 })

@@ -66,13 +66,50 @@ frontend/
 │   ├── devices.spec.ts      # 设备管理
 │   ├── zones.spec.ts        # 分区管理
 │   ├── alarms.spec.ts       # 告警中心
-│   └── reports.spec.ts      # 报表分析
+│   ├── reports.spec.ts      # 报表分析
+│   ├── comprehensive-test.spec.ts # 全面功能测试
+│   └── full-test.spec.ts    # 全流程测试
 ├── index.html
 ├── vite.config.ts
 ├── tsconfig.json
 ├── package.json
-└── playwright.config.ts
+└── playwright.config.ts     # E2E 测试配置（支持生产环境）
 ```
+
+---
+
+## E2E 测试配置
+
+### playwright.config.ts
+
+支持本地和生产环境 E2E 测试：
+
+```typescript
+// 根据 BASE_URL 或 TEST_ENV 环境变量决定测试环境
+const baseURL = process.env.BASE_URL || process.env.TEST_ENV === 'production'
+  ? 'https://www.jxbonner.cloud'
+  : 'http://localhost:3000'
+```
+
+### 使用方法
+
+```bash
+# 本地测试（默认，启动开发服务器）
+npx playwright test
+
+# 生产环境测试（不启动本地服务器）
+TEST_ENV=production npx playwright test
+
+# 或指定自定义 URL
+BASE_URL=https://www.jxbonner.cloud npx playwright test
+```
+
+### 测试项目配置
+
+- **chromium**：Desktop Chrome 测试
+- **测试目录**：./e2e
+- **Reporter**：HTML + JSON + List
+- **失败处理**：自动截图、录屏、Trace
 
 ---
 
