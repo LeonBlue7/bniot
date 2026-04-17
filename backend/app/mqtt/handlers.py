@@ -128,6 +128,9 @@ class MQTTMessageHandler:
                     device.settings = param_data
                     device.sim_card = param_data.get("Sim")
                     device.firmware_version = str(param_data.get("Ver", ""))
+                    # 更新在线状态和最后通信时间
+                    device.is_online = True
+                    device.last_seen_at = datetime.now(UTC)
                     await db.commit()
 
             logger.info(f"设备 {device_id} 版本: {version}, 参数已更新")
@@ -156,6 +159,9 @@ class MQTTMessageHandler:
                 if device:
                     device.protocol_version = version
                     device.settings = param_data
+                    # 更新在线状态和最后通信时间
+                    device.is_online = True
+                    device.last_seen_at = datetime.now(UTC)
                     await db.commit()
 
             # 发送回复
@@ -172,6 +178,14 @@ class MQTTMessageHandler:
 
             logger.info(f"远程控制回复: {device_id}, code: {code}")
 
+            # 更新设备最后通信时间
+            async with self.db_session_factory() as db:
+                device = await self._get_device(db, device_id)
+                if device:
+                    device.is_online = True
+                    device.last_seen_at = datetime.now(UTC)
+                    await db.commit()
+
         except Exception as e:
             logger.exception(f"处理控制回复消息失败: {e}")
 
@@ -182,6 +196,14 @@ class MQTTMessageHandler:
             code = data.get("code")
 
             logger.info(f"设置参数回复: {device_id}, code: {code}")
+
+            # 更新设备最后通信时间
+            async with self.db_session_factory() as db:
+                device = await self._get_device(db, device_id)
+                if device:
+                    device.is_online = True
+                    device.last_seen_at = datetime.now(UTC)
+                    await db.commit()
 
         except Exception as e:
             logger.exception(f"处理设置回复消息失败: {e}")
