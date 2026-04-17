@@ -108,6 +108,8 @@ check_and_update "CLAUDE.md" "README.md" "CLAUDE.md 项目说明"
 
 check_and_update "backend/tests/unit/test_device_monitor.py" "docs/CODEMAPS/backend.md" "设备监控测试"
 check_and_update "backend/tests/unit/test_version_detector.py" "docs/CODEMAPS/backend.md" "版本检测测试"
+check_and_update "frontend/playwright.config.ts" "docs/CODEMAPS/frontend.md" "E2E 测试配置"
+check_and_update "frontend/e2e/*.spec.ts" "docs/CODEMAPS/frontend.md" "E2E 测试用例"
 
 # ========================================
 # 目录级别批量检查（保持原有逻辑）

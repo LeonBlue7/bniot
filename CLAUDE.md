@@ -212,6 +212,151 @@ origin  git@github.com:LeonBlue7/bniot.git (push)
 2. **同步推送**：本地推送自动同步到两个仓库，无需手动分开推送
 3. **冲突处理**：如服务器有本地修改，需先 `git checkout -- <files>` 再拉取
 
+## 自动化部署与测试闭环
+
+代码推送后，自动执行以下工作流，实现开发→部署→测试→修复的完整闭环：
+
+### 工作流程
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        开发端（本地）                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│  1. 功能开发 / Bug修复                                               │
+│  2. 本地验证（build + test + lint）                                  │
+│  3. 提交代码 + 文档同步检查                                           │
+│  4. git push → GitHub + Gitee                                        │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        生产服务器（远程）                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  5. SSH 登录服务器                                                   │
+│  6. 拉取最新代码（git pull from Gitee）                              │
+│  7. 根据变更类型执行操作：                                            │
+│     • 后端代码变更 → docker-compose restart backend                  │
+│     • 前端代码变更 → npm build + 更新静态文件                         │
+│     • 数据库迁移 → alembic upgrade head                              │
+│     • 配置变更 → 重启相关服务                                         │
+│  8. 检查服务状态（docker-compose ps）                                 │
+│  9. 查看启动日志（docker logs --tail 50）                            │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        E2E 测试（本地）                                │
+├─────────────────────────────────────────────────────────────────────┤
+│  10. 运行生产环境 E2E 测试                                            │
+│      npx playwright test --project=chromium                          │
+│      BASE_URL=https://www.jxbonner.cloud                             │
+│  11. 分析测试结果                                                    │
+│      • 通过 → 功能实现完成，闭环结束                                  │
+│      • 失败 → 记录 Bug，回到步骤 1                                    │
+│  12. Bug 修复后重新推送，重复闭环                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 执行命令
+
+**推送后自动执行**（由 Claude Code 自动完成）：
+
+```bash
+# 步骤 5-6: SSH 登录并拉取代码
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud "cd /opt/bniot && sudo git pull"
+
+# 步骤 7: 根据变更类型重启服务
+# 后端变更
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud \
+  "cd /opt/bniot && sudo docker-compose restart backend"
+
+# 前端变更
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud \
+  "cd /opt/bniot/frontend && sudo docker-compose restart frontend"
+
+# 全量部署（重大变更）
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud \
+  "cd /opt/bniot && sudo docker-compose restart"
+
+# 步骤 8-9: 检查服务状态和日志
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud \
+  "sudo docker-compose ps && sudo docker logs bniot-backend --tail 50"
+```
+
+**本地 E2E 测试**：
+
+```bash
+# 步骤 10: 运行生产环境 E2E 测试
+cd frontend
+npx playwright test --project=chromium \
+  --base-url=https://www.jxbonner.cloud
+
+# 可选：生成测试报告
+npx playwright show-report
+```
+
+### 变更类型判断规则
+
+| 变更文件 | 执行操作 | 重启命令 |
+|----------|----------|----------|
+| `backend/app/**/*.py` | 重启后端容器 | `restart backend` |
+| `backend/requirements.txt` | 重建后端镜像 | `up -d --build backend` |
+| `frontend/src/**/*.vue/ts` | 重启前端容器 | `restart frontend` |
+| `frontend/package.json` | 重建前端镜像 | `up -d --build frontend` |
+| `migrations/versions/*.py` | 执行数据库迁移 | `alembic upgrade head` |
+| `docker-compose.yml` | 重启所有服务 | `restart` |
+| `.env` / `config.py` | 重启相关服务 | `restart backend frontend` |
+
+### 日志查询命令
+
+```bash
+# 查看后端最近日志
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud \
+  "sudo docker logs bniot-backend --tail 100"
+
+# 实时跟踪日志
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud \
+  "sudo docker logs -f bniot-backend"
+
+# 查看特定时间段日志
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud \
+  "sudo docker logs bniot-backend --since 10m"
+
+# 查看错误日志
+sshpass -p 'lan.feng527' ssh ubuntu@www.jxbonner.cloud \
+  "sudo docker logs bniot-backend 2>&1 | grep -i error"
+```
+
+### 测试失败处理流程
+
+1. **记录 Bug 详情**：
+   - 测试名称、失败步骤、错误信息
+   - 截图/视频位置
+   - 预期行为 vs 实际行为
+
+2. **分析失败原因**：
+   - 查看生产服务器日志
+   - 检查前端/后端代码逻辑
+   - 确认环境配置差异
+
+3. **修复 Bug**：
+   - 本地开发环境修复
+   - 本地验证（单元测试 + E2E）
+   - 提交并推送
+
+4. **重新执行闭环**：
+   - 部署到生产环境
+   - 运行 E2E 测试验证
+   - 直至测试通过
+
+### 闭环完成标准
+
+- ✅ 生产环境部署成功
+- ✅ 服务状态正常（docker-compose ps 显示 healthy）
+- ✅ 启动日志无错误
+- ✅ E2E 测试全部通过
+- ✅ 功能符合预期
+
 ## MQTT 设备认证
 
 设备端嵌入式程序已硬编码认证信息，无法修改：
