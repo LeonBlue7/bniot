@@ -122,8 +122,8 @@ test.describe('全面功能测试', () => {
     })
 
     test('应该显示搜索和过滤功能', async ({ page }) => {
-      await expect(page.locator('input[placeholder="搜索设备名称或IMEI"]')).toBeVisible()
-      await expect(page.locator('.ant-select')).toHaveCount(2) // 分区和在线状态筛选
+      await expect(page.locator('input[placeholder="搜索设备号、名称、SIM卡、固件版本、分区"]')).toBeVisible()
+      await expect(page.locator('.ant-select')).toHaveCount(3) // 分区、协议版本、在线状态筛选
       await takeScreenshot(page, '12-devices-toolbar')
     })
 
@@ -141,7 +141,7 @@ test.describe('全面功能测试', () => {
     })
 
     test('应该显示设备表格列', async ({ page }) => {
-      const columns = ['IMEI号', '设备名称', '协议版本', '状态', '最后通信', '操作']
+      const columns = ['设备号', '设备名称', '温度', '湿度', '告警状态', '协议版本', '分区', '在线状态', '最后通信', '操作']
       for (const col of columns) {
         await expect(page.locator(`th:has-text("${col}")`)).toBeVisible()
       }
@@ -149,9 +149,9 @@ test.describe('全面功能测试', () => {
     })
 
     test('应该能搜索设备', async ({ page }) => {
-      await page.fill('input[placeholder="搜索设备名称或IMEI"]', 'test')
+      await page.fill('input[placeholder="搜索设备号、名称、SIM卡、固件版本、分区"]', 'test')
       // 按 Enter 键触发搜索
-      await page.press('input[placeholder="搜索设备名称或IMEI"]', 'Enter')
+      await page.press('input[placeholder="搜索设备号、名称、SIM卡、固件版本、分区"]', 'Enter')
       await page.waitForTimeout(500)
       await takeScreenshot(page, '16-devices-search')
     })

@@ -133,7 +133,7 @@ test.describe('设备管理流程', () => {
 
     // 验证关键列存在
     const tableHeaders = page.locator('.ant-table-thead th')
-    const headerTexts = ['IMEI号', '设备名称', '状态', '操作']
+    const headerTexts = ['设备号', '设备名称', '在线状态', '操作']
 
     for (const header of headerTexts) {
       const found = await tableHeaders.locator(`:scope:has-text("${header}")`).count()

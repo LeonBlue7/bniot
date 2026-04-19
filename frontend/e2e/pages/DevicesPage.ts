@@ -19,7 +19,7 @@ export class DevicesPage {
   constructor(page: Page) {
     this.page = page
     this.toolbarCard = '.toolbar-card'
-    this.searchInput = 'input[placeholder="搜索设备名称或IMEI"]'
+    this.searchInput = 'input[placeholder="搜索设备号、名称、SIM卡、固件版本、分区"]'
     this.zoneFilter = '.ant-select-selector'
     this.addButton = 'button:has-text("添加设备")'
     this.deviceTable = '.ant-table'
@@ -76,7 +76,8 @@ export class DevicesPage {
    */
   async clickFirstRowDetailButton() {
     const firstRow = this.page.locator('.ant-table-row').first()
-    const detailButton = firstRow.locator('button:has-text("详情")')
+    // 按钮文本可能是 "详 情" 或 "详情"，使用更灵活的选择器
+    const detailButton = firstRow.locator('button').filter({ hasText: '详' }).first()
     await detailButton.click()
   }
 
