@@ -261,9 +261,9 @@ function handleLogout() {
   router.push({ name: 'Login' })
 }
 
-// 个人中心（暂未实现页面，显示提示）
+// 个人中心
 function handleProfile() {
-  message.info('个人中心页面开发中，敬请期待')
+  router.push({ name: 'Profile' })
 }
 </script>
 

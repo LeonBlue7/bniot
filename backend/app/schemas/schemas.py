@@ -78,6 +78,12 @@ class UserStatusUpdate(BaseModel):
     is_active: bool
 
 
+class PasswordChangeRequest(BaseModel):
+    """修改密码请求"""
+    old_password: str = Field(..., min_length=6, description="当前密码")
+    new_password: str = Field(..., min_length=6, description="新密码")
+
+
 # ============ 租户 ============
 class TenantBase(BaseModel):
     name: str

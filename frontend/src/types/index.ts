@@ -19,6 +19,11 @@ export interface LoginRequest {
   password: string
 }
 
+export interface PasswordChangeRequest {
+  old_password: string
+  new_password: string
+}
+
 // ============ 用户 ============
 export interface User {
   id: number

@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-19
 
 ## 目录结构
 
@@ -10,7 +10,7 @@ frontend/
 ├── src/
 │   ├── api/                 # API 模块
 │   │   ├── client.ts        # Axios 客户端（含 CSRF 保护）
-│   │   ├── auth.ts          # 认证 API
+│   │   ├── auth.ts          # 认证 API（login、getCurrentUser、changePassword）
 │   │   ├── devices.ts       # 设备 API
 │   │   ├── zones.ts         # 分区 API
 │   │   ├── reports.ts       # 报表 API
@@ -26,9 +26,11 @@ frontend/
 │   │   ├── Alarms.vue       # 告警中心
 │   │   ├── Reports.vue      # 报表分析（动态导入图表、数据显示优化）
 │   │   ├── Users.vue        # 用户管理（仅管理员）
-│   │   └── Settings.vue     # 系统设置
+│   │   ├── Settings.vue     # 系统设置
+│   │   ├── Profile.vue      # 个人中心（用户信息、修改密码）
+│   │   └── __tests__/       # 页面测试
 │   ├── layouts/             # 布局组件
-│   │   ├── MainLayout.vue   # 主布局
+│   │   ├── MainLayout.vue   # 主布局（含个人中心导航）
 │   │   └── __tests__/       # 布局测试
 │   ├── components/          # 通用组件
 │   │   └── charts/          # 图表组件（懒加载）

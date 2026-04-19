@@ -2,7 +2,7 @@
  * 认证相关 API
  */
 import apiClient from './client'
-import type { Token, User, LoginRequest } from '@/types'
+import type { Token, User, LoginRequest, PasswordChangeRequest } from '@/types'
 
 export const authApi = {
   /**
@@ -28,5 +28,12 @@ export const authApi = {
   async getCurrentUser(): Promise<User> {
     const response = await apiClient.get<User>('/auth/me')
     return response.data
+  },
+
+  /**
+   * 修改密码
+   */
+  async changePassword(data: PasswordChangeRequest): Promise<void> {
+    await apiClient.post('/auth/change-password', data)
   }
 }

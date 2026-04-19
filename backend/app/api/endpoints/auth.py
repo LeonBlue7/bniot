@@ -11,8 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.models import User
-from app.schemas import Token, UserResponse
-from app.services.auth import create_access_token, get_current_user, verify_password
+from app.schemas import Token, UserResponse, PasswordChangeRequest
+from app.services.auth import create_access_token, get_current_user, verify_password, get_password_hash
 from app.services.csrf import create_csrf_token_for_user
 from app.services.rate_limiter import RateLimiter
 
@@ -151,3 +151,24 @@ async def get_csrf_token(
     csrf_token = await create_csrf_token_for_user(user_id, redis_client)
 
     return {"csrf_token": csrf_token}
+
+
+@router.post("/change-password")
+async def change_password(
+    data: PasswordChangeRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """修改密码"""
+    # 验证当前密码
+    if not verify_password(data.old_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="当前密码错误"
+        )
+
+    # 更新密码
+    current_user.password_hash = get_password_hash(data.new_password)
+    await db.commit()
+
+    return {"message": "密码修改成功"}

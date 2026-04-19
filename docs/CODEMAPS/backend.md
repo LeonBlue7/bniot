@@ -1,7 +1,7 @@
 # 后端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-19
 
 ## 目录结构
 
@@ -14,7 +14,7 @@ backend/
 │   │   ├── __init__.py      # 路由注册
 │   │   └── endpoints/       # API 端点
 │   │       ├── __init__.py
-│   │       ├── auth.py      # 认证 API（含 CSRF）
+│   │       ├── auth.py      # 认证 API（含 CSRF、修改密码）
 │   │       ├── users.py     # 用户管理 API（仅管理员）
 │   │       ├── alarms.py    # 告警管理 API
 │   │       ├── devices.py   # 设备 API
@@ -90,6 +90,7 @@ backend/
 │       ├── test_protocol_parser.py
 │       ├── test_version_detector.py
 │       ├── test_device_monitor.py # 设备离线监控测试（Phase 4.3）
+│       ├── test_change_password.py # 修改密码测试
 │       ├── test_security_fixes.py
 │       └── test_permissions.py
 ├── Dockerfile
