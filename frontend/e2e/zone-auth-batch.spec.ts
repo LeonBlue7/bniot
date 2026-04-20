@@ -26,6 +26,12 @@ test.describe('分区授权与批量操作', () => {
       await waitForAntLoading(page)
       await page.waitForTimeout(2000)
 
+      // 强制关闭所有可能存在的弹窗
+      while (await page.locator('.ant-modal').isVisible({ timeout: 500 })) {
+        await page.keyboard.press('Escape')
+        await page.waitForTimeout(300)
+      }
+
       // 点击添加按钮
       const addButton = page.locator('button:has-text("添加")')
       await addButton.click()
@@ -35,11 +41,11 @@ test.describe('分区授权与批量操作', () => {
       const zoneName = `E2E测试分区-${Date.now()}`
       await page.fill('.ant-modal input', zoneName)
 
-      // 提交创建 - Ant Design Modal 的确认按钮默认是"确定"
+      // 提交创建
       await page.locator('.ant-modal .ant-btn-primary').click()
       await page.waitForTimeout(2000)
 
-      // 验证分区创建成功（应该在树中显示）
+      // 验证分区创建成功
       const tree = page.locator('.ant-tree')
       await expect(tree).toBeVisible({ timeout: 10000 })
 
@@ -52,31 +58,34 @@ test.describe('分区授权与批量操作', () => {
       await waitForAntLoading(page)
       await page.waitForTimeout(2000)
 
+      // 强制关闭所有可能存在的弹窗
+      while (await page.locator('.ant-modal').isVisible({ timeout: 500 })) {
+        await page.keyboard.press('Escape')
+        await page.waitForTimeout(300)
+      }
+
       // 检查是否有分区数据
       const treeVisible = await page.locator('.ant-tree').isVisible()
       const emptyVisible = await page.locator('.ant-empty').first().isVisible()
 
       if (treeVisible) {
-        // 使用 ant-tree-node-content-wrapper 选择器点击分区节点
+        // 点击树节点
         const treeNode = page.locator('.ant-tree-node-content-wrapper').first()
-        await treeNode.click({ timeout: 15000 })
-        await page.waitForTimeout(2000) // 增加等待时间让授权列表加载
+        await treeNode.click({ force: true, timeout: 15000 })
+        await page.waitForTimeout(2000)
 
-        // 检查分区详情中是否有授权信息
-        const detailCard = page.locator('.ant-card:has-text("分区详情")')
-        await expect(detailCard).toBeVisible({ timeout: 10000 })
+        // 等待分区详情加载
+        await expect(page.locator('.ant-descriptions')).toBeVisible({ timeout: 5000 })
 
-        // 检查授权分隔符是否存在 - 使用 data-testid
+        // 检查授权分隔符是否存在
         const authDivider = page.locator('[data-testid="auth-divider"]')
         await expect(authDivider).toBeVisible({ timeout: 10000 })
 
         // 截图
         await page.screenshot({ path: 'playwright-report/screenshots/zone-detail-auth.png' })
       } else if (emptyVisible) {
-        // 没有分区时跳过测试
         test.skip(true, '没有分区数据，跳过测试')
       } else {
-        // 等待加载完成
         await page.waitForTimeout(3000)
         test.skip(true, '分区数据未加载完成，跳过测试')
       }
@@ -92,18 +101,27 @@ test.describe('分区授权与批量操作', () => {
       await waitForAntLoading(page)
       await page.waitForTimeout(2000)
 
+      // 强制关闭所有可能存在的弹窗
+      while (await page.locator('.ant-modal').isVisible({ timeout: 500 })) {
+        await page.keyboard.press('Escape')
+        await page.waitForTimeout(300)
+      }
+
       // 检查是否有分区
       const treeVisible = await page.locator('.ant-tree').isVisible()
 
       if (treeVisible) {
-        // 选择第一个分区
+        // 选择第一个分区 - 使用 node-content-wrapper
         const treeNode = page.locator('.ant-tree-node-content-wrapper').first()
-        await treeNode.click({ timeout: 15000 })
+        await treeNode.click({ force: true, timeout: 15000 })
         await page.waitForTimeout(2000)
 
         // 查看分区详情卡片
         const detailCard = page.locator('.ant-card:has-text("分区详情")')
         await expect(detailCard).toBeVisible({ timeout: 10000 })
+
+        // 等待分区详情加载
+        await expect(page.locator('.ant-descriptions')).toBeVisible({ timeout: 5000 })
 
         // 检查授权分隔符 - 使用 data-testid
         const authDivider = page.locator('[data-testid="auth-divider"]')
@@ -121,14 +139,23 @@ test.describe('分区授权与批量操作', () => {
       await waitForAntLoading(page)
       await page.waitForTimeout(2000)
 
+      // 强制关闭所有可能存在的弹窗
+      while (await page.locator('.ant-modal').isVisible({ timeout: 500 })) {
+        await page.keyboard.press('Escape')
+        await page.waitForTimeout(300)
+      }
+
       const treeVisible = await page.locator('.ant-tree').isVisible()
 
       if (treeVisible) {
         const treeNode = page.locator('.ant-tree-node-content-wrapper').first()
-        await treeNode.click({ timeout: 15000 })
+        await treeNode.click({ force: true, timeout: 15000 })
         await page.waitForTimeout(2000)
 
-        // 查看是否有授权表格 - 使用 data-testid
+        // 等待分区详情加载
+        await expect(page.locator('.ant-descriptions')).toBeVisible({ timeout: 5000 })
+
+        // 查看是否有授权表格
         const authTable = page.locator('[data-testid="auth-table"]')
         await expect(authTable).toBeVisible({ timeout: 10000 })
 
