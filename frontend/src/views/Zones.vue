@@ -105,9 +105,10 @@
             </a-descriptions>
 
             <!-- 分区授权列表 -->
-            <a-divider>分区授权</a-divider>
+            <a-divider data-testid="auth-divider">分区授权</a-divider>
             <a-spin :spinning="authLoading">
               <a-table
+                data-testid="auth-table"
                 :columns="authColumns"
                 :data-source="authorizations"
                 :pagination="false"
@@ -136,6 +137,7 @@
               <div style="margin-top: 16px; text-align: right">
                 <a-button
                   type="primary"
+                  data-testid="add-auth-btn"
                   @click="showAddAuthModal"
                 >
                   <plus-outlined />
