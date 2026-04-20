@@ -1,7 +1,7 @@
 # 后端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-20 (分区授权增强)
 
 ## 目录结构
 
@@ -16,6 +16,7 @@ backend/
 │   │       ├── __init__.py
 │   │       ├── auth.py      # 认证 API（含 CSRF、修改密码）
 │   │       ├── users.py     # 用户管理 API（仅管理员）
+│   │       ├── tenants.py   # 租户 API（租户列表、当前租户信息）
 │   │       ├── alarms.py    # 告警管理 API
 │   │       ├── devices.py   # 设备 API
 │   │       ├── zones.py     # 分区 API
@@ -96,6 +97,7 @@ backend/
 │       ├── test_permissions.py
 │       ├── test_device_permission.py # 设备权限服务测试
 │       ├── test_device_api_permission.py # 设备API权限测试
+│       ├── test_zone_authorization.py # 分区授权测试（自动授权、批量移动）
 │       └── test_device_list_extension.py # 设备列表扩展测试
 ├── Dockerfile
 ├── alembic.ini              # Alembic 配置
@@ -124,6 +126,15 @@ backend/
 | PUT | `/{user_id}` | 更新用户（仅管理员） |
 | PATCH | `/{user_id}/status` | 启用/禁用用户（仅管理员） |
 | DELETE | `/{user_id}` | 删除用户（仅管理员） |
+
+### 租户管理 (`/api/tenants`)
+
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/` | 租户列表（仅管理员，需 USER_CREATE 权限） |
+| GET | `/me` | 当前用户所属租户信息（需认证） |
+
+**用途**：用于分区授权管理，获取可选的租户列表进行授权操作。
 
 ### 告警管理 (`/api/alarms`)
 
@@ -169,12 +180,17 @@ backend/
 | 方法 | 路径 | 描述 |
 |------|------|------|
 | GET | `/` | 分区列表 |
-| POST | `/` | 创建分区 |
+| POST | `/` | 创建分区（自动授权给创建者租户） |
 | PUT | `/{zone_id}` | 更新分区 |
 | DELETE | `/{zone_id}` | 删除分区 |
 | GET | `/{zone_id}/authorizations` | 分区授权列表 |
 | POST | `/{zone_id}/authorizations` | 授权分区给租户 |
 | DELETE | `/{zone_id}/authorizations/{tenant_id}` | 移除分区授权 |
+
+**分区自动授权**（2026-04-20）：
+- 创建分区时自动授权给创建者的租户
+- 确保创建者能立即看到新分区内的设备
+- 避免创建分区后忘记授权的问题
 
 **分区授权管理**（2026-04-20）：
 - 观察员/操作员只能查看已授权分区内的设备
@@ -602,6 +618,7 @@ pytest tests/unit/test_permissions.py
 
 ### 测试统计
 
-- 单元测试：486+ tests
+- 单元测试：550+ tests
 - 跳过测试：46 (需项目根目录文件)
 - 设备权限测试：17 tests（test_device_permission.py + test_device_api_permission.py）
+- 分区授权测试：15 tests（test_zone_authorization.py）

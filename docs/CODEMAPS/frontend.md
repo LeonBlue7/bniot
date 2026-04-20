@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-20 (分区授权增强)
 
 ## 目录结构
 
@@ -11,8 +11,9 @@ frontend/
 │   ├── api/                 # API 模块
 │   │   ├── client.ts        # Axios 客户端（含 CSRF 保护）
 │   │   ├── auth.ts          # 认证 API（login、getCurrentUser、changePassword）
-│   │   ├── devices.ts       # 设备 API
-│   │   ├── zones.ts         # 分区 API
+│   │   ├── devices.ts       # 设备 API（含批量移动分区）
+│   │   ├── zones.ts         # 分区 API（含授权管理）
+│   │   ├── tenants.ts       # 租户 API（租户列表、当前租户）
 │   │   ├── reports.ts       # 报表 API
 │   │   ├── users.ts         # 用户管理 API
 │   │   ├── alarms.ts        # 告警管理 API
@@ -20,9 +21,9 @@ frontend/
 │   ├── views/               # 页面组件
 │   │   ├── Login.vue        # 登录页
 │   │   ├── Dashboard.vue    # 仪表盘
-│   │   ├── Devices.vue      # 设备管理（含深色主题标签样式）
+│   │   ├── Devices.vue      # 设备管理（含深色主题标签、批量移动分区）
 │   │   ├── DeviceDetail.vue # 设备详情
-│   │   ├── Zones.vue        # 分区管理
+│   │   ├── Zones.vue        # 分区管理（含授权管理界面）
 │   │   ├── Alarms.vue       # 告警中心
 │   │   ├── Reports.vue      # 报表分析（动态导入图表、数据显示优化）
 │   │   ├── Users.vue        # 用户管理（仅管理员）
@@ -123,11 +124,30 @@ BASE_URL=https://www.jxbonner.cloud npx playwright test
 | `/` | Dashboard.vue | 仪表盘 |
 | `/devices` | Devices.vue | 设备列表 |
 | `/devices/:id` | DeviceDetail.vue | 设备详情 |
-| `/zones` | Zones.vue | 分区管理 |
+| `/zones` | Zones.vue | 分区管理（含授权管理） |
 | `/alarms` | Alarms.vue | 告警中心 |
 | `/reports` | Reports.vue | 报表分析 |
 | `/users` | Users.vue | 用户管理（仅管理员） |
 | `/settings` | Settings.vue | 系统设置 |
+
+---
+
+## 新增页面功能（2026-04-20）
+
+### 分区授权管理 (`Zones.vue`)
+
+管理员可以在分区列表中管理授权：
+- 查看每个分区的授权列表
+- 将分区授权给其他租户
+- 移除对租户的授权
+- 创建分区时自动授权给当前租户
+
+### 批量移动设备 (`Devices.vue`)
+
+支持批量将设备移动到指定分区：
+- 选择多个设备后可批量操作
+- 移动到已有分区或移出分区（变为未分区）
+- 操作后自动刷新列表显示最新分区
 
 ---
 
@@ -151,7 +171,13 @@ deviceApi.delete(deviceId)          // 删除设备
 deviceApi.getData(deviceId, params) // 设备历史数据
 deviceApi.getEvents(deviceId, params) // 开关机记录（仅V10）
 deviceApi.getRuntime(deviceId)      // 运行时间统计（仅V10）
+deviceApi.batchMoveZone(deviceIds, zoneId) // 批量移动设备分区
 ```
+
+**批量移动分区**（2026-04-20 新增）：
+- `batchMoveZone(deviceIds, zoneId)` - 将多个设备移动到指定分区
+- `zoneId` 为 `null` 时表示移出分区（设备变为未分区状态）
+- 返回 `{ success_count, failed_count, failed_details }`
 
 **新增返回格式（2026-04-16）**：
 
@@ -177,7 +203,24 @@ zoneApi.list()                      // 分区列表
 zoneApi.create(data)                // 创建分区
 zoneApi.update(zoneId, data)        // 更新分区
 zoneApi.delete(zoneId)              // 删除分区
+zoneApi.listAuthorizations(zoneId)  // 分区授权列表
+zoneApi.authorize(zoneId, tenantId) // 授权分区给租户
+zoneApi.removeAuthorization(zoneId, tenantId) // 移除分区授权
 ```
+
+**分区授权管理**（2026-04-20 新增）：
+- `listAuthorizations(zoneId)` - 获取分区的授权列表
+- `authorize(zoneId, tenantId)` - 将分区授权给指定租户
+- `removeAuthorization(zoneId, tenantId)` - 移除对指定租户的授权
+
+### 租户 API (`api/tenants.ts`)
+
+```typescript
+tenantApi.list()                    // 租户列表（仅管理员）
+tenantApi.getCurrent()              // 当前用户所属租户信息
+```
+
+**用途**：用于分区授权管理界面，获取可选的租户列表进行授权操作。
 
 ### 报表 API (`api/reports.ts`)
 
@@ -367,6 +410,29 @@ interface Zone {
   name: string
   parent_id?: number
   children?: Zone[]
+}
+
+// 分区授权（2026-04-20 新增）
+interface ZoneAuthorization {
+  id: number
+  zone_id: number
+  tenant_id: number
+  created_at: string
+}
+
+// 租户（2026-04-20 新增）
+interface Tenant {
+  id: number
+  name: string
+  code: string
+  created_at: string
+}
+
+// 批量操作响应（2026-04-20 新增）
+interface BatchOperationResponse {
+  success_count: number
+  failed_count: number
+  failed_details: Array<{ device_id: number; reason: string }>
 }
 
 // 告警

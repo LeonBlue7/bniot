@@ -146,5 +146,18 @@ export const deviceApi = {
       device_ids: deviceIds
     })
     return response.data
+  },
+
+  /**
+   * 批量移动设备到指定分区
+   * @param deviceIds 设备ID列表
+   * @param zoneId 目标分区ID（null表示移出分区）
+   */
+  async batchMoveZone(deviceIds: number[], zoneId: number | null): Promise<BatchOperationResponse> {
+    const response = await apiClient.post<BatchOperationResponse>('/devices/batch/move-zone', {
+      device_ids: deviceIds,
+      zone_id: zoneId
+    })
+    return response.data
   }
 }

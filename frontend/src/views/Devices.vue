@@ -68,6 +68,16 @@
           style="text-align: right"
         >
           <a-space>
+            <!-- 批量操作按钮 -->
+            <a-button
+              v-if="selectedRowKeys.length > 0"
+              type="primary"
+              ghost
+              @click="showBatchMoveModal"
+            >
+              <swap-outlined />
+              移动分区 ({{ selectedRowKeys.length }})
+            </a-button>
             <a-button
               :loading="refreshLoading"
               @click="handleRefresh"
@@ -94,6 +104,7 @@
         :data-source="devices"
         :loading="loading"
         :pagination="pagination"
+        :row-selection="rowSelection"
         row-key="id"
         @change="handleTableChange"
       >
@@ -311,6 +322,42 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <!-- 批量移动分区弹窗 -->
+    <a-modal
+      v-model:open="batchMoveModalVisible"
+      title="批量移动设备分区"
+      :confirm-loading="batchMoveLoading"
+      @ok="handleBatchMove"
+    >
+      <a-form layout="vertical">
+        <a-form-item label="选中设备数量">
+          <a-tag color="blue">{{ selectedRowKeys.length }} 台设备</a-tag>
+        </a-form-item>
+        <a-form-item label="目标分区">
+          <a-select
+            v-model:value="batchMoveTargetZone"
+            placeholder="选择目标分区（不选则移出分区）"
+            allow-clear
+            style="width: 100%"
+          >
+            <a-select-option
+              v-for="zone in zones"
+              :key="zone.id"
+              :value="zone.id"
+            >
+              {{ zone.name }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-form>
+      <a-alert
+        message="提示"
+        description="移动设备到分区后，该分区需要授权给相应租户，非管理员才能看到这些设备。"
+        type="info"
+        show-icon
+      />
+    </a-modal>
   </div>
 </template>
 
@@ -321,7 +368,8 @@ import { message, Modal } from 'ant-design-vue'
 import { useDeviceStore } from '@/stores/devices'
 import { useZoneStore } from '@/stores/zones'
 import { useAuthStore } from '@/stores/auth'
-import { PlusOutlined, DownOutlined, ReloadOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, DownOutlined, ReloadOutlined, SwapOutlined } from '@ant-design/icons-vue'
+import { deviceApi } from '@/api/devices'
 import dayjs from 'dayjs'
 import type { Device, DeviceCreate, DeviceUpdate } from '@/types'
 import type { TableProps, FormInstance } from 'ant-design-vue'
@@ -337,6 +385,15 @@ const searchKeyword = ref('')
 const filterZone = ref<number | undefined>()
 const filterOnline = ref<boolean | undefined>()
 const filterProtocol = ref<string | undefined>()
+
+// 批量选择
+const selectedRowKeys = ref<number[]>([])
+const rowSelection = computed(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (keys: number[]) => {
+    selectedRowKeys.value = keys
+  }
+}))
 
 // 数据
 const devices = computed(() => deviceStore.devices)
@@ -455,6 +512,11 @@ const controlModalVisible = ref(false)
 const controlLoading = ref(false)
 const controlDevice = ref<Device | null>(null)
 const controlAction = ref(1)
+
+// 批量移动弹窗
+const batchMoveModalVisible = ref(false)
+const batchMoveLoading = ref(false)
+const batchMoveTargetZone = ref<number | null>(null)
 
 // 加载数据
 onMounted(async () => {
@@ -579,6 +641,37 @@ async function handleControl() {
     controlModalVisible.value = false
   }
   controlLoading.value = false
+}
+
+// 显示批量移动弹窗
+function showBatchMoveModal() {
+  batchMoveTargetZone.value = null
+  batchMoveModalVisible.value = true
+}
+
+// 批量移动设备
+async function handleBatchMove() {
+  if (selectedRowKeys.value.length === 0) {
+    message.warning('请先选择要移动的设备')
+    return
+  }
+
+  batchMoveLoading.value = true
+  try {
+    const result = await deviceApi.batchMoveZone(selectedRowKeys.value, batchMoveTargetZone.value)
+    message.success(`成功移动 ${result.success_count} 台设备`)
+    if (result.failed_count > 0) {
+      message.warning(`失败 ${result.failed_count} 台设备`)
+    }
+    batchMoveModalVisible.value = false
+    selectedRowKeys.value = []
+    await fetchDevices()
+  } catch (error: any) {
+    const detail = error.response?.data?.detail || '批量移动失败'
+    message.error(detail)
+  } finally {
+    batchMoveLoading.value = false
+  }
 }
 
 // 删除设备

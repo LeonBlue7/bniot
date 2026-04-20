@@ -37,7 +37,7 @@ async def create_zone(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_permission(Permission.ZONE_CREATE))
 ):
-    """创建分区""" 
+    """创建分区，自动授权给创建者的租户"""
     zone = Zone(
         tenant_id=current_user.tenant_id,
         name=zone_in.name,
@@ -48,6 +48,15 @@ async def create_zone(
     db.add(zone)
     await db.commit()
     await db.refresh(zone)
+
+    # 自动授权给创建者的租户
+    zone_tenant = ZoneTenant(
+        zone_id=zone.id,
+        tenant_id=current_user.tenant_id
+    )
+    db.add(zone_tenant)
+    await db.commit()
+
     return zone
 
 
