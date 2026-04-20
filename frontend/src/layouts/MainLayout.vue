@@ -170,6 +170,7 @@ const user = computed(() => authStore.user)
 const userInitial = computed(() => user.value?.username?.charAt(0).toUpperCase() || 'U')
 
 // 菜单项 - key 必须与路由 name 一致（PascalCase）
+// 只有管理员才能看到：用户管理、分区管理
 const menuItems = computed<MenuProps['items']>(() => {
   const items: MenuProps['items'] = [
     {
@@ -184,12 +185,13 @@ const menuItems = computed<MenuProps['items']>(() => {
       label: '设备管理',
       title: '设备管理'
     },
-    {
+    // 分区管理：只有管理员才能增删改，所以只有管理员显示此菜单
+    ...(authStore.isAdmin ? [{
       key: 'Zones',
       icon: () => h(PartitionOutlined),
       label: '分区管理',
       title: '分区管理'
-    },
+    }] : []),
     {
       key: 'Alarms',
       icon: () => h(AlertOutlined),

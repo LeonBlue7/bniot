@@ -105,10 +105,8 @@ ROLE_PERMISSIONS: dict[str, set[Permission]] = {
         Permission.DEVICE_DELETE,
         Permission.DEVICE_CONTROL,
         # 用户：操作员不能访问用户管理
-        # 分区操作权限
+        # 分区：操作员只能查看分区，不能增删改（只有管理员才能管理分区）
         Permission.ZONE_READ,
-        Permission.ZONE_CREATE,
-        Permission.ZONE_UPDATE,
         # 告警处理权限
         Permission.ALARM_READ,
         Permission.ALARM_HANDLE,

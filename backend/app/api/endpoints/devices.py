@@ -50,33 +50,96 @@ async def get_dashboard_stats(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_permission(Permission.DEVICE_READ))
 ):
-    """获取仪表盘统计数据"""
+    """获取仪表盘统计数据
+
+    权限规则：
+    - 系统管理员（admin）：可以看到租户内所有设备统计
+    - 观察员/操作员：只能看到授权分区内的设备统计
+    - 无授权分区：返回所有统计为0
+
+    跨租户授权场景：
+    - 分区可以授权给其他租户查看
+    - 授权分区内的设备对被授权租户可见
+    """
+    # 分区权限过滤：非管理员只能看到已授权分区内的设备
+    authorized_zone_ids = None
+    if current_user.role != "admin":
+        # 查询用户租户被授权的分区ID列表
+        authorized_zones_result = await db.execute(
+            select(ZoneTenant.zone_id).where(
+                ZoneTenant.tenant_id == current_user.tenant_id
+            )
+        )
+        authorized_zone_ids = [row[0] for row in authorized_zones_result.all()]
+
+        # 如果没有授权分区，返回所有统计为0
+        if not authorized_zone_ids:
+            return DashboardStats(
+                total_devices=0,
+                online_devices=0,
+                offline_devices=0,
+                total_alarms=0,
+                unresolved_alarms=0
+            )
+
+    # 构建设备查询条件
+    if authorized_zone_ids is not None:
+        # 非管理员：只统计授权分区内的设备（跨租户可见）
+        # 设备可能属于分区创建者的租户，但被授权给其他租户查看
+        device_conditions = [Device.zone_id.in_(authorized_zone_ids)]
+    else:
+        # 管理员：统计自己租户内所有设备
+        device_conditions = [Device.tenant_id == current_user.tenant_id]
+
     # 设备统计
     total_result = await db.execute(
-        select(func.count(Device.id)).where(Device.tenant_id == current_user.tenant_id)
+        select(func.count(Device.id)).where(and_(*device_conditions))
     )
     total_devices = total_result.scalar() or 0
 
     online_result = await db.execute(
         select(func.count(Device.id)).where(
             and_(
-                Device.tenant_id == current_user.tenant_id,
+                *device_conditions,
                 Device.is_online
             )
         )
     )
     online_devices = online_result.scalar() or 0
 
-    # 告警统计
+    # 告警统计 - 需要根据设备所属分区过滤
+    if authorized_zone_ids is not None:
+        # 非管理员：先获取授权分区内的设备ID列表
+        devices_in_zones_result = await db.execute(
+            select(Device.device_id).where(and_(*device_conditions))
+        )
+        device_ids_in_zones = [row[0] for row in devices_in_zones_result.all()]
+
+        if device_ids_in_zones:
+            # 告警过滤条件：只统计这些设备的告警
+            alarm_conditions = [Alarm.device_id.in_(device_ids_in_zones)]
+        else:
+            # 无设备时返回0告警
+            return DashboardStats(
+                total_devices=total_devices,
+                online_devices=online_devices,
+                offline_devices=total_devices - online_devices,
+                total_alarms=0,
+                unresolved_alarms=0
+            )
+    else:
+        # 管理员：统计租户内所有告警（不依赖设备过滤）
+        alarm_conditions = [Alarm.tenant_id == current_user.tenant_id]
+
     total_alarms_result = await db.execute(
-        select(func.count(Alarm.id)).where(Alarm.tenant_id == current_user.tenant_id)
+        select(func.count(Alarm.id)).where(and_(*alarm_conditions))
     )
     total_alarms = total_alarms_result.scalar() or 0
 
     unresolved_alarms_result = await db.execute(
         select(func.count(Alarm.id)).where(
             and_(
-                Alarm.tenant_id == current_user.tenant_id,
+                *alarm_conditions,
                 Alarm.is_resolved == False
             )
         )

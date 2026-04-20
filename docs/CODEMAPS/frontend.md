@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-04-20
 
 ## 目录结构
 
@@ -30,8 +30,8 @@ frontend/
 │   │   ├── Profile.vue      # 个人中心（用户信息、修改密码）
 │   │   └── __tests__/       # 页面测试
 │   ├── layouts/             # 布局组件
-│   │   ├── MainLayout.vue   # 主布局（含个人中心导航）
-│   │   └── __tests__/       # 布局测试
+│   │   ├── MainLayout.vue   # 主布局（含菜单权限控制、个人中心导航）
+│   │   └── __tests__/       # 布局测试（含菜单权限测试）
 │   ├── components/          # 通用组件
 │   │   └── charts/          # 图表组件（懒加载）
 │   │       ├── EnergyChart.vue    # 能耗柱状图

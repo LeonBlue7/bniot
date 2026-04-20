@@ -83,8 +83,11 @@ class TestRoleBasedAccessControl:
         assert checker.has_permission(Permission.DEVICE_UPDATE) == True
         assert checker.has_permission(Permission.DEVICE_DELETE) == True
         assert checker.has_permission(Permission.DEVICE_CONTROL) == True
-        assert checker.has_permission(Permission.ZONE_CREATE) == True
-        assert checker.has_permission(Permission.ZONE_UPDATE) == True
+
+        # 操作员只能查看分区，不能增删改（只有管理员才能管理分区）
+        assert checker.has_permission(Permission.ZONE_READ) == True
+        assert checker.has_permission(Permission.ZONE_CREATE) == False
+        assert checker.has_permission(Permission.ZONE_UPDATE) == False
 
         # 操作员不能访问用户管理（仅管理员）
         assert checker.has_permission(Permission.USER_READ) == False
@@ -512,12 +515,16 @@ class TestRolePermissionMapping:
         assert Permission.USER_READ in admin_permissions
         assert Permission.SETTING_UPDATE in admin_permissions
 
-        # 操作员权限：有设备操作，无用户管理
+        # 操作员权限：有设备操作，无用户管理，无分区增删改
         operator_permissions = ROLE_PERMISSIONS['operator']
         assert Permission.USER_CREATE not in operator_permissions
         assert Permission.USER_READ not in operator_permissions  # 用户管理仅管理员
         assert Permission.SETTING_UPDATE not in operator_permissions
         assert Permission.DEVICE_CONTROL in operator_permissions
+        assert Permission.ZONE_READ in operator_permissions  # 分区查看权限
+        assert Permission.ZONE_CREATE not in operator_permissions  # 分区创建仅管理员
+        assert Permission.ZONE_UPDATE not in operator_permissions  # 分区更新仅管理员
+        assert Permission.ZONE_DELETE not in operator_permissions  # 分区删除仅管理员
 
         # 查看者权限应该最少
         viewer_permissions = ROLE_PERMISSIONS['viewer']
