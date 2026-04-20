@@ -98,7 +98,8 @@ class TestDeviceEndpoints:
                 )
                 assert response.status_code == 200
                 data = response.json()
-                assert isinstance(data, list)
+                assert "items" in data
+                assert "total" in data
         except httpx.ConnectError:
             pytest.skip("服务未运行")
 

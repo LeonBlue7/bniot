@@ -166,7 +166,8 @@ class TestDeviceListNewFields:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             assert len(devices) >= 1
 
             # 查找IMEI001设备
@@ -201,7 +202,8 @@ class TestDeviceListNewFields:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
 
             device1 = next((d for d in devices if d["device_id"] == "IMEI001"), None)
             assert device1 is not None
@@ -233,7 +235,8 @@ class TestDeviceListNewFields:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
 
             device1 = next((d for d in devices if d["device_id"] == "IMEI001"), None)
             assert device1 is not None
@@ -265,8 +268,8 @@ class TestDeviceListNewFields:
             )
 
             assert response.status_code == 200
-            devices = response.json()
-
+            result = response.json()
+            devices = result["items"]
             # 有分区的设备
             device1 = next((d for d in devices if d["device_id"] == "IMEI001"), None)
             assert device1 is not None
@@ -308,7 +311,8 @@ class TestDeviceListSearchExtension:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             # 应该只返回IMEI001
             assert len(devices) == 1
             assert devices[0]["device_id"] == "IMEI001"
@@ -337,7 +341,8 @@ class TestDeviceListSearchExtension:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             # 应该只返回IMEI002（firmware_version=2.0.0）
             assert len(devices) == 1
             assert devices[0]["device_id"] == "IMEI002"
@@ -366,7 +371,8 @@ class TestDeviceListSearchExtension:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             # 应该返回办公区的设备
             assert len(devices) >= 1
             for device in devices:
@@ -397,7 +403,8 @@ class TestDeviceListSearchExtension:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             assert len(devices) == 1
             assert devices[0]["name"] == "空调1"
 
@@ -408,7 +415,8 @@ class TestDeviceListSearchExtension:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             assert len(devices) == 1
             assert devices[0]["device_id"] == "IMEI002"
 
@@ -439,7 +447,8 @@ class TestDeviceListProtocolFilter:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             # 只返回V10设备
             for device in devices:
                 assert device["protocol_version"] == "V10"
@@ -467,7 +476,8 @@ class TestDeviceListProtocolFilter:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             # 只返回V20设备
             for device in devices:
                 assert device["protocol_version"] == "V20"
@@ -495,7 +505,8 @@ class TestDeviceListProtocolFilter:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             # 应该返回所有3个设备
             assert len(devices) == 3
             versions = [d["protocol_version"] for d in devices]
@@ -545,7 +556,8 @@ class TestDeviceListEdgeCases:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
 
             device4 = next((d for d in devices if d["device_id"] == "IMEI004"), None)
             assert device4 is not None
@@ -602,7 +614,8 @@ class TestDeviceListEdgeCases:
             )
 
             assert response.status_code == 200
-            devices = response.json()
+            result = response.json()
+            devices = result["items"]
             # 不应该看到其他租户的设备
             device_ids = [d["device_id"] for d in devices]
             assert "IMEI999" not in device_ids

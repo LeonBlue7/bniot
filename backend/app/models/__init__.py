@@ -16,7 +16,8 @@ from app.models.models import (
     RestoreRecord,
     Tenant,
     User,
-    Zone
+    Zone,
+    ZoneTenant
 )
 
 __all__ = [
@@ -34,5 +35,6 @@ __all__ = [
     "RestoreRecord",
     "Tenant",
     "User",
-    "Zone"
+    "Zone",
+    "ZoneTenant"
 ]

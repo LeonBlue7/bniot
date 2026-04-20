@@ -4,7 +4,7 @@
 from datetime import UTC, datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -109,6 +109,31 @@ class Zone(Base):
 
     def __repr__(self):
         return f"<Zone(id={self.id}, name={self.name})>"
+
+
+class ZoneTenant(Base):
+    """分区-租户授权关联表
+
+    用于控制哪些租户可以访问哪些分区的设备。
+    观察员和操作员只能看到所属租户授权分区内的设备。
+    """
+    __tablename__ = "zone_tenants"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    zone_id: Mapped[int] = mapped_column(ForeignKey("zones.id", ondelete="CASCADE"))
+    tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id", ondelete="CASCADE"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+    # 索引和约束
+    __table_args__ = (
+        Index('idx_zone_tenants_zone_id', 'zone_id'),
+        Index('idx_zone_tenants_tenant_id', 'tenant_id'),
+        # 唯一约束：同一分区不能重复授权给同一租户
+        UniqueConstraint('zone_id', 'tenant_id', name='uq_zone_tenant'),
+    )
+
+    def __repr__(self):
+        return f"<ZoneTenant(zone_id={self.zone_id}, tenant_id={self.tenant_id})>"
 
 
 class Device(Base):

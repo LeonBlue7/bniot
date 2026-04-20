@@ -1,7 +1,7 @@
 # 后端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-04-20
 
 ## 目录结构
 
@@ -56,6 +56,7 @@ backend/
 │   │   ├── reports.py           # 报表服务
 │   │   ├── version_detector.py  # 版本检测
 │   │   ├── permissions.py       # 权限系统（Phase 1.1）
+│   │   ├── device_permission.py # 设备权限服务（分区授权过滤）
 │   │   ├── operation_log.py     # 操作日志（Phase 1.2）
 │   │   ├── realtime_push.py     # 实时数据推送（Phase 2.3）
 │   │   ├── device_monitor.py    # 设备离线监控（Phase 4.3）
@@ -92,7 +93,10 @@ backend/
 │       ├── test_device_monitor.py # 设备离线监控测试（Phase 4.3）
 │       ├── test_change_password.py # 修改密码测试
 │       ├── test_security_fixes.py
-│       └── test_permissions.py
+│       ├── test_permissions.py
+│       ├── test_device_permission.py # 设备权限服务测试
+│       ├── test_device_api_permission.py # 设备API权限测试
+│       └── test_device_list_extension.py # 设备列表扩展测试
 ├── Dockerfile
 ├── alembic.ini              # Alembic 配置
 ├── requirements.txt
@@ -168,6 +172,14 @@ backend/
 | POST | `/` | 创建分区 |
 | PUT | `/{zone_id}` | 更新分区 |
 | DELETE | `/{zone_id}` | 删除分区 |
+| GET | `/{zone_id}/authorizations` | 分区授权列表 |
+| POST | `/{zone_id}/authorizations` | 授权分区给租户 |
+| DELETE | `/{zone_id}/authorizations/{tenant_id}` | 移除分区授权 |
+
+**分区授权管理**（2026-04-20）：
+- 观察员/操作员只能查看已授权分区内的设备
+- 管理员可查看租户内所有设备（包括未分区）
+- 支持分区对多个租户授权
 
 ### 报表 (`/api/reports`)
 
@@ -281,6 +293,18 @@ backend/
 - `check_tenant_access()` - 租户隔离检查
 - `can_manage_user()` - 用户管理权限检查
 
+### 设备权限服务 (`services/device_permission.py`) - 2026-04-20
+
+基于分区授权的设备访问控制：
+- `DevicePermissionService` - 设备权限服务类
+- `get_visible_devices()` - 获取用户可见设备列表
+- `can_access_device()` - 检查单设备访问权限
+- **权限规则**：
+  - 系统管理员：可查看租户内所有设备（包括未分区）
+  - 观察员/操作员：只能查看已授权分区内的设备
+  - 未分区设备：仅管理员可见
+  - 禁用用户：无任何设备访问权限
+
 ### 操作日志服务 (`services/operation_log.py`) - Phase 1.2
 
 审计追踪功能：
@@ -338,7 +362,7 @@ backend/
 定期检测设备在线状态：
 - `DeviceMonitorService` - 监控服务类
 - 每 60 秒检测一次
-- 5 分钟离线阈值
+- 15 分钟离线阈值（`OFFLINE_THRESHOLD_MINUTES`）
 - 自动标记超时设备为离线
 - WebSocket 实时推送状态变化
 - `start_device_monitor()` - 启动服务
@@ -406,11 +430,29 @@ backend/
 | `tenants` | 租户表 | - |
 | `users` | 用户表 | `idx_users_tenant_id` |
 | `zones` | 分区表 | `idx_zones_tenant_id` |
+| `zone_tenants` | 分区-租户授权表 | `idx_zone_tenants_zone_id`, `idx_zone_tenants_tenant_id`, `uq_zone_tenant` |
 | `devices` | 设备表 | `idx_devices_tenant_id`, `idx_devices_is_online`, `idx_devices_last_seen` |
 | `device_data` | 设备数据（时序） | Hypertable, `idx_device_data_time`, `idx_device_data_airstate` |
 | `alarms` | 告警表 | `idx_alarms_tenant_id`, `idx_alarms_device_id`, `idx_alarms_occurred_at` |
 | `operation_logs` | 操作日志 | `idx_operation_logs_tenant_id`, `idx_operation_logs_user_id`, `idx_operation_logs_action` |
 | `protocol_versions` | 协议版本注册 | - |
+
+### zone_tenants 分区授权表（2026-04-20）
+
+**用途**：控制哪些租户可以访问哪些分区的设备。
+
+**字段**：
+- `id` - 主键
+- `zone_id` - 分区ID（外键，级联删除）
+- `tenant_id` - 租户ID（外键，级联删除）
+- `created_at` - 创建时间
+
+**约束**：
+- `uq_zone_tenant` - 唯一约束（zone_id + tenant_id），防止重复授权
+
+**权限规则**：
+- 观察员/操作员只能看到所属租户授权分区内的设备
+- 管理员可以看到租户内所有设备（包括未分区设备）
 
 ### Phase 2.2 新增表
 
@@ -441,6 +483,7 @@ backend/
 | 迁移文件 | 描述 | 创建日期 |
 |----------|------|----------|
 | `b9f4d3e6f2c5_add_airstate_index_for_runtime_queries.py` | 添加 airstate 索引优化运行时间查询 | 2026-04-15 |
+| `c1e2f3a4b5d6_add_zone_tenants_table.py` | 创建分区-租户授权表（设备权限管理） | 2026-04-20 |
 
 ### 索引说明
 
@@ -552,5 +595,6 @@ pytest tests/unit/test_permissions.py
 
 ### 测试统计
 
-- 单元测试：200+ tests
-- 跳过测试：23 (需项目根目录文件)
+- 单元测试：486+ tests
+- 跳过测试：46 (需项目根目录文件)
+- 设备权限测试：17 tests（test_device_permission.py + test_device_api_permission.py）

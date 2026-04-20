@@ -1,6 +1,7 @@
 """
 设备 API 端点
 使用新的权限系统进行访问控制
+包含基于分区授权的设备访问过滤
 
 注意：批量操作路由必须在/{device_id}路由之前定义，否则batch会被当作device_id处理
 """
@@ -15,6 +16,7 @@ from sqlalchemy.orm import outerjoin, selectinload
 
 from app.core.database import get_db
 from app.models import Alarm, Device, DeviceData, User, Zone
+from app.models.models import ZoneTenant
 from app.mqtt import get_mqtt_client
 from app.schemas import (
     BatchControlRequest,
@@ -101,10 +103,31 @@ async def list_devices(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_permission(Permission.DEVICE_READ))
 ):
-    """获取设备列表，包含实时数据和分区信息"""
+    """获取设备列表，包含实时数据和分区信息
+
+    权限规则：
+    - 系统管理员（admin）：可以看到租户内所有设备
+    - 观察员/操作员：只能看到所属租户授权分区内的设备
+    - 未分区的设备：仅管理员可见
+    """
     # 处理空字符串 keyword（前端可能传递 keyword=""）
     if keyword == "":
         keyword = None
+
+    # 分区权限过滤：非管理员只能看到已授权分区内的设备
+    authorized_zone_ids = None
+    if current_user.role != "admin":
+        # 查询用户租户被授权的分区ID列表
+        authorized_zones_result = await db.execute(
+            select(ZoneTenant.zone_id).where(
+                ZoneTenant.tenant_id == current_user.tenant_id
+            )
+        )
+        authorized_zone_ids = [row[0] for row in authorized_zones_result.all()]
+
+        # 如果没有授权分区，返回空列表
+        if not authorized_zone_ids:
+            return DeviceListResponse(items=[], total=0, skip=skip, limit=limit)
 
     # 使用 DISTINCT ON 获取每个设备的最新数据（PostgreSQL 特有）
     # 先按 device_id 分组，取时间最新的那条记录
@@ -124,8 +147,15 @@ async def list_devices(
 
     # 基础查询条件（用于计数和查询）
     base_conditions = [Device.tenant_id == current_user.tenant_id]
-    if zone_id:
+
+    # 分区权限过滤
+    if authorized_zone_ids is not None:
+        # 非管理员：只能看到授权分区内的设备
+        base_conditions.append(Device.zone_id.in_(authorized_zone_ids))
+    elif zone_id:
+        # 管理员可以按指定分区过滤
         base_conditions.append(Device.zone_id == zone_id)
+
     if is_online is not None:
         base_conditions.append(Device.is_online == is_online)
     if protocol_version:

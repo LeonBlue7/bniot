@@ -124,16 +124,16 @@ class TestOfflineThreshold:
         """测试离线阈值默认值"""
         from app.services.device_monitor import OFFLINE_THRESHOLD_MINUTES
 
-        # 默认应该为 5 分钟
-        assert OFFLINE_THRESHOLD_MINUTES == 5
+        # 默认应该为 15 分钟
+        assert OFFLINE_THRESHOLD_MINUTES == 15
 
     def test_threshold_seconds_conversion(self):
         """测试阈值秒数转换"""
         from app.services.device_monitor import DeviceMonitorService
 
         service = DeviceMonitorService()
-        # 5 分钟应该转换为 300 秒
-        assert service.offline_threshold_seconds == 300
+        # 15 分钟应该转换为 900 秒
+        assert service.offline_threshold_seconds == 900
 
 
 class TestDeviceMonitorLogic:
@@ -148,11 +148,12 @@ class TestDeviceMonitorLogic:
         threshold_time = now - timedelta(seconds=service.offline_threshold_seconds)
 
         # last_seen_at 如果小于 threshold_time，应该被标记为离线
-        old_time = now - timedelta(minutes=10)
+        # 20分钟超过15分钟阈值
+        old_time = now - timedelta(minutes=20)
         assert old_time < threshold_time
 
         # last_seen_at 如果大于 threshold_time，应该保持在线
-        recent_time = now - timedelta(minutes=2)
+        recent_time = now - timedelta(minutes=10)
         assert recent_time > threshold_time
 
     def test_null_last_seen_at_should_be_offline(self):

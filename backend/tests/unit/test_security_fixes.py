@@ -340,7 +340,7 @@ class TestSQLInjectionProtection:
                 current_user=user
             )
             # 应该返回空列表或安全过滤的结果，不应该报错
-            assert isinstance(result, list)
+            assert hasattr(result, 'items')  # DeviceListResponse has items attribute
 
         # 验证数据没有被删除
         all_devices = await db_session.execute(
@@ -386,7 +386,7 @@ class TestSQLInjectionProtection:
             current_user=user
         )
         # 应该安全处理特殊字符
-        assert isinstance(result, list)
+        assert hasattr(result, 'items')
 
 
 # ============================================================================
