@@ -53,6 +53,31 @@ export interface DeviceListResponse {
   limit: number
 }
 
+// 参数信息接口
+export interface ParamInfo {
+  code: string
+  name: string
+  type: string
+  range: string | null
+  desc: string | null
+  current_value: any | null
+}
+
+// 设备参数响应接口
+export interface DeviceParamsResponse {
+  version: string
+  params: ParamInfo[]
+  supported_codes: string[]
+}
+
+// 参数设置响应接口
+export interface SetParamResponse {
+  success: boolean
+  message: string
+  param_code: string | null
+  validation_errors: string[] | null
+}
+
 export const deviceApi = {
   /**
    * 获取仪表盘统计
@@ -157,6 +182,36 @@ export const deviceApi = {
     const response = await apiClient.post<BatchOperationResponse>('/devices/batch/move-zone', {
       device_ids: deviceIds,
       zone_id: zoneId
+    })
+    return response.data
+  },
+
+  /**
+   * 获取设备支持的参数列表
+   */
+  async getParams(id: number): Promise<DeviceParamsResponse> {
+    const response = await apiClient.get<DeviceParamsResponse>(`/devices/${id}/params`)
+    return response.data
+  },
+
+  /**
+   * 设置单个设备参数
+   */
+  async setParam(id: number, paramCode: string, paramValue: any): Promise<SetParamResponse> {
+    const response = await apiClient.post<SetParamResponse>(`/devices/${id}/set-param`, {
+      param_code: paramCode,
+      param_value: paramValue
+    })
+    return response.data
+  },
+
+  /**
+   * 批量设置设备参数
+   */
+  async batchSetParam(deviceIds: number[], params: Record<string, any>): Promise<BatchOperationResponse> {
+    const response = await apiClient.post<BatchOperationResponse>('/devices/batch/set-param', {
+      device_ids: deviceIds,
+      params
     })
     return response.data
   }

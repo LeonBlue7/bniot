@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-20 (分区授权增强)
+**Last Updated:** 2026-04-21 (参数设置功能)
 
 ## 目录结构
 
@@ -11,7 +11,7 @@ frontend/
 │   ├── api/                 # API 模块
 │   │   ├── client.ts        # Axios 客户端（含 CSRF 保护）
 │   │   ├── auth.ts          # 认证 API（login、getCurrentUser、changePassword）
-│   │   ├── devices.ts       # 设备 API（含批量移动分区）
+│   │   ├── devices.ts       # 设备 API（含批量移动分区、参数设置）
 │   │   ├── zones.ts         # 分区 API（含授权管理）
 │   │   ├── tenants.ts       # 租户 API（租户列表、当前租户）
 │   │   ├── reports.ts       # 报表 API
@@ -22,7 +22,7 @@ frontend/
 │   │   ├── Login.vue        # 登录页
 │   │   ├── Dashboard.vue    # 仪表盘
 │   │   ├── Devices.vue      # 设备管理（含深色主题标签、批量移动分区）
-│   │   ├── DeviceDetail.vue # 设备详情
+│   │   ├── DeviceDetail.vue # 设备详情（含参数设置功能）
 │   │   ├── Zones.vue        # 分区管理（含授权管理界面）
 │   │   ├── Alarms.vue       # 告警中心
 │   │   ├── Reports.vue      # 报表分析（动态导入图表、数据显示优化）
@@ -70,6 +70,7 @@ frontend/
 │   ├── zones.spec.ts        # 分区管理
 │   ├── alarms.spec.ts       # 告警中心
 │   ├── reports.spec.ts      # 报表分析
+│   ├── param-setting.spec.ts # 参数设置功能
 │   ├── comprehensive-test.spec.ts # 全面功能测试
 │   └── full-test.spec.ts    # 全流程测试
 ├── index.html
@@ -132,9 +133,23 @@ BASE_URL=https://www.jxbonner.cloud npx playwright test
 
 ---
 
-## 新增页面功能（2026-04-20）
+## 新增页面功能
 
-### 分区授权管理 (`Zones.vue`)
+### 参数设置功能 (`DeviceDetail.vue`) - 2026-04-21
+
+系统管理员和操作员可远程设置设备参数：
+- **空调开机条件**：夏天/冬天开机温度
+- **空调关机条件**：夏天/冬天关机温度
+- **开关机时间**：开机时间段1/2、关机时间段1/2（格式：HH:MM~HH:MM）
+- **联动模式**：关闭/温度联动/时间段联动/温度+时间联动
+- **其他参数**：上送周期、温度告警阈值、湿度告警阈值
+- **V20 独有参数**：冬天开始月份、冬天结束月份、空调关机间隔
+
+**版本差异化处理**：
+- V10 设备显示 V10 参数集（冬天开机温度 105、冬天关机温度 106）
+- V20 设备显示 V20 参数集（夏天关机温度 104、冬天关机温度 107、月份参数 108/109）
+
+### 分区授权管理 (`Zones.vue`) - 2026-04-20
 
 管理员可以在分区列表中管理授权：
 - 查看每个分区的授权列表
@@ -172,6 +187,9 @@ deviceApi.getData(deviceId, params) // 设备历史数据
 deviceApi.getEvents(deviceId, params) // 开关机记录（仅V10）
 deviceApi.getRuntime(deviceId)      // 运行时间统计（仅V10）
 deviceApi.batchMoveZone(deviceIds, zoneId) // 批量移动设备分区
+deviceApi.getParams(deviceId)       // 获取设备参数列表（V10/V20差异化）
+deviceApi.setParam(deviceId, paramCode, paramValue) // 设置单个参数
+deviceApi.batchSetParam(deviceIds, params) // 批量设置参数
 ```
 
 **批量移动分区**（2026-04-20 新增）：
@@ -435,6 +453,31 @@ interface BatchOperationResponse {
   failed_details: Array<{ device_id: number; reason: string }>
 }
 
+// 参数信息（2026-04-21 新增）
+interface ParamInfo {
+  code: string              // 参数编号（如 101, 102）
+  name: string              // 参数名称
+  type: string              // 参数类型（int/float/string）
+  range: string | null      // 参数范围
+  desc: string | null       // 参数描述
+  current_value: any | null // 当前值
+}
+
+// 设备参数响应（2026-04-21 新增）
+interface DeviceParamsResponse {
+  version: string           // 协议版本（V10/V20）
+  params: ParamInfo[]       // 参数列表
+  supported_codes: string[] // 支持的参数编号列表
+}
+
+// 参数设置响应（2026-04-21 新增）
+interface SetParamResponse {
+  success: boolean
+  message: string
+  param_code: string | null
+  validation_errors: string[] | null
+}
+
 // 告警
 interface Alarm {
   id: number
@@ -478,7 +521,7 @@ npm run e2e:headed
 ### 测试覆盖率
 
 - 单元测试：399 tests
-- E2E 测试：45 tests
+- E2E 测试：54 tests（含参数设置功能 9 tests）
 - 覆盖率：90%+
 
 ---

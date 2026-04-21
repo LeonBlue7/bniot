@@ -471,6 +471,37 @@ class BatchSetParamRequest(BaseModel):
     params: dict[str, Any] = Field(..., description="参数键值对")
 
 
+class SetParamRequest(BaseModel):
+    """单个参数设置请求"""
+    param_code: str = Field(..., description="参数编号")
+    param_value: Any = Field(..., description="参数值")
+
+
+class SetParamResponse(BaseModel):
+    """参数设置响应"""
+    success: bool = Field(..., description="是否成功")
+    message: str = Field(..., description="响应消息")
+    param_code: str | None = Field(None, description="参数编号")
+    validation_errors: list[str] | None = Field(None, description="验证错误列表")
+
+
+class ParamInfoResponse(BaseModel):
+    """参数信息响应"""
+    code: str = Field(..., description="参数编号")
+    name: str = Field(..., description="参数名称")
+    type: str = Field(..., description="参数类型")
+    range: str | None = Field(None, description="参数范围")
+    desc: str | None = Field(None, description="参数描述")
+    current_value: Any | None = Field(None, description="当前值")
+
+
+class DeviceParamsResponse(BaseModel):
+    """设备参数响应"""
+    version: str = Field(..., description="协议版本")
+    params: list[ParamInfoResponse] = Field(..., description="参数列表")
+    supported_codes: list[str] = Field(..., description="支持的参数编号列表")
+
+
 # ============ 通知规则 ============
 class NotificationRuleBase(BaseModel):
     """通知规则基础"""

@@ -23,16 +23,20 @@ from app.schemas import (
     BatchDeleteRequest,
     BatchMoveZoneRequest,
     BatchOperationResponse,
+    BatchSetParamRequest,
     DashboardStats,
     DeviceCreate,
     DeviceDetailResponse,
     DeviceEventsResponse,
     DeviceListItemResponse,
     DeviceListResponse,
+    DeviceParamsResponse,
     DeviceResponse,
     DeviceRuntimeResponse,
     DeviceUpdate,
     Message,
+    SetParamRequest,
+    SetParamResponse,
 )
 from app.services.auth import get_current_user
 from app.services.permissions import Permission, require_permission
@@ -929,3 +933,256 @@ async def get_device_runtime(
         "today_runtime": today_runtime,
         "month_runtime": month_runtime
     }
+
+
+# ============ 参数设置 API ============
+
+@router.get("/{device_id}/params", response_model=DeviceParamsResponse)
+async def get_device_params(
+    device_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(Permission.DEVICE_READ))
+):
+    """
+    获取设备支持的参数列表
+
+    返回设备协议版本支持的所有可设置参数信息
+    """
+    from app.services.param_validator import ParamValidator
+    from app.schemas.schemas import ParamInfoResponse
+
+    result = await db.execute(
+        select(Device).where(
+            Device.id == device_id,
+            Device.tenant_id == current_user.tenant_id
+        )
+    )
+    device = result.scalar_one_or_none()
+    if not device:
+        raise HTTPException(status_code=404, detail="设备不存在")
+
+    validator = ParamValidator(device.protocol_version or "V10")
+    param_mapping = validator.parser.get_param_mapping()
+
+    params_list = []
+    for code, info in param_mapping.items():
+        params_list.append(ParamInfoResponse(
+            code=code,
+            name=info.get("name", ""),
+            type=info.get("type", ""),
+            range=info.get("range"),
+            desc=info.get("desc"),
+            current_value=None  # 当前值需要从设备设置中获取
+        ))
+
+    return DeviceParamsResponse(
+        version=device.protocol_version or "V10",
+        params=params_list,
+        supported_codes=list(param_mapping.keys())
+    )
+
+
+@router.post("/{device_id}/set-param", response_model=SetParamResponse)
+async def set_device_param(
+    device_id: int,
+    param_req: SetParamRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(Permission.DEVICE_CONTROL))
+):
+    """
+    设置单个设备参数
+
+    发送 MQTT /set 消息到设备，设置指定参数值
+
+    权限要求：DEVICE_CONTROL（管理员和操作员）
+    """
+    from app.services.param_validator import ParamValidator
+    from app.services.device_permission import DevicePermissionService
+
+    # 检查设备访问权限
+    permission_service = DevicePermissionService(db)
+    has_access = await permission_service.can_access_device(current_user, device_id)
+    if not has_access:
+        raise HTTPException(status_code=403, detail="无权访问此设备")
+
+    result = await db.execute(
+        select(Device).where(Device.id == device_id)
+    )
+    device = result.scalar_one_or_none()
+    if not device:
+        raise HTTPException(status_code=404, detail="设备不存在")
+
+    # 参数验证
+    validator = ParamValidator(device.protocol_version or "V10")
+    validation_result = validator.validate(param_req.param_code, param_req.param_value)
+
+    if not validation_result.valid:
+        return SetParamResponse(
+            success=False,
+            message=f"参数验证失败: {validation_result.error}",
+            param_code=param_req.param_code,
+            validation_errors=[validation_result.error]
+        )
+
+    # 检查设备是否在线
+    if not device.is_online:
+        return SetParamResponse(
+            success=False,
+            message="设备离线，无法设置参数",
+            param_code=param_req.param_code,
+            validation_errors=["设备离线"]
+        )
+
+    # 发送 MQTT 消息
+    mqtt = get_mqtt_client()
+    topic = f"/down/{device.device_id}/set"
+    payload = json.dumps({
+        "Name": param_req.param_code,
+        "Value": param_req.param_value,
+        "timestamp": str(int(datetime.now(UTC).timestamp()))
+    })
+
+    if mqtt.publish(topic, payload):
+        # 记录操作日志
+        log_service = OperationLogService()
+        await log_service.log(
+            db,
+            user=current_user,
+            action=ActionType.DEVICE_CONTROL,
+            resource_type=ResourceType.DEVICE,
+            details={
+                "device_id": device_id,
+                "device_name": device.name,
+                "operation": "set_param",
+                "param_code": param_req.param_code,
+                "param_value": param_req.param_value
+            },
+            ip_address=request.client.host if request.client else None
+        )
+        await db.commit()
+
+        return SetParamResponse(
+            success=True,
+            message="参数设置命令已发送",
+            param_code=param_req.param_code
+        )
+    else:
+        return SetParamResponse(
+            success=False,
+            message="MQTT 发送失败",
+            param_code=param_req.param_code,
+            validation_errors=["MQTT 连接异常"]
+        )
+
+
+@router.post("/batch/set-param", response_model=BatchOperationResponse)
+async def batch_set_param(
+    request: Request,
+    batch_req: BatchSetParamRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission(Permission.DEVICE_CONTROL))
+):
+    """
+    批量设置设备参数
+
+    同时设置多个设备的相同参数值
+
+    权限要求：DEVICE_CONTROL（管理员和操作员）
+    """
+    from app.services.param_validator import ParamValidator
+    from app.services.device_permission import DevicePermissionService
+
+    log_service = OperationLogService()
+    permission_service = DevicePermissionService(db)
+    success_count = 0
+    failed_details = []
+
+    # 验证所有参数
+    for device_id in batch_req.device_ids:
+        has_access = await permission_service.can_access_device(current_user, device_id)
+        if not has_access:
+            failed_details.append({
+                "device_id": device_id,
+                "reason": "无权访问此设备"
+            })
+            continue
+
+        result = await db.execute(
+            select(Device).where(Device.id == device_id)
+        )
+        device = result.scalar_one_or_none()
+
+        if not device:
+            failed_details.append({
+                "device_id": device_id,
+                "reason": "设备不存在"
+            })
+            continue
+
+        if not device.is_online:
+            failed_details.append({
+                "device_id": device_id,
+                "reason": "设备离线，无法设置参数"
+            })
+            continue
+
+        # 验证参数
+        validator = ParamValidator(device.protocol_version or "V10")
+        validation_results = validator.validate_batch(batch_req.params)
+
+        invalid_params = [code for code, result in validation_results.items() if not result.valid]
+        if invalid_params:
+            failed_details.append({
+                "device_id": device_id,
+                "reason": f"参数验证失败: {', '.join(invalid_params)}"
+            })
+            continue
+
+        # 发送参数设置消息
+        mqtt = get_mqtt_client()
+        timestamp = str(int(datetime.now(UTC).timestamp()))
+
+        device_success = True
+        for param_code, param_value in batch_req.params.items():
+            topic = f"/down/{device.device_id}/set"
+            payload = json.dumps({
+                "Name": param_code,
+                "Value": param_value,
+                "timestamp": timestamp
+            })
+
+            if not mqtt.publish(topic, payload):
+                device_success = False
+                break
+
+        if device_success:
+            success_count += 1
+        else:
+            failed_details.append({
+                "device_id": device_id,
+                "reason": "MQTT 发送失败"
+            })
+
+    # 记录操作日志
+    await log_service.log(
+        db,
+        user=current_user,
+        action=ActionType.DEVICE_BATCH_CONTROL,
+        resource_type=ResourceType.DEVICE,
+        details={
+            "device_ids": batch_req.device_ids,
+            "operation": "batch_set_param",
+            "params": batch_req.params,
+            "success_count": success_count,
+            "failed_count": len(failed_details)
+        },
+        ip_address=request.client.host if request.client else None
+    )
+    await db.commit()
+
+    return BatchOperationResponse(
+        success_count=success_count,
+        failed_count=len(failed_details),
+        failed_details=failed_details
+    )

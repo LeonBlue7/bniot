@@ -243,6 +243,15 @@
         style="margin-top: 16px"
         size="small"
       >
+        <template #extra>
+          <a-button
+            type="primary"
+            size="small"
+            @click="showParamEditModal"
+          >
+            编辑参数
+          </a-button>
+        </template>
         <a-empty
           v-if="!device?.settings"
           description="暂无参数数据"
@@ -354,6 +363,261 @@
         </a-descriptions-item>
       </a-descriptions>
     </a-modal>
+
+    <!-- 参数编辑弹窗 -->
+    <a-modal
+      v-model:open="paramEditModalVisible"
+      title="参数设置"
+      width="600px"
+      :confirm-loading="paramEditLoading"
+      @ok="handleParamEditSubmit"
+      @cancel="resetParamEditForm"
+    >
+      <a-spin :spinning="paramsLoading">
+        <a-form
+          ref="paramEditFormRef"
+          :model="paramEditForm"
+          :label-col="{ span: 6 }"
+          :wrapper-col="{ span: 18 }"
+        >
+          <a-alert
+            v-if="device?.protocol_version === 'V10'"
+            message="当前设备为 V10 版本，部分参数不可设置"
+            type="info"
+            show-icon
+            style="margin-bottom: 16px"
+          />
+
+          <!-- 联动模式 -->
+          <a-form-item
+            label="联动模式"
+            name="101"
+          >
+            <a-select v-model:value="paramEditForm['101']">
+              <a-select-option :value="0">
+                关闭
+              </a-select-option>
+              <a-select-option :value="1">
+                温度联动
+              </a-select-option>
+              <a-select-option :value="2">
+                时间段联动
+              </a-select-option>
+              <a-select-option :value="3">
+                温度+时间联动
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+
+          <!-- 温度设定 -->
+          <a-form-item
+            label="温度设定"
+            name="102"
+          >
+            <a-input-number
+              v-model:value="paramEditForm['102']"
+              :min="-5"
+              :max="45"
+              :precision="1"
+              addon-after="C"
+            />
+          </a-form-item>
+
+          <!-- 空调开机条件 -->
+          <a-divider>空调开机条件</a-divider>
+
+          <!-- 夏天开机温度 -->
+          <a-form-item
+            label="夏天开机温度"
+            name="103"
+          >
+            <a-input-number
+              v-model:value="paramEditForm['103']"
+              :min="-5"
+              :max="45"
+              :precision="1"
+              addon-after="C"
+            />
+          </a-form-item>
+
+          <!-- 夏天关机温度 -->
+          <a-form-item
+            label="夏天关机温度"
+            name="104"
+          >
+            <a-input-number
+              v-model:value="paramEditForm['104']"
+              :min="-5"
+              :max="45"
+              :precision="1"
+              addon-after="C"
+            />
+          </a-form-item>
+
+          <!-- 冬天开机温度 (V10) -->
+          <a-form-item
+            v-if="device?.protocol_version === 'V10'"
+            label="冬天开机温度"
+            name="105"
+          >
+            <a-input-number
+              v-model:value="paramEditForm['105']"
+              :min="-5"
+              :max="45"
+              :precision="1"
+              addon-after="C"
+            />
+          </a-form-item>
+
+          <!-- 冬天关机温度 (V10:106, V20:107) -->
+          <a-form-item
+            label="冬天关机温度"
+            :name="device?.protocol_version === 'V20' ? '107' : '106'"
+          >
+            <a-input-number
+              v-model:value="paramEditForm[device?.protocol_version === 'V20' ? '107' : '106']"
+              :min="-5"
+              :max="45"
+              :precision="1"
+              addon-after="C"
+            />
+          </a-form-item>
+
+          <!-- V20 独有参数 -->
+          <template v-if="device?.protocol_version === 'V20'">
+            <a-divider>V20 独有参数</a-divider>
+
+            <!-- 冬天开始月份 -->
+            <a-form-item
+              label="冬天开始月份"
+              name="108"
+            >
+              <a-input-number
+                v-model:value="paramEditForm['108']"
+                :min="1"
+                :max="12"
+              />
+            </a-form-item>
+
+            <!-- 冬天结束月份 -->
+            <a-form-item
+              label="冬天结束月份"
+              name="109"
+            >
+              <a-input-number
+                v-model:value="paramEditForm['109']"
+                :min="1"
+                :max="12"
+              />
+            </a-form-item>
+
+            <!-- 空调关机间隔 -->
+            <a-form-item
+              label="空调关机间隔"
+              name="110"
+            >
+              <a-input-number
+                v-model:value="paramEditForm['110']"
+                :min="1"
+                :max="60"
+                addon-after="分钟"
+              />
+            </a-form-item>
+          </template>
+
+          <!-- 开关机时间设置 -->
+          <a-divider>开关机时间设置</a-divider>
+
+          <!-- 开机时间段1 -->
+          <a-form-item
+            label="开机时间段1"
+            name="201"
+          >
+            <a-input
+              v-model:value="paramEditForm['201']"
+              placeholder="HH:MM~HH:MM"
+            />
+          </a-form-item>
+
+          <!-- 关机时间段1 -->
+          <a-form-item
+            label="关机时间段1"
+            name="202"
+          >
+            <a-input
+              v-model:value="paramEditForm['202']"
+              placeholder="HH:MM~HH:MM"
+            />
+          </a-form-item>
+
+          <!-- 开机时间段2 -->
+          <a-form-item
+            label="开机时间段2"
+            name="203"
+          >
+            <a-input
+              v-model:value="paramEditForm['203']"
+              placeholder="HH:MM~HH:MM"
+            />
+          </a-form-item>
+
+          <!-- 关机时间段2 -->
+          <a-form-item
+            label="关机时间段2"
+            name="204"
+          >
+            <a-input
+              v-model:value="paramEditForm['204']"
+              placeholder="HH:MM~HH:MM"
+            />
+          </a-form-item>
+
+          <!-- 其他参数 -->
+          <a-divider>其他参数</a-divider>
+
+          <!-- 上送周期 -->
+          <a-form-item
+            label="上送周期"
+            name="501"
+          >
+            <a-input-number
+              v-model:value="paramEditForm['501']"
+              :min="1"
+              :max="1440"
+              addon-after="分钟"
+            />
+          </a-form-item>
+
+          <!-- 温度告警阈值 -->
+          <a-form-item
+            label="温度告警阈值"
+            name="401"
+          >
+            <a-input-number
+              v-model:value="paramEditForm['401']"
+              :min="-5"
+              :max="45"
+              :precision="1"
+              addon-after="C"
+            />
+          </a-form-item>
+
+          <!-- 湿度告警阈值 -->
+          <a-form-item
+            label="湿度告警阈值"
+            name="402"
+          >
+            <a-input-number
+              v-model:value="paramEditForm['402']"
+              :min="0"
+              :max="100"
+              :precision="1"
+              addon-after="%"
+            />
+          </a-form-item>
+        </a-form>
+      </a-spin>
+    </a-modal>
   </div>
 </template>
 
@@ -363,8 +627,9 @@ import { useRouter, useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { useDeviceStore } from '@/stores/devices'
 import { deviceApi } from '@/api/devices'
+import type { DeviceParamsResponse } from '@/api/devices'
 import dayjs from 'dayjs'
-import type { TableProps } from 'ant-design-vue'
+import type { TableProps, FormInstance } from 'ant-design-vue'
 import type { DeviceEventsResponse } from '@/api/devices'
 
 const router = useRouter()
@@ -381,6 +646,14 @@ const dataLoading = ref(false)
 const eventsLoading = ref(false)
 const events = ref<DeviceEventsResponse | null>(null)
 const paramsModalVisible = ref(false)
+
+// 参数编辑弹窗相关
+const paramEditModalVisible = ref(false)
+const paramEditLoading = ref(false)
+const paramsLoading = ref(false)
+const paramEditFormRef = ref<FormInstance>()
+const paramEditForm = ref<Record<string, any>>({})
+const deviceParams = ref<DeviceParamsResponse | null>(null)
 
 // 开关机事件表格列
 const eventColumns: TableProps['columns'] = [
@@ -490,6 +763,108 @@ function handleEventsPageChange(page: number) {
 // 显示完整参数弹窗
 function showFullParams() {
   paramsModalVisible.value = true
+}
+
+// 显示参数编辑弹窗
+async function showParamEditModal() {
+  paramEditModalVisible.value = true
+  paramsLoading.value = true
+
+  try {
+    // 获取设备参数信息
+    deviceParams.value = await deviceApi.getParams(deviceId.value)
+
+    // 用当前值初始化表单
+    const settings = device.value?.settings || {}
+    paramEditForm.value = {}
+
+    // 填充表单默认值
+    for (const param of deviceParams.value.params) {
+      if (param.current_value != null) {
+        paramEditForm.value[param.code] = param.current_value
+      }
+    }
+  } catch (err) {
+    message.error('获取参数信息失败')
+    paramEditModalVisible.value = false
+  } finally {
+    paramsLoading.value = false
+  }
+}
+
+// 提交参数编辑
+async function handleParamEditSubmit() {
+  paramEditLoading.value = true
+
+  try {
+    // 验证时间段格式
+    const timeParams = ['201', '202', '203', '204']
+    for (const code of timeParams) {
+      const value = paramEditForm.value[code]
+      if (value && !isValidTimePeriod(value)) {
+        message.error(`时间段格式错误，应为 HH:MM~HH:MM`)
+        paramEditLoading.value = false
+        return
+      }
+    }
+
+    // 过滤出有变化的参数
+    const changedParams: Record<string, any> = {}
+    const settings = device.value?.settings || {}
+
+    for (const [code, value] of Object.entries(paramEditForm.value)) {
+      // 只发送有变化且不为空的参数
+      if (value != null && value !== '' && settings[code] !== value) {
+        changedParams[code] = value
+      }
+    }
+
+    if (Object.keys(changedParams).length === 0) {
+      message.info('没有参数需要修改')
+      paramEditModalVisible.value = false
+      paramEditLoading.value = false
+      return
+    }
+
+    // 使用批量参数设置 API（支持多参数单设备）
+    const result = await deviceApi.batchSetParam([deviceId.value], changedParams)
+
+    if (result.success_count > 0) {
+      message.success('参数设置命令已发送')
+      paramEditModalVisible.value = false
+
+      // 刷新设备信息
+      await deviceStore.fetchDevice(deviceId.value)
+    } else {
+      const failedReason = result.failed_details[0]?.reason || '参数设置失败'
+      message.error(failedReason)
+    }
+  } catch (err: any) {
+    message.error(err.response?.data?.detail || '参数设置失败')
+  } finally {
+    paramEditLoading.value = false
+  }
+}
+
+// 重置参数编辑表单
+function resetParamEditForm() {
+  paramEditForm.value = {}
+  deviceParams.value = null
+}
+
+// 验证时间段格式
+function isValidTimePeriod(value: string): boolean {
+  const pattern = /^\d{2}:\d{2}~\d{2}:\d{2}$/
+  if (!pattern.test(value)) return false
+
+  const parts = value.split('~')
+  for (const part of parts) {
+    const [hour, minute] = part.split(':').map(Number)
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      return false
+    }
+  }
+  return true
 }
 
 // 监听设备 ID 变化

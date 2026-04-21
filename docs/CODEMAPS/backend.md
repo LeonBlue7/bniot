@@ -1,7 +1,7 @@
 # 后端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-20 (分区授权增强)
+**Last Updated:** 2026-04-21 (参数设置功能)
 
 ## 目录结构
 
@@ -58,6 +58,7 @@ backend/
 │   │   ├── version_detector.py  # 版本检测
 │   │   ├── permissions.py       # 权限系统（Phase 1.1）
 │   │   ├── device_permission.py # 设备权限服务（分区授权过滤）
+│   │   ├── param_validator.py   # 参数验证器（V10/V20差异化）
 │   │   ├── operation_log.py     # 操作日志（Phase 1.2）
 │   │   ├── realtime_push.py     # 实时数据推送（Phase 2.3）
 │   │   ├── device_monitor.py    # 设备离线监控（Phase 4.3）
@@ -98,6 +99,7 @@ backend/
 │       ├── test_device_permission.py # 设备权限服务测试
 │       ├── test_device_api_permission.py # 设备API权限测试
 │       ├── test_zone_authorization.py # 分区授权测试（自动授权、批量移动）
+│       ├── test_param_setting.py # 参数设置测试（31 tests）
 │       └── test_device_list_extension.py # 设备列表扩展测试
 ├── Dockerfile
 ├── alembic.ini              # Alembic 配置
@@ -159,9 +161,12 @@ backend/
 | GET | `/{device_id}/data` | 设备历史数据 |
 | GET | `/{device_id}/events` | 开关机事件记录 |
 | GET | `/{device_id}/runtime` | 运行时间统计 |
+| GET | `/{device_id}/params` | 获取设备参数列表 |
+| POST | `/{device_id}/set-param` | 设置单个设备参数 |
 | POST | `/batch/control` | 批量控制设备 |
 | POST | `/batch/delete` | 批量删除设备 |
 | POST | `/batch/move-zone` | 批量迁移分区 |
+| POST | `/batch/set-param` | 批量设置参数 |
 
 **新增响应格式（2026-04-16）**：
 
@@ -172,6 +177,32 @@ backend/
   "total": 76,        // 设备总数
   "skip": 0,          // 偏移量
   "limit": 20         // 每页数量
+}
+```
+
+**参数设置功能（2026-04-21）**：
+
+| 端点 | 描述 | 权限 |
+|------|------|------|
+| `GET /{device_id}/params` | 获取设备参数列表（含当前值） | DEVICE_CONTROL |
+| `POST /{device_id}/set-param` | 设置单个参数（发送 MQTT /set） | DEVICE_CONTROL |
+| `POST /batch/set-param` | 批量设置多设备参数 | DEVICE_CONTROL |
+
+**参数请求格式**：
+```json
+{
+  "param_code": "102",    // 参数编号
+  "param_value": 26.5     // 参数值
+}
+```
+
+**参数响应格式**：
+```json
+{
+  "success": true,
+  "message": "参数设置命令已发送",
+  "param_code": "102",
+  "validation_errors": null
 }
 ```
 
@@ -327,6 +358,30 @@ backend/
   - 观察员/操作员：只能查看已授权分区内的设备
   - 未分区设备：仅管理员可见
   - 禁用用户：无任何设备访问权限
+
+### 参数验证器 (`services/param_validator.py`) - 2026-04-21
+
+V10/V20 协议版本差异化参数验证：
+- `ParamValidator` - 参数验证器类
+- `validate(param_code, param_value)` - 验证单个参数
+- `validate_batch(params)` - 批量验证参数
+- `get_supported_params()` - 获取支持的参数列表
+- `get_param_info(param_code)` - 获取参数信息
+
+**验证规则**：
+- 温度参数范围：-5.0 ~ 45.0
+- 时间段格式：HH:MM~HH:MM
+- 月份范围：1 ~ 12
+- V20 独有参数：108/109/110（V10 不支持）
+
+**关键参数编号**：
+| 编号 | V10 含义 | V20 含义 |
+|------|---------|---------|
+| 104 | 冬天开机温度 | 夏天关机温度 |
+| 107 | 无 | 冬天关机温度 |
+| 108 | 无 | 冬天开始月份 |
+| 109 | 无 | 冬天结束月份 |
+| 110 | 无 | 空调关机间隔 |
 
 ### 操作日志服务 (`services/operation_log.py`) - Phase 1.2
 
@@ -618,7 +673,8 @@ pytest tests/unit/test_permissions.py
 
 ### 测试统计
 
-- 单元测试：550+ tests
+- 单元测试：576 tests（含参数设置 31 tests）
 - 跳过测试：46 (需项目根目录文件)
 - 设备权限测试：17 tests（test_device_permission.py + test_device_api_permission.py）
 - 分区授权测试：15 tests（test_zone_authorization.py）
+- 参数设置测试：31 tests（test_param_setting.py）
