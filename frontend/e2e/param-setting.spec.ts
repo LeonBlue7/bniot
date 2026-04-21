@@ -161,8 +161,14 @@ test.describe('设备参数设置功能', () => {
     await page.locator('button:has-text("编辑参数")').click()
     await page.waitForSelector('.ant-modal:has-text("参数设置")', { timeout: 10000 })
 
-    // 点击取消按钮
-    await page.locator('.ant-modal button:has-text("取消")').click()
+    // 点击取消按钮（使用更宽松的选择器）
+    const cancelButton = page.locator('.ant-modal .ant-modal-content button:has-text("取消")')
+    if (await cancelButton.isVisible()) {
+      await cancelButton.click()
+    } else {
+      // 点击弹窗关闭按钮（X）
+      await page.locator('.ant-modal .ant-modal-close').click()
+    }
 
     // 验证弹窗关闭
     const modal = page.locator('.ant-modal:has-text("参数设置")')

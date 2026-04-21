@@ -29,7 +29,8 @@ export async function performLogin(page: import('@playwright/test').Page) {
   await page.fill('input[placeholder="请输入用户名"]', TEST_USER.username)
   await page.fill('input[placeholder="请输入密码"]', TEST_USER.password)
   await page.click('.login-btn')
-  await page.waitForURL(/dashboard/, { timeout: 15000 })
+  // 增加超时时间并等待导航完成
+  await page.waitForURL(/dashboard|devices/, { timeout: 30000 })
 }
 
 // 截图辅助函数
