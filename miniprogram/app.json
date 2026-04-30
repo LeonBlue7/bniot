@@ -6,7 +6,9 @@
     "pages/device-detail/device-detail",
     "pages/alarms/alarms",
     "pages/alarm-detail/alarm-detail",
-    "pages/zones/zones"
+    "pages/zones/zones",
+    "pages/reports/reports",
+    "pages/profile/profile"
   ],
   "window": {
     "navigationBarBackgroundColor": "#1890ff",

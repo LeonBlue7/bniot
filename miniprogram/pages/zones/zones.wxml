@@ -1,3 +1,4 @@
+<!--分区列表页面-->
 <view class="zones-page">
   <!-- 加载状态 -->
   <view class="loading-container" wx:if="{{loading}}">
@@ -10,11 +11,16 @@
     <button class="retry-btn" bindtap="loadZones">重新加载</button>
   </view>
 
+  <!-- 管理员提示 -->
+  <view class="admin-tip" wx:if="{{isAdmin && !loading && !errorMsg}}">
+    <text class="tip-text">点击分区可管理授权</text>
+  </view>
+
   <!-- 分区列表 -->
   <view class="zone-list" wx:if="{{!loading && !errorMsg}}">
     <block wx:for="{{zones}}" wx:key="id">
       <view
-        class="zone-item"
+        class="zone-item {{isAdmin ? 'admin-item' : ''}}"
         data-zone="{{item}}"
         bindtap="onZoneTap"
       >
@@ -23,11 +29,70 @@
           <view class="zone-name">{{item.name}}</view>
           <view class="zone-desc" wx:if="{{item.description}}">{{item.description}}</view>
         </view>
-        <view class="zone-arrow">></view>
+        <view class="zone-arrow" wx:if="{{isAdmin}}">授权管理 ></view>
+        <view class="zone-arrow" wx:else>></view>
       </view>
     </block>
 
     <!-- 空状态 -->
-    <empty-state wx:if="{{zones.length === 0}}" text="暂无分区" icon="zone" />
+    <empty-state wx:if="{{zones.length === 0}}" message="暂无分区" />
+  </view>
+</view>
+
+<!-- 授权管理弹窗 -->
+<view class="modal-mask" wx:if="{{showAuthModal}}" bindtap="onHideAuthModal"></view>
+<view class="modal-popup {{showAuthModal ? 'show' : ''}}">
+  <view class="modal-header">
+    <text class="modal-title">{{currentZone.name}} - 授权管理</text>
+    <text class="modal-close" bindtap="onHideAuthModal">×</text>
+  </view>
+
+  <view class="modal-body">
+    <!-- 加载状态 -->
+    <view class="loading-container" wx:if="{{authLoading}}">
+      <view class="loading-text">加载授权列表...</view>
+    </view>
+
+    <!-- 授权列表 -->
+    <view class="auth-list" wx:if="{{!authLoading}}">
+      <view class="auth-header">
+        <text class="auth-title">已授权租户</text>
+        <button class="add-auth-btn" bindtap="onShowTenantPicker">+ 添加授权</button>
+      </view>
+
+      <view class="auth-item" wx:for="{{authorizations}}" wx:key="id">
+        <view class="auth-info">
+          <text class="auth-name">{{item.tenant_name}}</text>
+          <text class="auth-time">{{item.created_at}}</text>
+        </view>
+        <button
+          class="remove-btn"
+          data-tenant-id="{{item.tenant_id}}"
+          catchtap="onRemoveAuth"
+        >移除</button>
+      </view>
+
+      <view class="empty-auth" wx:if="{{authorizations.length === 0}}">
+        <text class="empty-text">暂无授权</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 租户选择弹窗 -->
+<view class="picker-mask" wx:if="{{showTenantPicker}}" bindtap="onHideTenantPicker"></view>
+<view class="picker-popup {{showTenantPicker ? 'show' : ''}}">
+  <view class="picker-title">选择要授权的租户</view>
+  <view class="picker-list">
+    <view
+      class="picker-item"
+      wx:for="{{tenants}}"
+      wx:key="id"
+      data-tenant-id="{{item.id}}"
+      bindtap="onTenantSelect"
+    >
+      <text class="picker-name">{{item.name}}</text>
+      <text class="picker-code">{{item.code}}</text>
+    </view>
   </view>
 </view>

@@ -167,6 +167,125 @@ function getAlarmStats() {
   return get('/alarms/stats')
 }
 
+/**
+ * 获取分区授权列表（管理员）
+ * @param {number} zoneId - 分区ID
+ * @returns {Promise<Array<{id, zone_id, tenant_id, tenant_name, created_at}>>}
+ */
+function getZoneAuthorizations(zoneId) {
+  return get(`/zones/${zoneId}/authorizations`)
+}
+
+/**
+ * 授权分区给租户（管理员）
+ * @param {number} zoneId - 分区ID
+ * @param {number} tenantId - 租户ID
+ * @returns {Promise<{id, zone_id, tenant_id, created_at}>}
+ */
+function authorizeZone(zoneId, tenantId) {
+  return post(`/zones/${zoneId}/authorizations`, { tenant_id: tenantId })
+}
+
+/**
+ * 移除分区授权（管理员）
+ * @param {number} zoneId - 分区ID
+ * @param {number} tenantId - 租户ID
+ * @returns {Promise<{message}>}
+ */
+function removeZoneAuthorization(zoneId, tenantId) {
+  return del(`/zones/${zoneId}/authorizations/${tenantId}`)
+}
+
+/**
+ * 获取租户列表（管理员）
+ * @returns {Promise<Array<{id, name, code, created_at}>>}
+ */
+function getTenants() {
+  return get('/tenants')
+}
+
+/**
+ * 获取当前用户信息
+ * @returns {Promise<{id, username, role, tenant_id, tenant_name, is_active, created_at, wechat_openid}>}
+ */
+function getCurrentUser() {
+  return get('/auth/me')
+}
+
+/**
+ * 修改密码
+ * @param {string} oldPassword - 旧密码
+ * @param {string} newPassword - 新密码
+ * @returns {Promise<{message}>}
+ */
+function changePassword(oldPassword, newPassword) {
+  return post('/auth/change-password', {
+    old_password: oldPassword,
+    new_password: newPassword
+  })
+}
+
+/**
+ * 解绑微信
+ * @returns {Promise<{message}>}
+ */
+function unbindWechat() {
+  return post('/users/unbind-wechat')
+}
+
+// ========== 报表 API ==========
+
+/**
+ * 获取能耗统计报表
+ * @param {object} params - 查询参数
+ * @param {string} params.start_date - 开始日期 YYYY-MM-DD
+ * @param {string} params.end_date - 结束日期 YYYY-MM-DD
+ * @param {number} params.zone_id - 分区ID
+ * @returns {Promise<Array<{device_id, device_name, total_runtime, energy_estimate}>>}
+ */
+function getEnergyStats(params = {}) {
+  return get('/reports/energy', params)
+}
+
+/**
+ * 获取温湿度趋势数据
+ * @param {object} params - 查询参数
+ * @param {string} params.start_date - 开始日期
+ * @param {string} params.end_date - 结束日期
+ * @param {number} params.device_id - 设备ID
+ * @param {number} params.zone_id - 分区ID
+ * @param {string} params.interval - 数据间隔 (1h, 6h, 1d)
+ * @returns {Promise<{labels, temp_data, humi_data}>}
+ */
+function getTrendData(params = {}) {
+  return get('/reports/trend', params)
+}
+
+/**
+ * 获取告警统计报表
+ * @param {object} params - 查询参数
+ * @param {string} params.start_date - 开始日期
+ * @param {string} params.end_date - 结束日期
+ * @param {string} params.group_by - 分组方式 (type, severity, device)
+ * @returns {Promise<{grouped_data, total_count, resolved_count, unresolved_count}>}
+ */
+function getAlarmReport(params = {}) {
+  return get('/reports/alarms', params)
+}
+
+/**
+ * 获取运行时长报表
+ * @param {object} params - 查询参数
+ * @param {string} params.start_date - 开始日期
+ * @param {string} params.end_date - 结束日期
+ * @param {number} params.zone_id - 分区ID
+ * @param {number} params.limit - 返回数量限制
+ * @returns {Promise<Array<{device_id, device_name, runtime_hours, percentage}>>}
+ */
+function getRuntimeStats(params = {}) {
+  return get('/reports/runtime', params)
+}
+
 module.exports = {
   // 微信登录
   wechatLogin,
@@ -186,11 +305,28 @@ module.exports = {
 
   // 分区
   getZones,
+  getZoneAuthorizations,
+  authorizeZone,
+  removeZoneAuthorization,
+
+  // 租户
+  getTenants,
+
+  // 用户
+  getCurrentUser,
+  changePassword,
+  unbindWechat,
 
   // 告警
   getAlarm,
   getAlarms,
   handleAlarm,
   batchHandleAlarms,
-  getAlarmStats
+  getAlarmStats,
+
+  // 报表
+  getEnergyStats,
+  getTrendData,
+  getAlarmReport,
+  getRuntimeStats
 }

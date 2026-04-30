@@ -1,7 +1,14 @@
+<!--首页仪表盘-->
 <view class="index-page">
+  <!-- WebSocket连接状态 -->
+  <view class="ws-status {{wsConnected ? 'connected' : 'disconnected'}}">
+    <text class="ws-text">{{wsConnected ? '实时连接' : '离线模式'}}</text>
+  </view>
+
   <!-- 加载状态 -->
   <view class="loading-container" wx:if="{{loading}}">
-    <view class="loading-text">加载中...</view>
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
   </view>
 
   <!-- 错误提示 -->
@@ -12,6 +19,18 @@
 
   <!-- 主内容区域 -->
   <view class="main-content" wx:if="{{!loading && !errorMsg}}">
+    <!-- 快速入口 -->
+    <view class="quick-actions">
+      <view class="action-item" bindtap="onGoToReports">
+        <view class="action-icon">📊</view>
+        <text class="action-text">报表分析</text>
+      </view>
+      <view class="action-item" bindtap="onGoToProfile">
+        <view class="action-icon">👤</view>
+        <text class="action-text">个人中心</text>
+      </view>
+    </view>
+
     <!-- 统计卡片区域 -->
     <view class="stats-section">
       <!-- 设备统计 -->
@@ -23,6 +42,13 @@
           <view class="stats-detail">
             <text class="online">在线 {{stats.online_devices}}</text>
             <text class="offline">离线 {{stats.offline_devices}}</text>
+          </view>
+          <!-- 在线率 -->
+          <view class="online-rate" wx:if="{{stats.total_devices > 0}}">
+            <text class="rate-text">在线率 {{(stats.online_devices / stats.total_devices * 100).toFixed(1)}}%</text>
+            <view class="rate-bar">
+              <view class="rate-fill" style="width: {{stats.online_devices / stats.total_devices * 100}}%"></view>
+            </view>
           </view>
         </view>
       </view>
@@ -62,8 +88,7 @@
       <!-- 空状态 -->
       <empty-state
         wx:else
-        text="暂无设备"
-        icon="device"
+        message="暂无设备"
       />
     </view>
 
@@ -89,8 +114,7 @@
       <!-- 空状态 -->
       <empty-state
         wx:else
-        text="暂无未处理告警"
-        icon="alarm"
+        message="暂无未处理告警"
       />
     </view>
   </view>

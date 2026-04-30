@@ -1,25 +1,43 @@
+/* 分区列表页面样式 */
+
 .zones-page {
   min-height: 100vh;
   background-color: #f5f5f5;
 }
 
+/* 管理员提示 */
+.admin-tip {
+  padding: 16rpx 24rpx;
+  background: #e6f7ff;
+  border-bottom: 1rpx solid #91d5ff;
+}
+
+.tip-text {
+  font-size: 26rpx;
+  color: #1890ff;
+}
+
 .zone-list {
-  padding: 16px;
+  padding: 16rpx;
 }
 
 .zone-item {
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: 24rpx;
   background-color: #ffffff;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.admin-item {
+  border-left: 6rpx solid #1890ff;
 }
 
 .zone-icon {
-  font-size: 24px;
-  margin-right: 12px;
+  font-size: 48rpx;
+  margin-right: 24rpx;
 }
 
 .zone-info {
@@ -27,30 +45,31 @@
 }
 
 .zone-name {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: 500;
   color: #333333;
 }
 
 .zone-desc {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #999999;
-  margin-top: 4px;
+  margin-top: 8rpx;
 }
 
 .zone-arrow {
-  font-size: 14px;
-  color: #999999;
+  font-size: 28rpx;
+  color: #1890ff;
 }
 
+/* 加载和错误状态 */
 .loading-container {
   display: flex;
   justify-content: center;
-  padding: 48px;
+  padding: 96rpx;
 }
 
 .loading-text {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #999999;
 }
 
@@ -58,19 +77,199 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px;
+  padding: 96rpx;
 }
 
 .error-text {
-  font-size: 14px;
-  color: #f5222d;
-  margin-bottom: 16px;
+  font-size: 28rpx;
+  color: #ff4d4f;
+  margin-bottom: 32rpx;
 }
 
 .retry-btn {
-  font-size: 14px;
-  padding: 8px 24px;
+  font-size: 28rpx;
+  padding: 16rpx 48rpx;
   background-color: #1890ff;
   color: #ffffff;
-  border-radius: 4px;
+  border-radius: 8rpx;
+}
+
+/* 弹窗样式 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.modal-popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+  z-index: 101;
+  max-height: 70vh;
+}
+
+.modal-popup.show {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #e8e8e8;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.modal-close {
+  font-size: 48rpx;
+  color: #999;
+}
+
+.modal-body {
+  padding: 24rpx;
+  overflow-y: auto;
+  max-height: calc(70vh - 100rpx);
+}
+
+/* 授权列表 */
+.auth-list {
+  margin-top: 16rpx;
+}
+
+.auth-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.auth-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.add-auth-btn {
+  padding: 8rpx 24rpx;
+  font-size: 26rpx;
+  background: #1890ff;
+  color: #fff;
+  border-radius: 8rpx;
+}
+
+.auth-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.auth-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.auth-time {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.remove-btn {
+  padding: 8rpx 24rpx;
+  font-size: 24rpx;
+  background: #ff4d4f;
+  color: #fff;
+  border-radius: 8rpx;
+}
+
+.empty-auth {
+  padding: 32rpx;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 租户选择弹窗 */
+.picker-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 102;
+}
+
+.picker-popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+  z-index: 103;
+}
+
+.picker-popup.show {
+  transform: translateY(0);
+}
+
+.picker-title {
+  padding: 24rpx;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 500;
+  border-bottom: 1rpx solid #e8e8e8;
+}
+
+.picker-list {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.picker-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.picker-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.picker-code {
+  font-size: 24rpx;
+  color: #999;
 }

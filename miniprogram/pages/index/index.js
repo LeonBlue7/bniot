@@ -320,5 +320,23 @@ Page({
     wx.switchTab({
       url: '/pages/alarms/alarms'
     })
+  },
+
+  /**
+   * 跳转到报表分析
+   */
+  onGoToReports() {
+    wx.navigateTo({
+      url: '/pages/reports/reports'
+    })
+  },
+
+  /**
+   * 跳转到个人中心
+   */
+  onGoToProfile() {
+    wx.navigateTo({
+      url: '/pages/profile/profile'
+    })
   }
 })

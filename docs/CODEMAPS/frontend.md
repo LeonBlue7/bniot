@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-30 (微信小程序绑定功能)
+**Last Updated:** 2026-04-30 (微信小程序Phase 5功能)
 
 ## 目录结构
 
@@ -590,3 +590,108 @@ input:-webkit-autofill {
 --color-status-danger
 --font-mono
 ```
+
+---
+
+## 微信小程序 (miniprogram/) - 2026-04-30
+
+微信小程序实现与管理后台对齐的功能，使用微信原生开发框架。
+
+### 目录结构
+
+```
+miniprogram/
+├── pages/
+│   ├── index/          # 仪表盘（WebSocket实时推送、在线率显示）
+│   ├── login/          # 微信OAuth登录
+│   ├── devices/        # 设备列表（搜索、分区筛选、扫码绑定）
+│   ├── device-detail/  # 设备详情（实时数据、参数设置、远程控制）
+│   ├── alarms/         # 告警列表（处理、批量处理）
+│   ├── alarm-detail/   # 告警详情
+│   ├── zones/          # 分区管理（授权管理 - Phase 5）
+│   ├── reports/        # 报表分析（Phase 5）
+│   └── profile/        # 个人中心（Phase 5）
+├── components/
+│   ├── device-card/    # 设备卡片组件
+│   ├── alarm-item/     # 告警条目组件
+│   └── empty-state/    # 空状态组件
+├── utils/
+│   ├── api.js          # API封装（报表、用户、分区授权）
+│   ├── auth.js         # 认证工具（微信登录、Token管理）
+│   ├── request.js      # HTTP请求封装
+│   ├── websocket.js    # WebSocket管理器（心跳、重连）
+│   ├── chart.js        # Canvas 2D图表工具（折线图、柱状图、饼图）
+│   ├── cache.js        # 数据缓存工具
+│   ├── errorCodes.js   # 错误码常量
+│   └── util.js         # 通用工具函数
+├── app.js              # 应用入口
+├── app.json            # 应用配置（页面路由、TabBar）
+└── app.wxss            # 全局样式
+```
+
+### 功能模块
+
+#### Phase 1-4 功能
+
+| 模块 | 功能 | 状态 |
+|------|------|------|
+| 登录 | 微信OAuth登录、JWT认证 | ✅ |
+| 仪表盘 | 统计数据、WebSocket实时推送 | ✅ |
+| 设备列表 | 搜索、分区筛选、扫码绑定、分页加载 | ✅ |
+| 设备详情 | 实时数据、历史图表、参数设置、远程控制 | ✅ |
+| 告警列表 | 未处理/已处理筛选、批量处理 | ✅ |
+| 告警详情 | 告警信息、处理操作 | ✅ |
+| 分区列表 | 分区查看 | ✅ |
+
+#### Phase 5 新增功能
+
+| 模块 | 功能 | 描述 |
+|------|------|------|
+| 报表分析 | 能耗统计 | 柱状图显示设备运行时长分布 |
+| 报表分析 | 温湿度趋势 | 折线图显示温湿度变化趋势 |
+| 报表分析 | 告警统计 | 饼图显示告警类型分布 |
+| 报表分析 | 运行时长 | 设备运行时长排行 |
+| 个人中心 | 用户信息 | 显示用户名、角色、租户、微信绑定状态 |
+| 个人中心 | 修改密码 | 密码验证、修改功能 |
+| 个人中心 | 微信解绑 | 解绑微信小程序 |
+| 分区管理 | 授权管理 | 管理员可授权分区给租户、移除授权 |
+
+### API封装
+
+```javascript
+// 报表API
+api.getEnergyStats(params)     // 能耗统计
+api.getTrendData(params)       // 温湿度趋势
+api.getAlarmReport(params)     // 告警统计
+api.getRuntimeStats(params)    // 运行时长
+
+// 用户API
+api.getCurrentUser()           // 获取当前用户
+api.changePassword(old, new)   // 修改密码
+api.unbindWechat()             // 解绑微信
+
+// 分区授权API
+api.getZoneAuthorizations(id)  // 获取授权列表
+api.authorizeZone(id, tenant)  // 授权分区
+api.removeZoneAuthorization(id, tenant) // 移除授权
+
+// 租户API
+api.getTenants()               // 租户列表
+```
+
+### WebSocket特性
+
+- 心跳保活（30秒间隔）
+- 断线自动重连（最多5次）
+- 设备数据实时推送
+- 告警实时推送
+- ID管理模式（避免监听器引用问题）
+- 条件化日志（debug=false）
+
+### 图表工具
+
+| 函数 | 描述 |
+|------|------|
+| drawLineChart() | 折线图（温湿度趋势） |
+| drawBarChart() | 柱状图（能耗、运行时长） |
+| drawPieChart() | 饼图（告警分布） |

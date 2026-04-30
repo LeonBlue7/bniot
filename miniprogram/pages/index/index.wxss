@@ -7,17 +7,59 @@
   background-color: #f5f5f5;
 }
 
+/* WebSocket状态 */
+.ws-status {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 8rpx 16rpx;
+  font-size: 24rpx;
+  text-align: center;
+  z-index: 100;
+}
+
+.ws-status.connected {
+  background: #52c41a;
+  color: #fff;
+}
+
+.ws-status.disconnected {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.ws-text {
+  font-size: 24rpx;
+}
+
+/* 加载状态 */
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: 300rpx;
+  padding: 100rpx 0;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid #e8e8e8;
+  border-top-color: #1890ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .loading-text {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #999999;
+  margin-top: 24rpx;
 }
 
 .error-container {
@@ -25,44 +67,71 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
-  padding: 16px;
+  min-height: 300rpx;
+  padding: 32rpx;
 }
 
 .error-text {
-  font-size: 14px;
-  color: #f5222d;
-  margin-bottom: 16px;
+  font-size: 28rpx;
+  color: #ff4d4f;
+  margin-bottom: 32rpx;
 }
 
 .retry-btn {
-  font-size: 14px;
-  padding: 8px 24px;
+  font-size: 28rpx;
+  padding: 16rpx 48rpx;
   background-color: #1890ff;
   color: #ffffff;
-  border-radius: 4px;
+  border-radius: 8rpx;
 }
 
 .main-content {
-  padding: 16px;
+  padding: 16rpx;
+}
+
+/* 快速入口 */
+.quick-actions {
+  display: flex;
+  justify-content: space-around;
+  padding: 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16rpx 32rpx;
+}
+
+.action-icon {
+  font-size: 48rpx;
+  margin-bottom: 8rpx;
+}
+
+.action-text {
+  font-size: 26rpx;
+  color: #333;
 }
 
 /* 统计卡片区域 */
 .stats-section {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 16rpx;
 }
 
 .stats-card {
   flex: 1;
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: 24rpx;
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-right: 8px;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  margin-right: 8rpx;
 }
 
 .stats-card:last-child {
@@ -70,8 +139,8 @@
 }
 
 .stats-icon {
-  font-size: 32px;
-  margin-right: 12px;
+  font-size: 64rpx;
+  margin-right: 24rpx;
 }
 
 .stats-info {
@@ -80,25 +149,25 @@
 }
 
 .stats-title {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #999999;
 }
 
 .stats-value {
-  font-size: 24px;
+  font-size: 48rpx;
   font-weight: 600;
   color: #333333;
-  margin-top: 4px;
+  margin-top: 8rpx;
 }
 
 .stats-value.alarm {
-  color: #f5222d;
+  color: #ff4d4f;
 }
 
 .stats-detail {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #666666;
-  margin-top: 4px;
+  margin-top: 8rpx;
 }
 
 .stats-detail .online {
@@ -106,30 +175,54 @@
 }
 
 .stats-detail .offline {
-  color: #f5222d;
-  margin-left: 8px;
+  color: #ff4d4f;
+  margin-left: 16rpx;
+}
+
+/* 在线率 */
+.online-rate {
+  margin-top: 12rpx;
+}
+
+.rate-text {
+  font-size: 22rpx;
+  color: #52c41a;
+}
+
+.rate-bar {
+  height: 8rpx;
+  background: #e8e8e8;
+  border-radius: 4rpx;
+  margin-top: 4rpx;
+  overflow: hidden;
+}
+
+.rate-fill {
+  height: 100%;
+  background: #52c41a;
+  border-radius: 4rpx;
 }
 
 /* 区块区域 */
 .section {
-  margin-bottom: 16px;
+  margin-bottom: 16rpx;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 24rpx 0;
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: 600;
   color: #333333;
 }
 
 .section-action {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #1890ff;
 }
 

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "报表分析",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "empty-state": "/components/empty-state/empty-state"
+  }
+}

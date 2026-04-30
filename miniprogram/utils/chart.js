@@ -280,8 +280,195 @@ function hasValidData(datasets) {
   })
 }
 
+/**
+ * 绘制柱状图
+ * @param {Object} options - 配置选项
+ * @param {CanvasContext} options.ctx - Canvas 2D 上下文
+ * @param {number} options.width - Canvas 宽度
+ * @param {number} options.height - Canvas 高度
+ * @param {Array} options.labels - X 轴标签
+ * @param {Array} options.values - 数值数组
+ * @param {string} options.title - 图表标题
+ * @param {string} options.color - 柱状图颜色
+ * @param {number} options.padding - 内边距
+ * @returns {boolean}
+ */
+function drawBarChart(options) {
+  const {
+    ctx,
+    width,
+    height,
+    labels = [],
+    values = [],
+    title = '',
+    color = '#1890ff',
+    padding = 40
+  } = options
+
+  // 参数验证
+  if (!ctx || !labels.length || !values.length) {
+    return false
+  }
+
+  // 计算绘图区域
+  const chartWidth = width - padding * 2
+  const chartHeight = height - padding * 2
+  const topPadding = title ? padding + 20 : padding
+
+  // 清空画布
+  ctx.clearRect(0, 0, width, height)
+
+  // 绘制背景
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, width, height)
+
+  // 绘制标题
+  if (title) {
+    ctx.fillStyle = '#333333'
+    ctx.font = '14px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(title, width / 2, 20)
+  }
+
+  // 计算最大值
+  const maxVal = Math.max(...values) || 100
+
+  // 计算柱宽
+  const barWidth = (chartWidth / labels.length) * 0.6
+  const barGap = (chartWidth / labels.length) * 0.4
+
+  // 绘制柱状图
+  ctx.fillStyle = color
+
+  values.forEach((value, index) => {
+    const barHeight = (value / maxVal) * chartHeight
+    const x = padding + (chartWidth / labels.length) * index + barGap / 2
+    const y = topPadding + chartHeight - barHeight
+
+    // 绘制柱子
+    ctx.fillRect(x, y, barWidth, barHeight)
+
+    // 绘制数值
+    ctx.fillStyle = '#666666'
+    ctx.font = '10px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(value.toFixed(1), x + barWidth / 2, y - 5)
+    ctx.fillStyle = color
+  })
+
+  // 绘制 X 轴标签
+  ctx.fillStyle = '#666666'
+  ctx.font = '10px sans-serif'
+  ctx.textAlign = 'center'
+
+  labels.forEach((label, index) => {
+    const x = padding + (chartWidth / labels.length) * index + (chartWidth / labels.length) / 2
+    // 简化标签显示
+    const shortLabel = label.length > 6 ? label.substring(0, 6) + '...' : label
+    ctx.fillText(shortLabel, x, height - padding + 15)
+  })
+
+  ctx.draw()
+  return true
+}
+
+/**
+ * 绘制饼图
+ * @param {Object} options - 配置选项
+ * @param {CanvasContext} options.ctx - Canvas 2D 上下文
+ * @param {number} options.width - Canvas 宽度
+ * @param {number} options.height - Canvas 高度
+ * @param {Array} options.labels - 标签数组
+ * @param {Array} options.values - 数值数组
+ * @param {string} options.title - 图表标题
+ * @param {Array} options.colors - 颜色数组
+ * @returns {boolean}
+ */
+function drawPieChart(options) {
+  const {
+    ctx,
+    width,
+    height,
+    labels = [],
+    values = [],
+    title = '',
+    colors = ['#1890ff', '#52c41a', '#faad14', '#ff4d4f', '#722ed1']
+  } = options
+
+  // 参数验证
+  if (!ctx || !labels.length || !values.length) {
+    return false
+  }
+
+  // 清空画布
+  ctx.clearRect(0, 0, width, height)
+
+  // 绘制背景
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, width, height)
+
+  // 绘制标题
+  if (title) {
+    ctx.fillStyle = '#333333'
+    ctx.font = '14px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(title, width / 2, 20)
+  }
+
+  // 计算总值
+  const total = values.reduce((sum, v) => sum + v, 0) || 100
+
+  // 饼图中心和半径
+  const centerX = width / 2
+  const centerY = height / 2 - 20
+  const radius = Math.min(width, height) / 3
+
+  // 绘制饼图扇形
+  let startAngle = -Math.PI / 2
+
+  values.forEach((value, index) => {
+    const sliceAngle = (value / total) * Math.PI * 2
+    const endAngle = startAngle + sliceAngle
+
+    ctx.beginPath()
+    ctx.moveTo(centerX, centerY)
+    ctx.arc(centerX, centerY, radius, startAngle, endAngle)
+    ctx.closePath()
+
+    ctx.fillStyle = colors[index % colors.length]
+    ctx.fill()
+
+    startAngle = endAngle
+  })
+
+  // 绘制图例
+  const legendStartY = height - 40
+  const legendItemWidth = width / labels.length
+
+  labels.forEach((label, index) => {
+    const x = legendItemWidth * index + legendItemWidth / 2
+    const y = legendStartY
+
+    // 绘制色块
+    ctx.fillStyle = colors[index % colors.length]
+    ctx.fillRect(x - 30, y - 6, 12, 12)
+
+    // 绘制标签
+    ctx.fillStyle = '#666666'
+    ctx.font = '10px sans-serif'
+    ctx.textAlign = 'left'
+    const shortLabel = label.length > 4 ? label.substring(0, 4) : label
+    ctx.fillText(`${shortLabel}: ${values[index]}`, x - 15, y)
+  })
+
+  ctx.draw()
+  return true
+}
+
 module.exports = {
   drawLineChart,
+  drawBarChart,
+  drawPieChart,
   formatChartData,
   prepareTempHumiData,
   hasValidData

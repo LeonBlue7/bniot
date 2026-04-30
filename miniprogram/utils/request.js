@@ -116,10 +116,15 @@ function put(url, data = {}) {
 /**
  * DELETE 请求
  * @param {string} url - 请求路径
+ * @param {object} params - 查询参数（可选）
  * @returns {Promise}
  */
-function del(url) {
-  return request(url, { method: 'DELETE' })
+function del(url, params = null) {
+  const options = { method: 'DELETE' }
+  if (params) {
+    options.params = params
+  }
+  return request(url, options)
 }
 
 /**
