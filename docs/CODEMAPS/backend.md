@@ -1,7 +1,7 @@
 # 后端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-21 (参数设置功能)
+**Last Updated:** 2026-04-30 (微信小程序登录API)
 
 ## 目录结构
 
@@ -27,7 +27,8 @@ backend/
 │   │       ├── health.py    # 系统健康监控 API（Phase 4.1）
 │   │       ├── backups.py   # 备份管理 API（Phase 3.1）
 │   │       ├── restores.py  # 恢复管理 API（Phase 3.2）
-│   │       └── docs.py      # API 文档端点（Phase 4.2）
+│   │       ├── docs.py      # API 文档端点（Phase 4.2）
+│   │       └── wechat.py    # 微信小程序登录 API（2026-04-30）
 │   ├── core/                # 核心配置
 │   │   ├── __init__.py
 │   │   ├── config.py        # 配置管理（含安全检测）
@@ -73,6 +74,7 @@ backend/
 │   │       ├── template_service.py    # 模板渲染
 │   │       ├── email_service.py       # 邮件通知
 │   │       └── wechat_service.py      # 微信通知
+│   │   └── wechat.py            # 微信小程序服务（2026-04-30）
 ├── migrations/              # Alembic 数据库迁移
 │   ├── env.py
 │   └── versions/
@@ -100,7 +102,8 @@ backend/
 │       ├── test_device_api_permission.py # 设备API权限测试
 │       ├── test_zone_authorization.py # 分区授权测试（自动授权、批量移动）
 │       ├── test_param_setting.py # 参数设置测试（31 tests）
-│       └── test_device_list_extension.py # 设备列表扩展测试
+│       ├── test_device_list_extension.py # 设备列表扩展测试
+│       └── test_wechat_login.py # 微信小程序登录测试（18 tests，2026-04-30）
 ├── Dockerfile
 ├── alembic.ini              # Alembic 配置
 ├── requirements.txt
@@ -293,6 +296,39 @@ backend/
 | 方法 | 路径 | 描述 |
 |------|------|------|
 | GET | `/error-codes` | 错误码文档 |
+
+### 微信小程序登录 (`/api/wechat`) - 2026-04-30
+
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| POST | `/login` | 微信小程序登录（code → openid → JWT） |
+
+**登录流程**：
+1. 小程序调用 `wx.login()` 获取临时 code
+2. 小程序将 code 发送到 `/api/wechat/login`
+3. 后端调用微信 API 获取 openid
+4. 后端查找/创建关联用户，返回 JWT
+
+**请求格式**：
+```json
+{
+  "code": "wx.login返回的临时code"
+}
+```
+
+**响应格式**：
+```json
+{
+  "access_token": "JWT Token",
+  "token_type": "bearer",
+  "user": {
+    "id": 1,
+    "username": "wechat_openid_xxx",
+    "role": "viewer",
+    "tenant_id": 1
+  }
+}
+```
 
 ### WebSocket (`/api/ws`)
 
@@ -506,7 +542,7 @@ V10/V20 协议版本差异化参数验证：
 | 表名 | 描述 | 索引 |
 |------|------|------|
 | `tenants` | 租户表 | - |
-| `users` | 用户表 | `idx_users_tenant_id` |
+| `users` | 用户表（含 wechat_openid 字段） | `idx_users_tenant_id`, `uq_wechat_openid` |
 | `zones` | 分区表 | `idx_zones_tenant_id` |
 | `zone_tenants` | 分区-租户授权表 | `idx_zone_tenants_zone_id`, `idx_zone_tenants_tenant_id`, `uq_zone_tenant` |
 | `devices` | 设备表 | `idx_devices_tenant_id`, `idx_devices_is_online`, `idx_devices_last_seen` |
@@ -531,6 +567,16 @@ V10/V20 协议版本差异化参数验证：
 **权限规则**：
 - 观察员/操作员只能看到所属租户授权分区内的设备
 - 管理员可以看到租户内所有设备（包括未分区设备）
+
+### users 用户表（2026-04-30 更新）
+
+**新增字段**：
+- `wechat_openid` - 微信小程序 openid（可选，唯一约束）
+
+**用途**：
+- 支持微信小程序登录
+- 用户可通过管理后台绑定/解绑微信
+- openid 关联后可实现免登录
 
 ### Phase 2.2 新增表
 
@@ -673,8 +719,9 @@ pytest tests/unit/test_permissions.py
 
 ### 测试统计
 
-- 单元测试：576 tests（含参数设置 31 tests）
+- 单元测试：594 tests（含参数设置 31 tests、微信登录 18 tests）
 - 跳过测试：46 (需项目根目录文件)
 - 设备权限测试：17 tests（test_device_permission.py + test_device_api_permission.py）
 - 分区授权测试：15 tests（test_zone_authorization.py）
 - 参数设置测试：31 tests（test_param_setting.py）
+- 微信登录测试：18 tests（test_wechat_login.py，2026-04-30）

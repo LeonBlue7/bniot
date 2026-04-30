@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-21 (参数设置功能)
+**Last Updated:** 2026-04-30 (微信小程序绑定功能)
 
 ## 目录结构
 
@@ -149,6 +149,17 @@ BASE_URL=https://www.jxbonner.cloud npx playwright test
 - V10 设备显示 V10 参数集（冬天开机温度 105、冬天关机温度 106）
 - V20 设备显示 V20 参数集（夏天关机温度 104、冬天关机温度 107、月份参数 108/109）
 
+### 微信绑定功能 (`Profile.vue`) - 2026-04-30
+
+用户可在个人中心绑定/解绑微信小程序：
+- **绑定微信**：显示微信 openid，允许小程序登录
+- **解绑微信**：清除 openid，小程序登录将创建新用户
+- **状态显示**：已绑定/未绑定状态可视化
+
+**API**：
+- `bindWechat()` - 绑定微信（生成 openid）
+- `unbindWechat()` - 解绑微信（清除 openid）
+
 ### 分区授权管理 (`Zones.vue`) - 2026-04-20
 
 管理员可以在分区列表中管理授权：
@@ -258,6 +269,8 @@ userApi.create(data)                 // 创建用户
 userApi.update(id, data)             // 更新用户
 userApi.updateStatus(id, data)      // 启用/禁用用户
 userApi.delete(id)                   // 删除用户
+userApi.bindWechat()                 // 绑定微信小程序（2026-04-30）
+userApi.unbindWechat()               // 解绑微信小程序（2026-04-30）
 ```
 
 ### 告警管理 API (`api/alarms.ts`)
@@ -378,6 +391,7 @@ interface User {
   tenant_id: number
   is_active: boolean
   created_at: string
+  wechat_openid?: string            // 微信小程序 openid（2026-04-30）
 }
 
 // 设备
