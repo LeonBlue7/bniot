@@ -51,6 +51,61 @@ async def list_alarms(
     return result.scalars().all()
 
 
+# 注意：固定路径路由必须在参数路径路由之前定义
+@router.get("/stats")
+async def get_alarm_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取告警统计"""
+    # 总告警数
+    total_result = await db.execute(
+        select(func.count(Alarm.id)).where(
+            Alarm.tenant_id == current_user.tenant_id
+        )
+    )
+    total_alarms = total_result.scalar() or 0
+
+    # 未处理告警数
+    unresolved_result = await db.execute(
+        select(func.count(Alarm.id)).where(
+            and_(
+                Alarm.tenant_id == current_user.tenant_id,
+                Alarm.is_resolved == False
+            )
+        )
+    )
+    unresolved_alarms = unresolved_result.scalar() or 0
+
+    return {
+        "total_alarms": total_alarms,
+        "unresolved_alarms": unresolved_alarms,
+        "resolved_alarms": total_alarms - unresolved_alarms
+    }
+
+
+@router.get("/{alarm_id}", response_model=AlarmResponse)
+async def get_alarm(
+    alarm_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取单个告警详情"""
+    result = await db.execute(
+        select(Alarm).where(
+            Alarm.id == alarm_id,
+            Alarm.tenant_id == current_user.tenant_id
+        )
+    )
+    alarm = result.scalar_one_or_none()
+    if not alarm:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="告警不存在"
+        )
+    return alarm
+
+
 @router.patch("/{alarm_id}/handle", response_model=AlarmResponse)
 async def handle_alarm(
     alarm_id: int,
@@ -135,35 +190,3 @@ async def batch_handle_alarms(
         response["warning"] = f"{len(invalid_ids)} 个告警ID不属于当前租户或已处理，未能处理"
 
     return response
-
-
-@router.get("/stats")
-async def get_alarm_stats(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """获取告警统计"""
-    # 总告警数
-    total_result = await db.execute(
-        select(func.count(Alarm.id)).where(
-            Alarm.tenant_id == current_user.tenant_id
-        )
-    )
-    total_alarms = total_result.scalar() or 0
-
-    # 未处理告警数
-    unresolved_result = await db.execute(
-        select(func.count(Alarm.id)).where(
-            and_(
-                Alarm.tenant_id == current_user.tenant_id,
-                Alarm.is_resolved == False
-            )
-        )
-    )
-    unresolved_alarms = unresolved_result.scalar() or 0
-
-    return {
-        "total_alarms": total_alarms,
-        "unresolved_alarms": unresolved_alarms,
-        "resolved_alarms": total_alarms - unresolved_alarms
-    }

@@ -332,7 +332,9 @@
     >
       <a-form layout="vertical">
         <a-form-item label="选中设备数量">
-          <a-tag color="blue">{{ selectedRowKeys.length }} 台设备</a-tag>
+          <a-tag color="blue">
+            {{ selectedRowKeys.length }} 台设备
+          </a-tag>
         </a-form-item>
         <a-form-item label="目标分区">
           <a-select

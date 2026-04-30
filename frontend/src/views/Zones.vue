@@ -105,7 +105,9 @@
             </a-descriptions>
 
             <!-- 分区授权列表 -->
-            <a-divider data-testid="auth-divider">分区授权</a-divider>
+            <a-divider data-testid="auth-divider">
+              分区授权
+            </a-divider>
             <a-spin :spinning="authLoading">
               <a-table
                 data-testid="auth-table"
