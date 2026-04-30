@@ -32,6 +32,7 @@ export interface User {
   tenant_id: number
   is_active: boolean
   created_at: string
+  wechat_openid?: string | null
 }
 
 // ============ 租户 ============

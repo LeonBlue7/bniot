@@ -1,0 +1,218 @@
+.devices-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 搜索栏 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-input {
+  flex: 1;
+  height: 32px;
+  padding: 0 12px;
+  background-color: #f5f5f5;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.search-btn {
+  font-size: 14px;
+  color: #1890ff;
+  padding: 8px 12px;
+  margin-left: 8px;
+}
+
+.clear-btn {
+  font-size: 12px;
+  color: #1890ff;
+  padding: 8px;
+  margin-left: 4px;
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filter-section {
+  display: flex;
+  flex: 1;
+}
+
+.filter-item {
+  font-size: 12px;
+  padding: 6px 12px;
+  background-color: #f5f5f5;
+  color: #666666;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.filter-item.active {
+  background-color: #1890ff;
+  color: #ffffff;
+}
+
+.zone-filter {
+  display: flex;
+  align-items: center;
+}
+
+.zone-label {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zone-arrow {
+  margin-left: 4px;
+  color: #999999;
+}
+
+/* 扫码按钮 */
+.scan-btn {
+  width: 32px;
+  height: 32px;
+  background-color: #1890ff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.scan-icon {
+  font-size: 16px;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* 分区筛选弹窗 */
+.zone-filter-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.zone-filter-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 260px;
+  max-height: 300px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  z-index: 101;
+  overflow: hidden;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.popup-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.popup-close {
+  font-size: 14px;
+  color: #999999;
+  padding: 4px 8px;
+}
+
+.popup-body {
+  padding: 8px 0;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.zone-item {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.zone-item:last-child {
+  border-bottom: none;
+}
+
+.zone-item.selected {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+/* 设备列表 */
+.device-list {
+  padding: 16px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #999999;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+}
+
+.error-text {
+  font-size: 14px;
+  color: #f5222d;
+  margin-bottom: 16px;
+}
+
+.retry-btn {
+  font-size: 14px;
+  padding: 8px 24px;
+  background-color: #1890ff;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.no-more {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.no-more-text {
+  font-size: 12px;
+  color: #999999;
+}

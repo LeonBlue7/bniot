@@ -1,0 +1,117 @@
+/**
+ * 告警条目组件样式
+ */
+
+.alarm-item {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.alarm-item.resolved {
+  background-color: #f5f5f5;
+  opacity: 0.8;
+}
+
+.alarm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.alarm-type {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.alarm-severity {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.severity-critical {
+  background-color: #fff1f0;
+  color: #f5222d;
+}
+
+.severity-warning {
+  background-color: #fffbe6;
+  color: #faad14;
+}
+
+.severity-info {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.alarm-message {
+  font-size: 14px;
+  color: #666666;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.alarm-device {
+  font-size: 12px;
+  color: #999999;
+  margin-bottom: 4px;
+}
+
+.device-label {
+  color: #999999;
+}
+
+.device-id {
+  color: #1890ff;
+}
+
+.alarm-time {
+  font-size: 12px;
+  color: #999999;
+  margin-bottom: 8px;
+}
+
+.time-label {
+  color: #999999;
+}
+
+.time-value {
+  color: #666666;
+}
+
+.alarm-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.alarm-status {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.status-resolved {
+  background-color: #e6f7e6;
+  color: #52c41a;
+}
+
+.status-unresolved {
+  background-color: #fff1f0;
+  color: #f5222d;
+}
+
+.handle-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  background-color: #1890ff;
+  color: #ffffff;
+  border-radius: 4px;
+}

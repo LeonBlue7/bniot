@@ -1,0 +1,97 @@
+<view class="index-page">
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-container" wx:if="{{errorMsg && !loading}}">
+    <view class="error-text">{{errorMsg}}</view>
+    <button class="retry-btn" bindtap="loadDashboardData">重新加载</button>
+  </view>
+
+  <!-- 主内容区域 -->
+  <view class="main-content" wx:if="{{!loading && !errorMsg}}">
+    <!-- 统计卡片区域 -->
+    <view class="stats-section">
+      <!-- 设备统计 -->
+      <view class="stats-card device-stats" bindtap="onStatsDeviceTap">
+        <view class="stats-icon">📱</view>
+        <view class="stats-info">
+          <view class="stats-title">设备总数</view>
+          <view class="stats-value">{{stats.total_devices}}</view>
+          <view class="stats-detail">
+            <text class="online">在线 {{stats.online_devices}}</text>
+            <text class="offline">离线 {{stats.offline_devices}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 告警统计 -->
+      <view class="stats-card alarm-stats" bindtap="onStatsAlarmTap">
+        <view class="stats-icon">🔔</view>
+        <view class="stats-info">
+          <view class="stats-title">告警数量</view>
+          <view class="stats-value {{stats.unresolved_alarms > 0 ? 'alarm' : ''}}">{{stats.unresolved_alarms}}</view>
+          <view class="stats-detail">
+            <text>未处理 {{stats.unresolved_alarms}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 最近设备区域 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">最近设备</view>
+        <view class="section-action" bindtap="onViewMoreDevices">查看更多 ></view>
+      </view>
+
+      <!-- 设备列表 -->
+      <view class="device-list" wx:if="{{recentDevices.length > 0}}">
+        <block wx:for="{{recentDevices}}" wx:key="id">
+          <device-card
+            device="{{item}}"
+            showDetail="{{true}}"
+            bind:tap="onDeviceTap"
+            bind:detail="onDeviceDetail"
+          />
+        </block>
+      </view>
+
+      <!-- 空状态 -->
+      <empty-state
+        wx:else
+        text="暂无设备"
+        icon="device"
+      />
+    </view>
+
+    <!-- 未处理告警区域 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">未处理告警</view>
+        <view class="section-action" bindtap="onViewMoreAlarms">查看更多 ></view>
+      </view>
+
+      <!-- 告警列表 -->
+      <view class="alarm-list" wx:if="{{recentAlarms.length > 0}}">
+        <block wx:for="{{recentAlarms}}" wx:key="id">
+          <alarm-item
+            alarm="{{item}}"
+            showHandle="{{true}}"
+            bind:tap="onAlarmTap"
+            bind:handle="onAlarmHandle"
+          />
+        </block>
+      </view>
+
+      <!-- 空状态 -->
+      <empty-state
+        wx:else
+        text="暂无未处理告警"
+        icon="alarm"
+      />
+    </view>
+  </view>
+</view>

@@ -1,0 +1,33 @@
+<view class="zones-page">
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-container" wx:if="{{errorMsg && !loading}}">
+    <view class="error-text">{{errorMsg}}</view>
+    <button class="retry-btn" bindtap="loadZones">重新加载</button>
+  </view>
+
+  <!-- 分区列表 -->
+  <view class="zone-list" wx:if="{{!loading && !errorMsg}}">
+    <block wx:for="{{zones}}" wx:key="id">
+      <view
+        class="zone-item"
+        data-zone="{{item}}"
+        bindtap="onZoneTap"
+      >
+        <view class="zone-icon">🏢</view>
+        <view class="zone-info">
+          <view class="zone-name">{{item.name}}</view>
+          <view class="zone-desc" wx:if="{{item.description}}">{{item.description}}</view>
+        </view>
+        <view class="zone-arrow">></view>
+      </view>
+    </block>
+
+    <!-- 空状态 -->
+    <empty-state wx:if="{{zones.length === 0}}" text="暂无分区" icon="zone" />
+  </view>
+</view>

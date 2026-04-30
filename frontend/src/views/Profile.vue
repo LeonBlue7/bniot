@@ -21,10 +21,49 @@
             {{ user?.is_active ? '正常' : '已禁用' }}
           </a-tag>
         </a-descriptions-item>
+        <a-descriptions-item label="微信绑定">
+          <a-tag :color="user?.wechat_openid ? 'success' : 'default'">
+            {{ user?.wechat_openid ? '已绑定' : '未绑定' }}
+          </a-tag>
+          <a-button
+            v-if="user?.wechat_openid"
+            type="link"
+            size="small"
+            danger
+            :loading="wechatLoading"
+            @click="handleUnbindWechat"
+          >
+            解绑微信
+          </a-button>
+          <a-button
+            v-else
+            type="link"
+            size="small"
+            :loading="wechatLoading"
+            @click="showBindModal"
+          >
+            绑定微信
+          </a-button>
+        </a-descriptions-item>
         <a-descriptions-item label="创建时间">
           {{ formatDate(user?.created_at) }}
         </a-descriptions-item>
       </a-descriptions>
+
+      <!-- 微信绑定弹窗 -->
+      <a-modal
+        v-model:open="bindModalVisible"
+        title="绑定微信"
+        :confirm-loading="wechatLoading"
+        @ok="handleBindWechat"
+        @cancel="bindModalVisible = false"
+      >
+        <p>绑定微信后，您可以使用微信小程序登录管理后台。</p>
+        <p>请在微信小程序中登录，然后点击确认绑定。</p>
+        <p class="bind-tip">
+          提示：绑定需要小程序授权，请确保已打开小程序。
+        </p>
+      </a-modal>
 
       <!-- 修改密码表单 -->
       <a-divider>修改密码</a-divider>
@@ -77,9 +116,9 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import { useAuthStore } from '@/stores/auth'
-import { authApi } from '@/api'
+import { authApi, userApi } from '@/api'
 import type { PasswordChangeRequest } from '@/types'
 import type { Rule } from 'ant-design-vue/es/form'
 
@@ -104,6 +143,11 @@ const passwordForm = reactive({
 })
 
 const loading = ref(false)
+
+// 微信绑定状态
+const wechatLoading = ref(false)
+const bindModalVisible = ref(false)
+const bindCode = ref('')
 
 // 密码验证规则
 const passwordRules: Record<string, Rule[]> = {
@@ -138,6 +182,61 @@ function formatDate(dateStr: string | undefined): string {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit'
+  })
+}
+
+// 显示绑定弹窗
+function showBindModal() {
+  bindModalVisible.value = true
+  bindCode.value = ''
+}
+
+// 绑定微信
+async function handleBindWechat() {
+  wechatLoading.value = true
+  try {
+    // 生成一个临时 code（实际场景需要从小程序获取）
+    // 这里使用模拟方式，实际应该通过小程序扫码授权获取
+    const tempCode = `bind_${Date.now()}_${Math.random().toString(36).slice(2)}`
+
+    const result = await userApi.bindWechat(tempCode)
+    if (result.success) {
+      message.success(result.message || '微信绑定成功')
+      bindModalVisible.value = false
+      // 刷新用户信息
+      await authStore.refreshUser()
+    }
+  } catch (error) {
+    const err = error as { response?: { data?: { detail?: string } } }
+    message.error(err.response?.data?.detail || '微信绑定失败')
+  } finally {
+    wechatLoading.value = false
+  }
+}
+
+// 解绑微信
+async function handleUnbindWechat() {
+  Modal.confirm({
+    title: '确认解绑',
+    content: '解绑后将无法使用微信小程序登录，确定要解绑吗？',
+    okText: '确定',
+    cancelText: '取消',
+    onOk: async () => {
+      wechatLoading.value = true
+      try {
+        const result = await userApi.unbindWechat()
+        if (result.success) {
+          message.success(result.message || '微信解绑成功')
+          // 刷新用户信息
+          await authStore.refreshUser()
+        }
+      } catch (error) {
+        const err = error as { response?: { data?: { detail?: string } } }
+        message.error(err.response?.data?.detail || '微信解绑失败')
+      } finally {
+        wechatLoading.value = false
+      }
+    }
   })
 }
 
@@ -209,5 +308,16 @@ async function handlePasswordChange() {
 :deep(.ant-input-password:hover),
 :deep(.ant-input-password:focus) {
   border-color: var(--color-cool-primary);
+}
+
+.bind-tip {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* 微信绑定按钮样式 */
+:deep(.ant-btn-link) {
+  padding-left: 8px;
 }
 </style>

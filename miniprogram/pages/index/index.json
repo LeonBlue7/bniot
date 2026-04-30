@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "BNIoT空调管理",
+  "usingComponents": {
+    "device-card": "/components/device-card/device-card",
+    "alarm-item": "/components/alarm-item/alarm-item",
+    "empty-state": "/components/empty-state/empty-state"
+  },
+  "enablePullDownRefresh": true
+}

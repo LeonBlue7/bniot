@@ -1,0 +1,55 @@
+<view class="alarms-page">
+  <!-- 标签栏 -->
+  <view class="tabs-bar">
+    <block wx:for="{{tabs}}" wx:key="key">
+      <view
+        class="tab-item {{activeTab === item.key ? 'active' : ''}}"
+        data-resolved="{{item.key}}"
+        bindtap="onTabChange"
+      >
+        {{item.name}}
+      </view>
+    </block>
+  </view>
+
+  <!-- 批量处理按钮 -->
+  <view class="batch-action" wx:if="{{activeTab === false && alarms.length > 0}}">
+    <button class="batch-btn" bindtap="onBatchHandle">批量处理</button>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-container" wx:if="{{errorMsg && !loading}}">
+    <view class="error-text">{{errorMsg}}</view>
+    <button class="retry-btn" bindtap="loadAlarms">重新加载</button>
+  </view>
+
+  <!-- 告警列表 -->
+  <view class="alarm-list" wx:if="{{!loading && !errorMsg}}">
+    <block wx:for="{{alarms}}" wx:key="id">
+      <alarm-item
+        alarm="{{item}}"
+        showHandle="{{!item.is_resolved}}"
+        bind:tap="onAlarmTap"
+        bind:handle="onAlarmHandle"
+      />
+    </block>
+
+    <!-- 空状态 -->
+    <empty-state wx:if="{{alarms.length === 0}}" text="暂无告警" icon="alarm" />
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{loadingMore}}">
+      <view class="loading-text">加载更多...</view>
+    </view>
+
+    <!-- 无更多数据 -->
+    <view class="no-more" wx:if="{{!hasMore && alarms.length > 0}}">
+      <view class="no-more-text">已加载全部数据</view>
+    </view>
+  </view>
+</view>

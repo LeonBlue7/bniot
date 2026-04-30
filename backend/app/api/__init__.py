@@ -3,7 +3,7 @@ API 路由注册
 """
 from fastapi import APIRouter
 
-from app.api.endpoints import alarms, auth, backups, devices, docs, health, logs, notifications, reports, restores, tenants, users, websocket, zones
+from app.api.endpoints import alarms, auth, backups, devices, docs, health, logs, notifications, reports, restores, tenants, users, websocket, zones, wechat
 
 api_router = APIRouter()
 
@@ -22,3 +22,4 @@ api_router.include_router(backups.router, prefix="/backups", tags=["备份管理
 api_router.include_router(restores.router, prefix="/restores", tags=["恢复管理"])
 api_router.include_router(docs.router, prefix="/docs", tags=["文档"])
 api_router.include_router(websocket.router, tags=["WebSocket"])
+api_router.include_router(wechat.router, prefix="/wechat", tags=["微信小程序"])

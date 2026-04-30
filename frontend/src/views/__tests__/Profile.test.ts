@@ -12,6 +12,10 @@ import { useAuthStore } from '@/stores/auth'
 vi.mock('@/api', () => ({
   authApi: {
     changePassword: vi.fn()
+  },
+  userApi: {
+    bindWechat: vi.fn(),
+    unbindWechat: vi.fn()
   }
 }))
 
@@ -20,11 +24,14 @@ vi.mock('@/stores/auth', () => ({
   useAuthStore: vi.fn()
 }))
 
-// Mock ant-design-vue message
+// Mock ant-design-vue message and Modal
 vi.mock('ant-design-vue', () => ({
   message: {
     success: vi.fn(),
     error: vi.fn()
+  },
+  Modal: {
+    confirm: vi.fn()
   }
 }))
 
@@ -44,7 +51,8 @@ const globalStubs = {
     }
   },
   'a-button': { template: '<button class="a-button" type="submit"><slot /></button>' },
-  'a-tag': { template: '<span class="a-tag"><slot /></span>' }
+  'a-tag': { template: '<span class="a-tag"><slot /></span>' },
+  'a-modal': { template: '<div class="a-modal"><slot /></div>' }
 }
 
 describe('Profile', () => {
@@ -63,7 +71,8 @@ describe('Profile', () => {
         role: 'admin',
         tenant_id: 1,
         is_active: true,
-        created_at: '2024-01-01T00:00:00Z'
+        created_at: '2024-01-01T00:00:00Z',
+        wechat_openid: null
       }
     } as unknown as ReturnType<typeof useAuthStore>)
   })
@@ -126,9 +135,10 @@ describe('Profile', () => {
         }
       })
 
-      const button = wrapper.find('.a-button')
-      expect(button.exists()).toBe(true)
-      expect(button.text()).toContain('修改密码')
+      // 找到修改密码按钮（注意：现在有多个按钮）
+      const buttons = wrapper.findAll('.a-button')
+      const passwordButton = buttons.find(b => b.text().includes('修改密码'))
+      expect(passwordButton?.exists()).toBe(true)
     })
   })
 })

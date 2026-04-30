@@ -1,6 +1,8 @@
 """
 用户管理 API 端点
 使用新的权限系统进行访问控制
+
+注意：特定路径的路由（如 /bind-wechat, /unbind-wechat）必须在参数化路由（如 /{user_id}）之前定义
 """
 import logging
 
@@ -10,13 +12,104 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models import User
-from app.schemas import Message, UserCreateAPI, UserResponse, UserStatusUpdate, UserUpdate
+from app.schemas import Message, UserCreateAPI, UserResponse, UserStatusUpdate, UserUpdate, WechatBindRequest, WechatBindResponse, WechatUnbindResponse
 from app.services.auth import get_current_user, get_password_hash
 from app.services.permissions import can_manage_user, Permission, require_permission
+from app.services.wechat import get_wechat_openid_async
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
+# ============ 特定路径路由（必须在参数化路由之前） ============
+
+@router.post("/bind-wechat", response_model=WechatBindResponse)
+async def bind_wechat(
+    request: WechatBindRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    绑定微信账号
+
+    将当前用户的账号与微信 openid 绑定，绑定后可以通过微信登录
+    """
+    # 检查用户是否已绑定微信
+    if current_user.wechat_openid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="该用户已绑定微信，请先解绑后再重新绑定"
+        )
+
+    # 获取 openid
+    wechat_data = await get_wechat_openid_async(request.code)
+
+    if not wechat_data or "openid" not in wechat_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="获取微信 openid 失败，无效的 code 或网络错误"
+        )
+
+    openid = wechat_data["openid"]
+
+    # 检查 openid 是否已被其他用户绑定
+    result = await db.execute(
+        select(User).where(User.wechat_openid == openid)
+    )
+    existing_user = result.scalar_one_or_none()
+
+    if existing_user and existing_user.id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="该微信账号已被其他用户绑定"
+        )
+
+    # 绑定 openid
+    current_user.wechat_openid = openid
+    await db.commit()
+    await db.refresh(current_user)
+
+    logger.info(f"User {current_user.username} bound WeChat openid: {openid}")
+
+    return WechatBindResponse(
+        success=True,
+        message="微信绑定成功",
+        openid=openid
+    )
+
+
+@router.delete("/unbind-wechat", response_model=WechatUnbindResponse)
+async def unbind_wechat(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    解绑微信账号
+
+    移除当前用户的微信 openid 绑定，解绑后无法通过微信登录
+    """
+    # 检查用户是否已绑定微信
+    if not current_user.wechat_openid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="该用户未绑定微信"
+        )
+
+    # 解绑
+    old_openid = current_user.wechat_openid
+    current_user.wechat_openid = None
+    await db.commit()
+    await db.refresh(current_user)
+
+    logger.info(f"User {current_user.username} unbound WeChat openid: {old_openid}")
+
+    return WechatUnbindResponse(
+        success=True,
+        message="微信解绑成功"
+    )
+
+
+# ============ 参数化路由 ============
 
 @router.get("", response_model=list[UserResponse])
 async def list_users(

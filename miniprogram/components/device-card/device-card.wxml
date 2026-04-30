@@ -1,0 +1,48 @@
+<view class="device-card" bindtap="onTap">
+  <!-- 设备头部：名称 + 状态 -->
+  <view class="device-header">
+    <view class="device-name">{{device.name || '未命名设备'}}</view>
+    <view class="device-status {{formatted.statusClass}}">{{formatted.statusText}}</view>
+  </view>
+
+  <!-- 设备ID -->
+  <view class="device-id">ID: {{device.device_id}}</view>
+
+  <!-- 分区信息 -->
+  <view class="device-zone" wx:if="{{device.zone_name}}">
+    <text class="zone-label">分区：</text>
+    <text class="zone-name">{{device.zone_name}}</text>
+  </view>
+
+  <!-- 数据展示 -->
+  <view class="device-data">
+    <!-- 温度 -->
+    <view class="data-item">
+      <view class="data-icon temp-icon">🌡️</view>
+      <view class="data-value">{{formatted.temp}}</view>
+      <view class="data-label">温度</view>
+    </view>
+
+    <!-- 湿度 -->
+    <view class="data-item">
+      <view class="data-icon humi-icon">💧</view>
+      <view class="data-value">{{formatted.humi}}</view>
+      <view class="data-label">湿度</view>
+    </view>
+
+    <!-- 告警状态 -->
+    <view class="data-item" wx:if="{{device.alarmtemp}}">
+      <view class="data-icon alarm-icon">⚠️</view>
+      <view class="data-value alarm">告警</view>
+      <view class="data-label">状态</view>
+    </view>
+  </view>
+
+  <!-- 底部信息 -->
+  <view class="device-footer">
+    <view class="last-seen">最后上报：{{formatted.lastSeen}}</view>
+    <view class="detail-btn" wx:if="{{showDetail}}" bindtap="onDetail" catchtap="onDetail">
+      查看详情 >
+    </view>
+  </view>
+</view>

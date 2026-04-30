@@ -1,0 +1,211 @@
+<view class="detail-page">
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-container" wx:if="{{errorMsg && !loading}}">
+    <view class="error-text">{{errorMsg}}</view>
+    <button class="retry-btn" bindtap="loadDeviceDetail">重新加载</button>
+  </view>
+
+  <!-- 设备详情 -->
+  <view class="detail-content" wx:if="{{!loading && device}}">
+    <!-- 设备基本信息 -->
+    <view class="info-card">
+      <view class="info-header">
+        <view class="info-name">{{device.name}}</view>
+        <view class="info-status {{device.is_online ? 'online' : 'offline'}}">
+          {{device.is_online ? '在线' : '离线'}}
+        </view>
+      </view>
+      <view class="info-row">
+        <view class="info-label">设备ID</view>
+        <view class="info-value">{{device.device_id}}</view>
+      </view>
+      <view class="info-row" wx:if="{{device.zone_name}}">
+        <view class="info-label">分区</view>
+        <view class="info-value">{{device.zone_name}}</view>
+      </view>
+      <view class="info-row" wx:if="{{device.protocol_version}}">
+        <view class="info-label">协议版本</view>
+        <view class="info-value">{{device.protocol_version}}</view>
+      </view>
+      <view class="info-row" wx:if="{{device.firmware_version}}">
+        <view class="info-label">固件版本</view>
+        <view class="info-value">{{device.firmware_version}}</view>
+      </view>
+    </view>
+
+    <!-- 实时数据 -->
+    <view class="data-card">
+      <view class="card-title">实时数据</view>
+      <view class="data-grid">
+        <view class="data-item">
+          <view class="data-label">温度</view>
+          <view class="data-value {{device.temp !== null && device.alarmtemp ? 'alarm' : ''}}">
+            {{device.temp !== null ? device.temp.toFixed(1) + '°C' : '--'}}
+          </view>
+          <view class="data-status alarm" wx:if="{{device.alarmtemp}}">告警</view>
+        </view>
+        <view class="data-item">
+          <view class="data-label">湿度</view>
+          <view class="data-value {{device.humi !== null && device.alarmhumi ? 'alarm' : ''}}">
+            {{device.humi !== null ? device.humi.toFixed(1) + '%' : '--'}}
+          </view>
+          <view class="data-status alarm" wx:if="{{device.alarmhumi}}">告警</view>
+        </view>
+        <view class="data-item" wx:if="{{device.current !== null}}">
+          <view class="data-label">电流</view>
+          <view class="data-value">{{device.current.toFixed(3)}}A</view>
+        </view>
+        <view class="data-item" wx:if="{{device.airstate !== null}}">
+          <view class="data-label">空调状态</view>
+          <view class="data-value">{{device.airstate === 1 ? '开机' : '关机'}}</view>
+        </view>
+        <view class="data-item" wx:if="{{device.csq !== null}}">
+          <view class="data-label">信号强度</view>
+          <view class="data-value">{{device.csq}}dB</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 运行时间统计 -->
+    <view class="runtime-card" wx:if="{{device.supports_runtime}}">
+      <view class="card-title">运行统计</view>
+      <view class="runtime-grid">
+        <view class="runtime-item">
+          <view class="runtime-label">今日运行</view>
+          <view class="runtime-value">{{device.today_runtime !== null ? device.today_runtime.toFixed(1) + '小时' : '--'}}</view>
+        </view>
+        <view class="runtime-item">
+          <view class="runtime-label">本月运行</view>
+          <view class="runtime-value">{{device.month_runtime !== null ? device.month_runtime.toFixed(1) + '小时' : '--'}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 历史数据图表 -->
+    <view class="chart-card">
+      <view class="card-title">历史趋势</view>
+
+      <!-- 时间范围选择 -->
+      <view class="hours-tabs">
+        <block wx:for="{{hoursOptions}}" wx:key="value">
+          <view
+            class="hours-tab {{selectedHours === item.value ? 'active' : ''}}"
+            data-hours="{{item.value}}"
+            bindtap="onHoursChange"
+          >
+            {{item.label}}
+          </view>
+        </block>
+      </view>
+
+      <!-- 加载状态 -->
+      <view class="chart-loading" wx:if="{{historyLoading}}">
+        <view class="loading-text">加载图表...</view>
+      </view>
+
+      <!-- 空数据状态 -->
+      <view class="chart-empty" wx:if="{{!historyLoading && historyData.length === 0}}">
+        <view class="empty-text">暂无历史数据</view>
+      </view>
+
+      <!-- Canvas 图表 -->
+      <view class="chart-container" wx:if="{{!historyLoading && historyData.length > 0}}">
+        <canvas
+          type="2d"
+          id="historyChart"
+          class="history-canvas"
+          style="width: {{canvasWidth}}px; height: {{canvasHeight}}px;"
+        ></canvas>
+      </view>
+    </view>
+
+    <!-- 参数设置 -->
+    <view class="params-card">
+      <view class="card-title">参数设置</view>
+
+      <!-- 加载状态 -->
+      <view class="loading-container" wx:if="{{paramsLoading}}">
+        <view class="loading-text">加载参数...</view>
+      </view>
+
+      <!-- 参数列表 -->
+      <view class="params-list" wx:if="{{!paramsLoading && params.length > 0}}">
+        <block wx:for="{{params}}" wx:key="code">
+          <view
+            class="param-item"
+            data-param="{{item}}"
+            bindtap="onParamTap"
+          >
+            <view class="param-name">{{item.name}}</view>
+            <view class="param-value">
+              {{item.currentValue !== null ? item.currentValue + item.unit : '未设置'}}
+              <text class="param-arrow">></text>
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{!paramsLoading && params.length === 0}}">
+        <view class="empty-text">暂无可设置参数</view>
+      </view>
+
+      <!-- 提示 -->
+      <view class="params-tip" wx:if="{{params.length > 0}}">
+        <text class="tip-text">点击参数项可进行设置，设备需在线才能生效</text>
+      </view>
+    </view>
+
+    <!-- 远程控制 -->
+    <view class="control-card" wx:if="{{device.is_online}}">
+      <view class="card-title">远程控制</view>
+      <view class="control-buttons">
+        <button class="control-btn on" data-airstate="1" bindtap="onControl">开机</button>
+        <button class="control-btn off" data-airstate="0" bindtap="onControl">关机</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 参数设置弹窗 -->
+  <view class="modal-mask" wx:if="{{showParamModal}}" bindtap="onModalClose"></view>
+  <view class="modal-container" wx:if="{{showParamModal}}">
+    <view class="modal-header">
+      <view class="modal-title">{{currentParam.name}}</view>
+      <view class="modal-close" bindtap="onModalClose">X</view>
+    </view>
+
+    <view class="modal-body">
+      <view class="param-info">
+        <view class="param-desc" wx:if="{{currentParam.desc}}">{{currentParam.desc}}</view>
+        <view class="param-range" wx:if="{{currentParam.range}}">
+          范围: {{currentParam.range[0]}} - {{currentParam.range[1]}}{{currentParam.unit}}
+        </view>
+      </view>
+
+      <view class="param-input-wrapper">
+        <input
+          class="param-input"
+          type="digit"
+          placeholder="请输入参数值"
+          value="{{paramValue}}"
+          bindinput="onParamInput"
+        />
+        <text class="param-unit">{{currentParam.unit}}</text>
+      </view>
+
+      <view class="param-error" wx:if="{{paramErrorMsg}}">
+        <text class="error-text">{{paramErrorMsg}}</text>
+      </view>
+    </view>
+
+    <view class="modal-footer">
+      <button class="modal-btn cancel" bindtap="onModalClose">取消</button>
+      <button class="modal-btn confirm" bindtap="onParamSubmit">确认</button>
+    </view>
+  </view>
+</view>

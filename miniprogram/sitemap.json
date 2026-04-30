@@ -1,0 +1,15 @@
+{
+  "rules": [
+    {
+      "action": {
+        "allow": true,
+        "page": "*"
+      },
+      "match": {
+        "attribute": {
+          "wechat": true
+        }
+      }
+    }
+  ]
+}

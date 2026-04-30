@@ -1,0 +1,152 @@
+/**
+ * BNIoT 空调管理小程序 - 全局样式
+ */
+
+/* 全局变量 */
+:root {
+  --primary-color: #1890ff;
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #f5222d;
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --border-color: #d9d9d9;
+  --background-color: #f5f5f5;
+}
+
+/* 页面基础样式 */
+page {
+  background-color: var(--background-color);
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif;
+  font-size: 14px;
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+/* 容器样式 */
+.container {
+  padding: 16px;
+}
+
+/* 卡片样式 */
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 标题样式 */
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 状态标签 */
+.status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.status-online {
+  background-color: #e6f7ff;
+  color: var(--primary-color);
+}
+
+.status-offline {
+  background-color: #fff1f0;
+  color: var(--error-color);
+}
+
+.status-warning {
+  background-color: #fffbe6;
+  color: var(--warning-color);
+}
+
+/* 按钮样式 */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 12px 24px;
+}
+
+.btn-default {
+  background-color: #ffffff;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 12px 24px;
+}
+
+/* 空状态样式 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+.empty-icon {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* 加载状态 */
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* 列表项样式 */
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+/* 统计卡片 */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: #ffffff;
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}

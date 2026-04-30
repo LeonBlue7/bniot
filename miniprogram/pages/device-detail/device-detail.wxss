@@ -1,0 +1,392 @@
+.detail-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 16px;
+  padding-bottom: 32px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #999999;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+}
+
+.error-text {
+  font-size: 14px;
+  color: #f5222d;
+  margin-bottom: 16px;
+}
+
+.retry-btn {
+  font-size: 14px;
+  padding: 8px 24px;
+  background-color: #1890ff;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+/* 卡片通用样式 */
+.info-card, .data-card, .runtime-card, .control-card, .chart-card, .params-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 设备基本信息 */
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.info-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.info-status {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.info-status.online {
+  background-color: #e6f7e6;
+  color: #52c41a;
+}
+
+.info-status.offline {
+  background-color: #fff1f0;
+  color: #f5222d;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #999999;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #333333;
+}
+
+/* 实时数据 */
+.data-grid, .runtime-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.data-item, .runtime-item {
+  flex: 1;
+  min-width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.data-label, .runtime-label {
+  font-size: 12px;
+  color: #999999;
+}
+
+.data-value, .runtime-value {
+  font-size: 20px;
+  font-weight: 500;
+  color: #333333;
+  margin-top: 4px;
+}
+
+.data-value.alarm {
+  color: #f5222d;
+}
+
+.data-status {
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.data-status.alarm {
+  color: #f5222d;
+  background-color: #fff1f0;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+/* 运行统计 */
+.runtime-value {
+  font-size: 16px;
+}
+
+/* 历史数据图表 */
+.chart-card {
+  padding: 16px;
+}
+
+.hours-tabs {
+  display: flex;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+}
+
+.hours-tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 12px;
+  color: #666666;
+  border-radius: 4px;
+}
+
+.hours-tab.active {
+  background-color: #1890ff;
+  color: #ffffff;
+}
+
+.chart-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.history-canvas {
+  display: block;
+}
+
+.chart-loading, .chart-empty {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+.empty-text {
+  font-size: 14px;
+  color: #999999;
+}
+
+/* 参数设置 */
+.params-card {
+  padding: 16px;
+}
+
+.params-list {
+  margin-top: 8px;
+}
+
+.param-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.param-item:last-child {
+  border-bottom: none;
+}
+
+.param-name {
+  font-size: 14px;
+  color: #333333;
+}
+
+.param-value {
+  font-size: 14px;
+  color: #666666;
+  display: flex;
+  align-items: center;
+}
+
+.param-arrow {
+  margin-left: 8px;
+  color: #999999;
+}
+
+.params-tip {
+  margin-top: 12px;
+  padding: 8px;
+  background-color: #e6f7ff;
+  border-radius: 4px;
+}
+
+.tip-text {
+  font-size: 12px;
+  color: #1890ff;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* 远程控制 */
+.control-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 8px;
+}
+
+.control-btn {
+  width: 80px;
+  height: 40px;
+  font-size: 14px;
+  border-radius: 20px;
+  margin: 0;
+}
+
+.control-btn.on {
+  background-color: #52c41a;
+  color: #ffffff;
+}
+
+.control-btn.off {
+  background-color: #f5222d;
+  color: #ffffff;
+}
+
+/* 弹窗样式 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.modal-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  z-index: 101;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.modal-close {
+  font-size: 14px;
+  color: #999999;
+  padding: 4px 8px;
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.param-info {
+  margin-bottom: 16px;
+}
+
+.param-desc {
+  font-size: 12px;
+  color: #666666;
+  margin-bottom: 4px;
+}
+
+.param-range {
+  font-size: 12px;
+  color: #999999;
+}
+
+.param-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+.param-input {
+  flex: 1;
+  font-size: 14px;
+}
+
+.param-unit {
+  font-size: 14px;
+  color: #999999;
+  margin-left: 4px;
+}
+
+.param-error {
+  margin-top: 8px;
+}
+
+.modal-footer {
+  display: flex;
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.modal-btn {
+  flex: 1;
+  font-size: 14px;
+  padding: 8px 0;
+  border-radius: 4px;
+  margin: 0 4px;
+}
+
+.modal-btn.cancel {
+  background-color: #f5f5f5;
+  color: #666666;
+}
+
+.modal-btn.confirm {
+  background-color: #1890ff;
+  color: #ffffff;
+}

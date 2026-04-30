@@ -57,6 +57,7 @@ class UserResponse(UserBase):
     id: int
     tenant_id: int
     is_active: bool
+    wechat_openid: str | None = None
     created_at: datetime
 
     class Config:
@@ -68,6 +69,7 @@ class UserResponse(UserBase):
                 "role": "admin",
                 "tenant_id": 1,
                 "is_active": True,
+                "wechat_openid": None,
                 "created_at": "2024-01-01T00:00:00Z"
             }
         }
@@ -82,6 +84,72 @@ class PasswordChangeRequest(BaseModel):
     """修改密码请求"""
     old_password: str = Field(..., min_length=6, description="当前密码")
     new_password: str = Field(..., min_length=6, description="新密码")
+
+
+# ============ 微信小程序登录 ============
+class WechatLoginRequest(BaseModel):
+    """微信小程序登录请求"""
+    code: str = Field(..., min_length=1, description="wx.login() 获取的 code")
+
+
+class WechatLoginResponse(BaseModel):
+    """微信小程序登录响应"""
+    access_token: str
+    token_type: str = "bearer"
+    is_new_user: bool = Field(..., description="是否为新用户（首次微信登录）")
+    user: "UserResponse"
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "token_type": "bearer",
+                "is_new_user": False,
+                "user": {
+                    "id": 1,
+                    "username": "wechat_user_abc123",
+                    "role": "viewer",
+                    "tenant_id": 1,
+                    "is_active": True,
+                    "created_at": "2024-01-01T00:00:00Z"
+                }
+            }
+        }
+
+
+class WechatBindRequest(BaseModel):
+    """微信绑定请求"""
+    code: str = Field(..., min_length=1, description="wx.login() 获取的 code")
+
+
+class WechatBindResponse(BaseModel):
+    """微信绑定响应"""
+    success: bool
+    message: str
+    openid: str | None = Field(None, description="绑定成功的 openid")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "message": "微信绑定成功",
+                "openid": "oABC123xyz456"
+            }
+        }
+
+
+class WechatUnbindResponse(BaseModel):
+    """微信解绑响应"""
+    success: bool
+    message: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "message": "微信解绑成功"
+            }
+        }
 
 
 # ============ 租户 ============

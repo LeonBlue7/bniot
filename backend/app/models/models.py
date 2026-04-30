@@ -69,6 +69,7 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(20), default="viewer")  # admin, operator, viewer
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    wechat_openid: Mapped[str | None] = mapped_column(String(100), nullable=True, unique=True)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
@@ -79,6 +80,7 @@ class User(Base):
     # 索引
     __table_args__ = (
         Index('idx_users_tenant_id', 'tenant_id'),
+        Index('ix_users_wechat_openid', 'wechat_openid'),
     )
 
     def __repr__(self):

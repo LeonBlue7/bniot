@@ -1,0 +1,39 @@
+<view class="login-page">
+  <!-- Logo 区域 -->
+  <view class="logo-section">
+    <view class="logo-icon">
+      <view class="logo-text-icon">BNIoT</view>
+    </view>
+    <view class="logo-title">BNIoT</view>
+    <view class="logo-subtitle">空调节能管理系统</view>
+  </view>
+
+  <!-- 登录按钮区域 -->
+  <view class="login-section">
+    <button
+      class="login-btn {{loading ? 'disabled' : ''}}"
+      bindtap="onWechatLogin"
+      disabled="{{loading}}"
+    >
+      <text wx:if="{{!loading}}">微信一键登录</text>
+      <text wx:else>登录中...</text>
+    </button>
+
+    <!-- 错误提示 -->
+    <view class="error-msg" wx:if="{{errorMsg}}">
+      {{errorMsg}}
+    </view>
+
+    <!-- 提示文字 -->
+    <view class="login-tip">
+      使用微信账号快速登录，无需注册
+    </view>
+  </view>
+
+  <!-- 底部信息 -->
+  <view class="footer-section">
+    <view class="footer-text">
+      登录即表示同意《用户协议》和《隐私政策》
+    </view>
+  </view>
+</view>

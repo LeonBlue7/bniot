@@ -57,5 +57,22 @@ export const userApi = {
   async delete(id: number): Promise<{ message: string }> {
     const response = await apiClient.delete<{ message: string }>(`/users/${id}`)
     return response.data
+  },
+
+  /**
+   * 绑定微信账号
+   * @param code - wx.login() 获取的 code
+   */
+  async bindWechat(code: string): Promise<{ success: boolean; message: string; openid: string }> {
+    const response = await apiClient.post<{ success: boolean; message: string; openid: string }>('/users/bind-wechat', { code })
+    return response.data
+  },
+
+  /**
+   * 解绑微信账号
+   */
+  async unbindWechat(): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.delete<{ success: boolean; message: string }>('/users/unbind-wechat')
+    return response.data
   }
 }

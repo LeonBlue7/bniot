@@ -1,0 +1,144 @@
+/**
+ * 首页仪表盘样式
+ */
+
+.index-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #999999;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 16px;
+}
+
+.error-text {
+  font-size: 14px;
+  color: #f5222d;
+  margin-bottom: 16px;
+}
+
+.retry-btn {
+  font-size: 14px;
+  padding: 8px 24px;
+  background-color: #1890ff;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+.main-content {
+  padding: 16px;
+}
+
+/* 统计卡片区域 */
+.stats-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.stats-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-right: 8px;
+}
+
+.stats-card:last-child {
+  margin-right: 0;
+}
+
+.stats-icon {
+  font-size: 32px;
+  margin-right: 12px;
+}
+
+.stats-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats-title {
+  font-size: 12px;
+  color: #999999;
+}
+
+.stats-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333333;
+  margin-top: 4px;
+}
+
+.stats-value.alarm {
+  color: #f5222d;
+}
+
+.stats-detail {
+  font-size: 12px;
+  color: #666666;
+  margin-top: 4px;
+}
+
+.stats-detail .online {
+  color: #52c41a;
+}
+
+.stats-detail .offline {
+  color: #f5222d;
+  margin-left: 8px;
+}
+
+/* 区块区域 */
+.section {
+  margin-bottom: 16px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.section-action {
+  font-size: 12px;
+  color: #1890ff;
+}
+
+/* 设备列表 */
+.device-list {
+  /* 无额外样式 */
+}
+
+/* 告警列表 */
+.alarm-list {
+  /* 无额外样式 */
+}

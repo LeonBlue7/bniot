@@ -1,0 +1,88 @@
+<view class="alarm-detail-page">
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-container" wx:if="{{errorMsg && !loading}}">
+    <view class="error-text">{{errorMsg}}</view>
+    <button class="retry-btn" bindtap="loadAlarmDetail">重新加载</button>
+  </view>
+
+  <!-- 告警详情 -->
+  <view class="detail-content" wx:if="{{!loading && alarm}}">
+    <!-- 告警头部信息 -->
+    <view class="alarm-header">
+      <view class="alarm-status {{alarm.resolvedClass}}">
+        {{alarm.resolvedText}}
+      </view>
+      <view class="alarm-severity {{alarm.severityClass}}">
+        {{alarm.severityText}}
+      </view>
+    </view>
+
+    <!-- 告警类型卡片 -->
+    <view class="type-card">
+      <view class="type-icon {{alarm.severityClass}}">
+        <text class="icon-text">{{alarm.severityText === '严重' ? '!' : '?'}}</text>
+      </view>
+      <view class="type-content">
+        <view class="type-title">{{alarm.typeText}}</view>
+        <view class="type-message">{{alarm.message}}</view>
+      </view>
+    </view>
+
+    <!-- 告警详细信息 -->
+    <view class="info-card">
+      <view class="card-title">告警信息</view>
+
+      <view class="info-row">
+        <view class="info-label">告警类型</view>
+        <view class="info-value">{{alarm.typeText}}</view>
+      </view>
+
+      <view class="info-row">
+        <view class="info-label">严重程度</view>
+        <view class="info-value {{alarm.severityClass}}">{{alarm.severityText}}</view>
+      </view>
+
+      <view class="info-row">
+        <view class="info-label">发生时间</view>
+        <view class="info-value">{{alarm.occurredTime}}</view>
+      </view>
+
+      <view class="info-row" wx:if="{{alarm.is_resolved && alarm.resolvedTime}}">
+        <view class="info-label">处理时间</view>
+        <view class="info-value">{{alarm.resolvedTime}}</view>
+      </view>
+
+      <view class="info-row" wx:if="{{alarm.device_id}}">
+        <view class="info-label">关联设备</view>
+        <view class="info-value clickable" bindtap="onDeviceTap">
+          {{device ? device.name : alarm.device_id}}
+          <text class="info-arrow">></text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 告警详情说明 -->
+    <view class="desc-card" wx:if="{{alarm.message}}">
+      <view class="card-title">详细说明</view>
+      <view class="desc-content">{{alarm.message}}</view>
+    </view>
+
+    <!-- 处理按钮 -->
+    <view class="action-card">
+      <button
+        class="handle-btn {{alarm.is_resolved ? 'disabled' : ''}}"
+        disabled="{{alarm.is_resolved || handling}}"
+        bindtap="onHandleAlarm"
+      >
+        {{handling ? '处理中...' : (alarm.is_resolved ? '已处理' : '处理告警')}}
+      </button>
+
+      <button class="back-btn" bindtap="onBackToList">返回列表</button>
+    </view>
+  </view>
+</view>

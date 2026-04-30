@@ -1,0 +1,54 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login/login",
+    "pages/devices/devices",
+    "pages/device-detail/device-detail",
+    "pages/alarms/alarms",
+    "pages/alarm-detail/alarm-detail",
+    "pages/zones/zones"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#1890ff",
+    "navigationBarTitleText": "BNIoT空调管理",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f5f5",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#1890ff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/icon-home.png",
+        "selectedIconPath": "images/icon-home-active.png"
+      },
+      {
+        "pagePath": "pages/devices/devices",
+        "text": "设备",
+        "iconPath": "images/icon-device.png",
+        "selectedIconPath": "images/icon-device-active.png"
+      },
+      {
+        "pagePath": "pages/alarms/alarms",
+        "text": "告警",
+        "iconPath": "images/icon-alarm.png",
+        "selectedIconPath": "images/icon-alarm-active.png"
+      },
+      {
+        "pagePath": "pages/zones/zones",
+        "text": "分区",
+        "iconPath": "images/icon-zone.png",
+        "selectedIconPath": "images/icon-zone-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

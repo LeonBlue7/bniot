@@ -1,0 +1,234 @@
+.alarm-detail-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 16px;
+  padding-bottom: 32px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #999999;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+}
+
+.error-text {
+  font-size: 14px;
+  color: #f5222d;
+  margin-bottom: 16px;
+}
+
+.retry-btn {
+  font-size: 14px;
+  padding: 8px 24px;
+  background-color: #1890ff;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+/* 告警头部 */
+.alarm-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.alarm-status {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.alarm-status.resolved {
+  background-color: #e6f7e6;
+  color: #52c41a;
+}
+
+.alarm-status.unresolved {
+  background-color: #fff1f0;
+  color: #f5222d;
+}
+
+.alarm-severity {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.severity-critical {
+  background-color: #fff1f0;
+  color: #f5222d;
+}
+
+.severity-warning {
+  background-color: #fffbe6;
+  color: #faad14;
+}
+
+.severity-info {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+/* 告警类型卡片 */
+.type-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.type-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.type-icon.severity-critical {
+  background-color: #f5222d;
+}
+
+.type-icon.severity-warning {
+  background-color: #faad14;
+}
+
+.type-icon.severity-info {
+  background-color: #1890ff;
+}
+
+.icon-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.type-content {
+  flex: 1;
+}
+
+.type-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.type-message {
+  font-size: 14px;
+  color: #666666;
+  margin-top: 4px;
+}
+
+/* 信息卡片 */
+.info-card, .desc-card, .action-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #999999;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #333333;
+}
+
+.info-value.clickable {
+  color: #1890ff;
+}
+
+.info-arrow {
+  margin-left: 4px;
+  color: #1890ff;
+}
+
+/* 严重程度颜色 */
+.info-value.severity-critical {
+  color: #f5222d;
+}
+
+.info-value.severity-warning {
+  color: #faad14;
+}
+
+.info-value.severity-info {
+  color: #1890ff;
+}
+
+/* 详细说明 */
+.desc-content {
+  font-size: 14px;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* 操作按钮 */
+.action-card {
+  padding: 16px;
+}
+
+.handle-btn {
+  width: 100%;
+  font-size: 16px;
+  padding: 12px 0;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background-color: #1890ff;
+  color: #ffffff;
+}
+
+.handle-btn.disabled {
+  background-color: #d9d9d9;
+  color: #999999;
+}
+
+.back-btn {
+  width: 100%;
+  font-size: 14px;
+  padding: 10px 0;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  color: #666666;
+}

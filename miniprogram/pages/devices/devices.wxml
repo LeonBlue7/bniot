@@ -1,0 +1,101 @@
+<view class="devices-page">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <input
+      class="search-input"
+      placeholder="搜索设备名称或ID"
+      value="{{filter.keyword}}"
+      bindinput="onSearchInput"
+      bindconfirm="onSearchConfirm"
+    />
+    <view class="search-btn" bindtap="onSearchConfirm">搜索</view>
+    <view class="clear-btn" wx:if="{{filter.keyword}}" bindtap="onClearSearch">清除</view>
+  </view>
+
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <!-- 状态筛选 -->
+    <view class="filter-section">
+      <block wx:for="{{statusOptions}}" wx:key="value">
+        <view
+          class="filter-item {{selectedStatus === item.value ? 'active' : ''}}"
+          data-status="{{item.value}}"
+          bindtap="onStatusFilter"
+        >
+          {{item.label}}
+        </view>
+      </block>
+    </view>
+
+    <!-- 分区筛选 -->
+    <view class="filter-section">
+      <view class="filter-item zone-filter" bindtap="onShowZoneFilter">
+        <text class="zone-label">
+          {{zones.length ? (filter.zone_id ? (zones.find(z => z.id === filter.zone_id)?.name || '全部分区') : '全部分区') : '加载分区'}}
+        </text>
+        <text class="zone-arrow">></text>
+      </view>
+    </view>
+
+    <!-- 扫码按钮 -->
+    <view class="scan-btn" bindtap="onScanDevice">
+      <text class="scan-icon">S</text>
+    </view>
+  </view>
+
+  <!-- 分区筛选弹窗 -->
+  <view class="zone-filter-mask" wx:if="{{showZoneFilter}}" bindtap="onHideZoneFilter"></view>
+  <view class="zone-filter-popup" wx:if="{{showZoneFilter}}">
+    <view class="popup-header">
+      <view class="popup-title">选择分区</view>
+      <view class="popup-close" bindtap="onHideZoneFilter">X</view>
+    </view>
+    <view class="popup-body">
+      <block wx:for="{{zones}}" wx:key="id">
+        <view
+          class="zone-item {{filter.zone_id === item.id ? 'selected' : ''}}"
+          data-zone-id="{{item.id}}"
+          bindtap="onZoneSelect"
+        >
+          {{item.name}}
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-container" wx:if="{{errorMsg && !loading}}">
+    <view class="error-text">{{errorMsg}}</view>
+    <button class="retry-btn" bindtap="loadDevices">重新加载</button>
+  </view>
+
+  <!-- 设备列表 -->
+  <view class="device-list" wx:if="{{!loading && !errorMsg}}">
+    <block wx:for="{{devices}}" wx:key="id">
+      <device-card
+        device="{{item}}"
+        showDetail="{{true}}"
+        bind:tap="onDeviceTap"
+        bind:detail="onDeviceDetail"
+      />
+    </block>
+
+    <!-- 空状态 -->
+    <empty-state wx:if="{{devices.length === 0}}" text="暂无设备" icon="device" />
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{loadingMore}}">
+      <view class="loading-text">加载更多...</view>
+    </view>
+
+    <!-- 无更多数据 -->
+    <view class="no-more" wx:if="{{!hasMore && devices.length > 0}}">
+      <view class="no-more-text">已加载全部数据</view>
+    </view>
+  </view>
+</view>

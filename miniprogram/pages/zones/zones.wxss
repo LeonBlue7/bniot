@@ -1,0 +1,76 @@
+.zones-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.zone-list {
+  padding: 16px;
+}
+
+.zone-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.zone-icon {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+.zone-info {
+  flex: 1;
+}
+
+.zone-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333333;
+}
+
+.zone-desc {
+  font-size: 12px;
+  color: #999999;
+  margin-top: 4px;
+}
+
+.zone-arrow {
+  font-size: 14px;
+  color: #999999;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #999999;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+}
+
+.error-text {
+  font-size: 14px;
+  color: #f5222d;
+  margin-bottom: 16px;
+}
+
+.retry-btn {
+  font-size: 14px;
+  padding: 8px 24px;
+  background-color: #1890ff;
+  color: #ffffff;
+  border-radius: 4px;
+}

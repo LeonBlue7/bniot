@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "分区管理",
+  "usingComponents": {
+    "empty-state": "/components/empty-state/empty-state"
+  },
+  "enablePullDownRefresh": true
+}

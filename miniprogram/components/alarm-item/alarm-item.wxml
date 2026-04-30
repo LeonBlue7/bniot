@@ -1,0 +1,37 @@
+<view class="alarm-item {{formatted.isResolved ? 'resolved' : ''}}" bindtap="onTap">
+  <!-- 告警头部：类型 + 严重程度 -->
+  <view class="alarm-header">
+    <view class="alarm-type">{{alarm.type || '未知告警'}}</view>
+    <view class="alarm-severity {{formatted.severityClass}}">{{formatted.severityText}}</view>
+  </view>
+
+  <!-- 告警消息 -->
+  <view class="alarm-message" wx:if="{{alarm.message}}">
+    {{alarm.message}}
+  </view>
+
+  <!-- 设备信息 -->
+  <view class="alarm-device">
+    <text class="device-label">设备：</text>
+    <text class="device-id">{{alarm.device_id}}</text>
+  </view>
+
+  <!-- 发生时间 -->
+  <view class="alarm-time">
+    <text class="time-label">发生时间：</text>
+    <text class="time-value">{{formatted.occurredTime}}</text>
+  </view>
+
+  <!-- 底部信息 -->
+  <view class="alarm-footer">
+    <!-- 处理状态 -->
+    <view class="alarm-status {{formatted.isResolved ? 'status-resolved' : 'status-unresolved'}}">
+      {{formatted.resolvedText}}
+    </view>
+
+    <!-- 处理按钮 -->
+    <view class="handle-btn" wx:if="{{showHandle && !formatted.isResolved}}" bindtap="onHandle" catchtap="onHandle">
+      处理
+    </view>
+  </view>
+</view>
