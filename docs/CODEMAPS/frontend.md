@@ -609,8 +609,8 @@ input:-webkit-autofill {
 
 - **侧边栏（`MainLayout.vue`）**：展开态显示完整 Logo（`china-telecom-logo.svg`），折叠态显示标识（`china-telecom-mark.svg`），移除原 "BNIoT" 文字与内联仪表盘图标
 - **登录页（`Login.vue`）**：Logo 替换为中国电信标识，品牌文案改为系统全称，副标题为「智慧物联」
-- **favicon（`public/favicon.svg`）**：替换为中国电信标识，`index.html` 引用加 `?v=2` 破缓存
-- SVG 使用 `fill="currentColor"`，颜色由 `--color-brand-primary` 驱动，适配深/浅主题
+- **favicon（`public/favicon.svg`）**：替换为中国电信标识，`index.html` 引用带版本号破缓存
+- 图形标为「双月牙 + 中竖」中字铜钱结构，文字用 SVG `<text>` + 系统黑体渲染；颜色固定电信蓝（`#1677D9`，favicon 用 `#005BAC`），不依赖 `currentColor`（`<img>` 引用的外部 SVG 无法继承页面 CSS）
 - E2E 断言由 `BNIoT` 改为匹配「空调物联网」（auth / full-test / comprehensive-test / LoginPage）
 
 ---
