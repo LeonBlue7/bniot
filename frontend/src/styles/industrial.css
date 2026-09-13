@@ -80,6 +80,11 @@
   --color-warm-secondary: #cc7700;
   --color-warm-glow: rgba(255, 149, 0, 0.15);
 
+  /* 品牌色 - 中国电信蓝（暗色主题提亮版） */
+  --color-brand-primary: #3B9BFF;
+  --color-brand-secondary: #0077E6;
+  --color-brand-glow: rgba(59, 155, 255, 0.2);
+
   /* 状态指示 */
   --color-status-normal: #00ff88;
   --color-status-warning: #ffc107;
@@ -124,6 +129,11 @@
   --color-warm-primary: #e68600;
   --color-warm-secondary: #b36b00;
   --color-warm-glow: rgba(230, 134, 0, 0.1);
+
+  /* 品牌色 - 中国电信蓝（官方标准色） */
+  --color-brand-primary: #005BAC;
+  --color-brand-secondary: #004480;
+  --color-brand-glow: rgba(0, 91, 172, 0.15);
 
   /* 状态指示 */
   --color-status-normal: #00aa55;

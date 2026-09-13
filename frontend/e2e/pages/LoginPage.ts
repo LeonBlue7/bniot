@@ -81,7 +81,7 @@ export class LoginPage {
    */
   async expectPageLoaded() {
     await expect(this.page.locator(this.loginContainer)).toBeVisible()
-    await expect(this.page.locator('.brand')).toContainText('BNIoT')
+    await expect(this.page.locator('.brand')).toContainText('空调物联网')
   }
 
   /**

@@ -92,10 +92,7 @@ router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
   const meta = to.meta as { title?: string; requiresAuth?: boolean; roles?: string[] }
 
-  // 设置页面标题
-  if (meta.title) {
-    document.title = `${meta.title} - BNIoT`
-  }
+  // 页面标题统一固定为"办公室空调物联网智能管控系统"（在 index.html 中定义），不再随路由动态变化
 
   // 检查认证
   if (meta.requiresAuth && !authStore.isAuthenticated) {

@@ -26,7 +26,7 @@ test.describe('用户登录流程', () => {
     await loginPage.expectPageLoaded()
 
     // 验证关键元素存在
-    await expect(page.locator('.brand')).toContainText('BNIoT')
+    await expect(page.locator('.brand')).toContainText('空调物联网')
     await expect(page.locator('.login-form')).toBeVisible()
     await expect(page.locator('input[placeholder="请输入用户名"]')).toBeVisible()
     await expect(page.locator('input[placeholder="请输入密码"]')).toBeVisible()

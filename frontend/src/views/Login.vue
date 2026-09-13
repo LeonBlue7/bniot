@@ -12,43 +12,14 @@
         <!-- Logo 区域 -->
         <div class="login-header">
           <div class="logo-container">
-            <div class="logo-icon">
-              <svg
-                viewBox="0 0 48 48"
-                fill="none"
-              >
-                <circle
-                  cx="24"
-                  cy="24"
-                  r="20"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  opacity="0.3"
-                />
-                <circle
-                  cx="24"
-                  cy="24"
-                  r="14"
-                  stroke="currentColor"
-                  stroke-width="2"
-                />
-                <path
-                  d="M24 12v12l8 6"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
-                <circle
-                  cx="24"
-                  cy="24"
-                  r="4"
-                  fill="currentColor"
-                />
-              </svg>
-            </div>
+            <img
+              src="@/assets/china-telecom-logo.svg"
+              class="logo-img"
+              alt="中国电信"
+            />
             <div class="logo-text">
-              <span class="brand">BNIoT</span>
-              <span class="subtitle">工业物联网控制中心</span>
+              <span class="brand">办公室空调物联网智能管控系统</span>
+              <span class="subtitle">智慧物联</span>
             </div>
           </div>
         </div>
@@ -134,7 +105,7 @@
         <!-- 底部信息 -->
         <div class="login-footer">
           <div class="footer-line" />
-          <span class="footer-text">空调节能管理系统 v1.0.0</span>
+          <span class="footer-text">办公室空调物联网智能管控系统 v1.0.0</span>
         </div>
       </div>
     </div>
@@ -261,16 +232,11 @@ async function handleLogin() {
   gap: 12px;
 }
 
-.logo-icon {
-  width: 64px;
-  height: 64px;
-  color: var(--color-cool-primary);
+.logo-img {
+  width: 180px;
+  height: auto;
+  color: var(--color-brand-primary, var(--color-cool-primary));
   filter: drop-shadow(0 0 20px var(--color-cool-glow));
-}
-
-.logo-icon svg {
-  width: 100%;
-  height: 100%;
 }
 
 .logo-text {
@@ -281,11 +247,10 @@ async function handleLogin() {
 }
 
 .brand {
-  font-family: var(--font-mono);
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--color-text-primary);
-  letter-spacing: 0.15em;
+  letter-spacing: 0.05em;
 }
 
 .subtitle {

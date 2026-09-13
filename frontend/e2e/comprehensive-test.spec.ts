@@ -29,7 +29,7 @@ test.describe('全面功能测试', () => {
     await page.waitForSelector('.login-container')
 
     // 验证关键元素
-    await expect(page.locator('.brand')).toContainText('BNIoT')
+    await expect(page.locator('.brand')).toContainText('空调物联网')
     await expect(page.locator('.login-form')).toBeVisible()
 
     await page.screenshot({ path: '/home/leon/projects/bniot/e2e-screenshots/01-login-page.png', fullPage: true })

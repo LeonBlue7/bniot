@@ -16,7 +16,7 @@ test.describe('全面功能测试', () => {
       await page.waitForSelector('.login-container')
 
       // 验证关键元素
-      await expect(page.locator('.brand')).toContainText('BNIoT')
+      await expect(page.locator('.brand')).toContainText('空调物联网')
       await expect(page.locator('.login-form')).toBeVisible()
       await expect(page.locator('input[placeholder="请输入用户名"]')).toBeVisible()
       await expect(page.locator('input[placeholder="请输入密码"]')).toBeVisible()

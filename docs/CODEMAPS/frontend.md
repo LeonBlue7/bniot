@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-30 (微信小程序Phase 5功能)
+**Last Updated:** 2026-09-13 (页面标题固定 + 中国电信品牌 Logo)
 
 ## 目录结构
 
@@ -55,6 +55,9 @@ frontend/
 │   ├── styles/              # 样式文件
 │   │   ├── industrial.css   # 工业风格主题（CSS 变量）
 │   │   └── style.css        # Chrome autofill 样式覆盖
+│   ├── assets/              # 静态资源
+│   │   ├── china-telecom-logo.svg  # 中国电信完整 Logo（展开态）
+│   │   └── china-telecom-mark.svg  # 中国电信标识（折叠态/favicon）
 │   ├── types/               # TypeScript 类型
 │   │   └── index.ts
 │   ├── App.vue              # 根组件（含主题配置）
@@ -588,8 +591,27 @@ input:-webkit-autofill {
 --color-text-primary
 --color-status-success
 --color-status-danger
+--color-brand-primary   /* 中国电信品牌蓝：暗色 #3B9BFF / 亮色 #005BAC */
 --font-mono
 ```
+
+---
+
+## 品牌与页面标题 - 2026-09-13
+
+### 页面标题固定
+
+- 所有页面（登录、404、各业务页）`document.title` 统一固定为「办公室空调物联网智能管控系统」
+- 标题在 `index.html` 的 `<title>` 中定义
+- `router/index.ts` 路由守卫不再根据 `meta.title` 动态拼接标题（`meta.title` 字段保留但不影响标签标题）
+
+### 中国电信品牌 Logo
+
+- **侧边栏（`MainLayout.vue`）**：展开态显示完整 Logo（`china-telecom-logo.svg`），折叠态显示标识（`china-telecom-mark.svg`），移除原 "BNIoT" 文字与内联仪表盘图标
+- **登录页（`Login.vue`）**：Logo 替换为中国电信标识，品牌文案改为系统全称，副标题为「智慧物联」
+- **favicon（`public/favicon.svg`）**：替换为中国电信标识，`index.html` 引用加 `?v=2` 破缓存
+- SVG 使用 `fill="currentColor"`，颜色由 `--color-brand-primary` 驱动，适配深/浅主题
+- E2E 断言由 `BNIoT` 改为匹配「空调物联网」（auth / full-test / comprehensive-test / LoginPage）
 
 ---
 

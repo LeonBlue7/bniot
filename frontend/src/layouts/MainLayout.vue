@@ -11,44 +11,18 @@
     >
       <!-- Logo 区域 -->
       <div class="sidebar-logo">
-        <div class="logo-icon">
-          <svg
-            viewBox="0 0 32 32"
-            fill="none"
-          >
-            <circle
-              cx="16"
-              cy="16"
-              r="14"
-              stroke="currentColor"
-              stroke-width="2"
-              opacity="0.3"
-            />
-            <circle
-              cx="16"
-              cy="16"
-              r="10"
-              stroke="currentColor"
-              stroke-width="2"
-            />
-            <path
-              d="M16 8v8l5 4"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-            <circle
-              cx="16"
-              cy="16"
-              r="3"
-              fill="currentColor"
-            />
-          </svg>
-        </div>
-        <span
-          v-show="!collapsed"
-          class="logo-text"
-        >BNIoT</span>
+        <img
+          v-if="!collapsed"
+          src="@/assets/china-telecom-logo.svg"
+          class="logo-full"
+          alt="中国电信"
+        />
+        <img
+          v-else
+          src="@/assets/china-telecom-mark.svg"
+          class="logo-mark"
+          alt="中国电信"
+        />
       </div>
 
       <!-- 导航菜单 -->
@@ -287,25 +261,24 @@ function handleProfile() {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
   border-bottom: 1px solid var(--color-border-primary);
   padding: 0 16px;
 }
 
-.logo-icon {
-  width: 28px;
+.logo-full {
   height: 28px;
-  color: var(--color-cool-primary);
+  width: auto;
+  color: var(--color-brand-primary, var(--color-cool-primary));
   flex-shrink: 0;
   filter: drop-shadow(0 0 8px var(--color-cool-glow));
 }
 
-.logo-text {
-  font-family: var(--font-mono);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  letter-spacing: 0.15em;
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  color: var(--color-brand-primary, var(--color-cool-primary));
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px var(--color-cool-glow));
 }
 
 .sidebar-menu {
