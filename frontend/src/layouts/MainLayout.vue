@@ -13,13 +13,13 @@
       <div class="sidebar-logo">
         <img
           v-if="!collapsed"
-          src="@/assets/china-telecom-logo.svg"
+          src="@/assets/china-telecom-logo.png"
           class="logo-full"
           alt="中国电信"
         />
         <img
           v-else
-          src="@/assets/china-telecom-mark.svg"
+          src="@/assets/china-telecom-mark.png"
           class="logo-mark"
           alt="中国电信"
         />
@@ -268,17 +268,24 @@ function handleProfile() {
 .logo-full {
   height: 28px;
   width: auto;
-  color: var(--color-brand-primary, var(--color-cool-primary));
   flex-shrink: 0;
-  filter: drop-shadow(0 0 8px var(--color-cool-glow));
+  /* 深色主题：蓝色官方 logo 反白显示（中国电信官方反白规范） */
+  filter: brightness(0) invert(1);
+  transition: filter var(--transition-fast);
 }
 
 .logo-mark {
   width: 32px;
   height: 32px;
-  color: var(--color-brand-primary, var(--color-cool-primary));
   flex-shrink: 0;
-  filter: drop-shadow(0 0 6px var(--color-cool-glow));
+  filter: brightness(0) invert(1);
+  transition: filter var(--transition-fast);
+}
+
+/* 浅色主题：显示官方电信蓝原色 */
+[data-theme='light'] .logo-full,
+[data-theme='light'] .logo-mark {
+  filter: none;
 }
 
 .sidebar-menu {

@@ -13,7 +13,7 @@
         <div class="login-header">
           <div class="logo-container">
             <img
-              src="@/assets/china-telecom-logo.svg"
+              src="@/assets/china-telecom-logo.png"
               class="logo-img"
               alt="中国电信"
             />
@@ -233,10 +233,15 @@ async function handleLogin() {
 }
 
 .logo-img {
-  width: 180px;
+  width: 200px;
   height: auto;
-  color: var(--color-brand-primary, var(--color-cool-primary));
-  filter: drop-shadow(0 0 20px var(--color-cool-glow));
+  /* 深色主题：官方蓝色 logo 反白显示 */
+  filter: brightness(0) invert(1);
+  transition: filter var(--transition-fast, 0.2s ease);
+}
+
+[data-theme='light'] .logo-img {
+  filter: none;
 }
 
 .logo-text {

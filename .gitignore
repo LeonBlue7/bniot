@@ -95,6 +95,7 @@ Thumbs.db
 # 临时测试截图（不应提交）
 *.png
 !frontend/public/**/*.png
+!frontend/src/assets/china-telecom-*.png
 !docs/**/*.png
 e2e-screenshots/
 test-results/

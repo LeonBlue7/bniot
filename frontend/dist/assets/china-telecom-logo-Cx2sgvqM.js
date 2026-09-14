@@ -1,0 +1,1 @@
+var e=`/assets/china-telecom-logo-HHHxhapR.png`;export{e as t};

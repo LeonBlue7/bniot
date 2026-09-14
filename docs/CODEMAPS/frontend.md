@@ -1,7 +1,7 @@
 # 前端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-09-13 (页面标题固定 + 中国电信品牌 Logo)
+**Last Updated:** 2026-09-14 (替换为官方中国电信 Logo PNG)
 
 ## 目录结构
 
@@ -607,11 +607,17 @@ input:-webkit-autofill {
 
 ### 中国电信品牌 Logo
 
-- **侧边栏（`MainLayout.vue`）**：展开态显示完整 Logo（`china-telecom-logo.svg`），折叠态显示标识（`china-telecom-mark.svg`），移除原 "BNIoT" 文字与内联仪表盘图标
-- **登录页（`Login.vue`）**：Logo 替换为中国电信标识，品牌文案改为系统全称，副标题为「智慧物联」
-- **favicon（`public/favicon.svg`）**：替换为中国电信标识，`index.html` 引用带版本号破缓存
-- 图形标为「双月牙 + 中竖」中字铜钱结构，文字用 SVG `<text>` + 系统黑体渲染；颜色固定电信蓝（`#1677D9`，favicon 用 `#005BAC`），不依赖 `currentColor`（`<img>` 引用的外部 SVG 无法继承页面 CSS）
+- **素材（2026-09-14 起为官方位图）**：
+  - `src/assets/china-telecom-logo.png` — 官方完整横版 Logo（牛形图形标 + 书法体「中国电信」+ CHINA TELECOM，电信蓝 #005BAC，透明底），来源百度百科官方词条图片
+  - `src/assets/china-telecom-mark.png` — 由完整 Logo 裁剪的纯图形标（方形透明画布）
+  - `public/favicon.png` — 图形标 256×256，`index.html` 引用带版本号破缓存
+- **侧边栏（`MainLayout.vue`）**：展开态显示完整 Logo（`.logo-full` 高 28px），折叠态显示纯图形标（`.logo-mark` 32px），移除原 "BNIoT" 文字与内联仪表盘图标
+- **登录页（`Login.vue`）**：`.logo-img` 宽 200px，品牌文案为系统全称，副标题为「智慧物联」
+- **深色/浅色主题适配**：默认深色主题下官方蓝色 Logo 对比度不足，用 CSS
+  `filter: brightness(0) invert(1)` 反白显示（中国电信官方反白规范用法，alpha 通道保留）；
+  `[data-theme='light']` 下 `filter: none` 显示电信蓝原色
 - E2E 断言由 `BNIoT` 改为匹配「空调物联网」（auth / full-test / comprehensive-test / LoginPage）
+- 历史：2026-09-13 曾使用手绘 SVG（`<text>` 渲染「中国电信」），因字形不标准于 2026-09-14 替换为官方 PNG
 
 ---
 
