@@ -86,9 +86,17 @@ class MQTTClient:
         else:
             logger.error(f"MQTT 连接失败，返回码: {rc}")
 
-    def _on_disconnect(self, client: mqtt.Client, userdata: Any, rc: int, properties: Any):
-        """断开连接回调"""
+    def _on_disconnect(
+        self,
+        client: mqtt.Client,
+        userdata: Any,
+        disconnect_flags: Any,
+        rc: Any,
+        properties: Any
+    ):
+        """断开连接回调（paho CallbackAPIVersion.VERSION2 签名，含 disconnect_flags）"""
         self.connected = False
+        # VERSION2 中 rc 为 ReasonCode 对象；自动重连由 paho loop 负责
         logger.warning(f"MQTT 断开连接，返回码: {rc}")
 
     def _on_message(self, client: mqtt.Client, userdata: Any, msg: mqtt.MQTTMessage):

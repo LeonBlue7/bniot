@@ -1,7 +1,7 @@
 # 后端代码结构
 
 <!-- AUTO-GENERATED -->
-**Last Updated:** 2026-04-30 (微信小程序登录API)
+**Last Updated:** 2026-09-14 (修复 paho VERSION2 on_disconnect 回调签名)
 
 ## 目录结构
 
@@ -532,6 +532,17 @@ V10/V20 协议版本差异化参数验证：
 - 数据上送处理
 - 主动版本探测
 - **电流值转换**：设备上报电流单位 mA，存储/返回时转换为 A（除以 1000）
+
+### MQTT 客户端 (`mqtt/client.py`) - 2026-09-14
+
+- 使用 paho `CallbackAPIVersion.VERSION2`，回调签名必须为 5 个位置参数：
+  - `on_connect(client, userdata, flags, rc, properties)`
+  - `on_disconnect(client, userdata, disconnect_flags, rc, properties)`
+  - `on_message(client, userdata, msg)`
+- **历史事故**：`on_disconnect` 曾缺少 `disconnect_flags` 参数，EMQX 重启时回调抛
+  `TypeError: takes 5 positional arguments but 6 were given`，导致网络循环线程终止、
+  后端永不自动重连，全部设备显示离线，只能手动重启 backend 容器恢复。
+- 自动重连由 paho `loop_start()` 内置机制负责，但前提是回调本身不抛异常。
 
 ---
 
