@@ -112,5 +112,6 @@ volumes/emqx/data/
 volumes/emqx/log/
 # 前端构建产物需要提交（一键部署），排除 frontend/dist 的忽略
 !frontend/dist/
+!frontend/dist/*.png
 !frontend/dist/assets/
 !frontend/dist/assets/**
